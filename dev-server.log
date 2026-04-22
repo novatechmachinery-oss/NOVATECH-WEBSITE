@@ -1,0 +1,15 @@
+
+> novatech-site@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.39:3000
+✓ Ready in 604ms
+Creating turbopack project {
+  dir: 'C:\\Users\\novat\\Downloads\\novatech-site\\novatech-site',
+  testMode: true
+}
+
+○ Compiling / ...
+✓ Finished writing to filesystem cache in 10.3s
