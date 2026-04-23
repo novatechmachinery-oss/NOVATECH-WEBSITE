@@ -27,8 +27,14 @@ export default function Footer() {
         <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-white/30 bg-white/95 sm:h-12 sm:w-12">
-                <Image src="/images/main-logo.svg" alt="Novatech logo" fill className="object-contain p-2" />
+              <div className="relative h-12 w-[112px] shrink-0 overflow-hidden rounded-xl border border-white/30 bg-white/95 px-2 sm:h-14 sm:w-[132px]">
+                <Image
+                  src="/images/main-logo.png"
+                  alt="Novatech logo"
+                  fill
+                  sizes="(min-width: 640px) 132px, 112px"
+                  className="object-contain p-2"
+                />
               </div>
 
               <div className="min-w-0">

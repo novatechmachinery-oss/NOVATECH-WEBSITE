@@ -20,12 +20,14 @@ export default function Navbar() {
     <nav className="border-b border-slate-300 bg-white">
       <div className="mx-auto flex max-w-[1460px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:hidden">
         <Link href="/" className="flex min-w-0 shrink-0 items-center gap-3 transition hover:opacity-95">
-          <div className="relative h-10 w-10 flex-none overflow-hidden rounded-full border border-slate-200">
-            <Image src="/images/main logo.webp" alt="Novatech logo" fill sizes="44px" className="object-cover" />
+          <div className="relative h-12 w-[164px] flex-none">
+            <Image src="/images/main-logo.png" alt="Novatech logo" fill sizes="164px" className="object-contain object-left" />
           </div>
           <div className="min-w-0 flex flex-col leading-none">
-            <span className="text-[1.7rem] font-bold uppercase tracking-[0.06em] text-slate-900">Novatech</span>
-            <span className="mt-1.5 text-[0.7rem] font-medium tracking-[0.2em] text-slate-500">Machinery</span>
+            <span className="text-[1.45rem] font-bold uppercase tracking-[0.05em] text-slate-900">Novatech</span>
+            <span className="mt-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+              Machinery
+            </span>
           </div>
         </Link>
 
@@ -49,14 +51,22 @@ export default function Navbar() {
 
       <div className="mx-auto hidden max-w-[1460px] grid-cols-[1.55fr_1fr] items-center gap-6 px-6 py-4 lg:grid xl:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-5 transition hover:opacity-95">
-          <div className="relative h-[74px] w-[74px] flex-none overflow-hidden rounded-full xl:h-[80px] xl:w-[80px]">
-            <Image src="/images/main logo.webp" alt="Novatech logo" fill sizes="86px" className="object-cover" />
+          <div className="relative h-[88px] w-[100px] flex-none xl:h-[96px] xl:w-[100px]">
+            <Image
+              src="/images/main-logo.png"
+              alt="Novatech logo"
+              fill
+              sizes="(min-width: 1280px) 356px, 320px"
+              className="object-contain object-left"
+            />
           </div>
           <div className="min-w-0 flex flex-col leading-none">
-            <span className="text-[1.75rem] font-black uppercase tracking-[0.02em] text-sky-700 xl:text-[2.1rem]">
-              Novatech Machinery
+            <span className="text-[1.45rem] font-black uppercase tracking-[0.05em] text-sky-700 xl:text-[1.7rem]">
+              Novatech Machinery Corporation (opc) pvt ltd
             </span>
-            <span className="mt-2 text-[0.82rem] italic text-slate-600">The Machinery Planet</span>
+            <span className="mt-2 text-[0.8rem] uppercase tracking-[0.2em] text-slate-500">
+              Built For Performance
+            </span>
           </div>
         </Link>
 
@@ -68,7 +78,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`whitespace-nowrap border-t-[3px] pt-2.5 transition duration-300 ${
+                  className={`whitespace-nowrap border-b-[3px] pb-2.5 transition duration-300 ${
                     isActive
                       ? "border-sky-600 text-sky-700"
                       : "border-transparent text-slate-700 hover:border-sky-400 hover:text-slate-950"
