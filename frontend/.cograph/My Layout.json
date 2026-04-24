@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "name": "My Layout",
+  "description": "",
+  "savedAt": "2026-04-23T06:44:26.460Z",
+  "settings": {
+    "complexityLevel": 1,
+    "clusterGroupBy": "file",
+    "layoutMode": "static",
+    "gitMode": true,
+    "languageMode": false,
+    "folderMode": false,
+    "classMode": false
+  },
+  "nodePositions": {}
+}
