@@ -494,18 +494,40 @@ textarea {
   border-collapse: collapse;
 }
 
+.category-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
 .machine-table th,
-.machine-table td {
+.machine-table td,
+.category-table th,
+.category-table td {
   padding: 1rem 0.85rem;
   border-bottom: 1px solid #e8eef4;
   text-align: left;
   vertical-align: middle;
 }
 
-.machine-table th {
+.machine-table th,
+.category-table th {
   color: #667085;
   font-size: 0.88rem;
   font-weight: 500;
+}
+
+.category-parent-name {
+  font-weight: 600;
+}
+
+.category-child-name {
+  color: #475467;
+}
+
+.category-action-row {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .machine-name-cell {
@@ -608,6 +630,25 @@ textarea {
 .machine-form {
   display: grid;
   gap: 1rem;
+}
+
+.category-popup-form {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.category-popup-card {
+  width: min(100%, 560px);
+}
+
+.category-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #eef2f6;
 }
 
 .form-grid {
@@ -795,6 +836,11 @@ textarea {
 
   .dialog-head {
     align-items: center;
+  }
+
+  .category-popup-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .search-box {
