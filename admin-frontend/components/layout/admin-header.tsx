@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Link from "next/link";
 
 type AdminHeaderProps = {
   title: string;
@@ -15,9 +16,9 @@ export default function AdminHeader({ title, description, actions }: AdminHeader
           <span className="topbar-email">admin@novatechmachinery.com</span>
         </div>
         <div className="admin-topbar-right">
-          <a href="/" className="topbar-link">
+          <Link href="/" className="topbar-link">
             View Site {"->"}
-          </a>
+          </Link>
         </div>
       </header>
 

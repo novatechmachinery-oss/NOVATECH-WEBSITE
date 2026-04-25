@@ -6,17 +6,22 @@ import type {
   MachineSpecification,
   UserRecord,
 } from "@/types/machine";
+import type { AdminSettings, TrackingSettings, WorkspaceSnapshot } from "@/types/settings";
 
-const STORAGE_KEY = "novatech-admin-machines";
+const MACHINE_STORAGE_KEY = "novatech-admin-machines";
+const SETTINGS_STORAGE_KEY = "novatech-admin-settings";
+const CATEGORY_STORAGE_KEY = "novatech-admin-categories";
+const SUBCATEGORY_STORAGE_KEY = "novatech-admin-subcategories";
+const SETTINGS_CHANGE_EVENT = "novatech:settings-change";
 
-const categories = [
+const defaultCategories = [
   "Metal Working Machinery",
   "Plastic Machinery",
   "Textile Machinery",
   "Pharmaceutical Machinery",
 ];
 
-const subcategoryMap: Record<string, string[]> = {
+const defaultSubcategoryMap: Record<string, string[]> = {
   "Metal Working Machinery": [
     "Heavy Duty Lathes",
     "Gear Hobbers",
@@ -28,6 +33,36 @@ const subcategoryMap: Record<string, string[]> = {
   "Textile Machinery": ["Weaving Machines", "Knitting Machines", "Dyeing Units"],
   "Pharmaceutical Machinery": ["Tablet Press", "Capsule Fillers", "Packaging Lines"],
 };
+
+const defaultSettings: AdminSettings = {
+  profile: {
+    fullName: "Admin Novatech Machinery",
+    phone: "+91 9646255855",
+    email: "admin@novatechmachinery.com",
+  },
+  smtp: {
+    host: "smtp.gmail.com",
+    port: "587",
+    username: "admin@novatechmachinery.com",
+    password: "novatech-app-password",
+    fromEmail: "info@novatechmachinery.com",
+    fromName: "Novatech Machinery",
+    useSsl: false,
+  },
+  tracking: {
+    googleAnalyticsId: "G-P6982NCZTC",
+    metaPixelId: "1254549116261073",
+    microsoftClarityId: "w8fhp8peo",
+  },
+  security: {
+    passwordHash: "",
+    passwordUpdatedAt: null,
+  },
+};
+
+const defaultAdminSettingsSnapshot = normalizeSettings(defaultSettings);
+let cachedAdminSettingsSnapshot = defaultAdminSettingsSnapshot;
+let cachedAdminSettingsRaw: string | null = null;
 
 const dummyMachines: Machine[] = [
   {
@@ -203,6 +238,84 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
+function readStorage<T>(key: string, fallback: T) {
+  if (!canUseStorage()) {
+    return fallback;
+  }
+
+  const raw = window.localStorage.getItem(key);
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage<T>(key: string, value: T) {
+  if (canUseStorage()) {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  return value;
+}
+
+function normalizeSettings(value?: Partial<AdminSettings>): AdminSettings {
+  return {
+    profile: {
+      ...defaultSettings.profile,
+      ...(value?.profile ?? {}),
+    },
+    smtp: {
+      ...defaultSettings.smtp,
+      ...(value?.smtp ?? {}),
+    },
+    tracking: {
+      ...defaultSettings.tracking,
+      ...(value?.tracking ?? {}),
+    },
+    security: {
+      ...defaultSettings.security,
+      ...(value?.security ?? {}),
+    },
+  };
+}
+
+function cacheAdminSettingsSnapshot(settings: AdminSettings) {
+  cachedAdminSettingsSnapshot = settings;
+  cachedAdminSettingsRaw = JSON.stringify(settings);
+  return settings;
+}
+
+function readAdminSettingsSnapshot() {
+  if (!canUseStorage()) {
+    return defaultAdminSettingsSnapshot;
+  }
+
+  const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+
+  if (!raw) {
+    cachedAdminSettingsRaw = null;
+    cachedAdminSettingsSnapshot = defaultAdminSettingsSnapshot;
+    return cachedAdminSettingsSnapshot;
+  }
+
+  if (raw === cachedAdminSettingsRaw) {
+    return cachedAdminSettingsSnapshot;
+  }
+
+  try {
+    return cacheAdminSettingsSnapshot(normalizeSettings(JSON.parse(raw) as Partial<AdminSettings>));
+  } catch {
+    cachedAdminSettingsRaw = null;
+    cachedAdminSettingsSnapshot = defaultAdminSettingsSnapshot;
+    return cachedAdminSettingsSnapshot;
+  }
+}
+
 function parseSpecifications(specificationsText: string): MachineSpecification[] {
   return specificationsText
     .split(",")
@@ -244,35 +357,71 @@ function buildMachine(values: MachineFormValues, id?: string): Machine {
   };
 }
 
-export function getMachines() {
-  if (!canUseStorage()) {
-    return dummyMachines;
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return dummyMachines;
-  }
-
-  try {
-    return JSON.parse(raw) as Machine[];
-  } catch {
-    return dummyMachines;
-  }
+function setMachines(machines: Machine[]) {
+  return writeStorage(MACHINE_STORAGE_KEY, machines);
 }
 
-function setMachines(machines: Machine[]) {
+function setCategoryOptions(categories: string[]) {
+  return writeStorage(CATEGORY_STORAGE_KEY, categories);
+}
+
+function setSubcategoryMap(subcategoryMap: Record<string, string[]>) {
+  return writeStorage(SUBCATEGORY_STORAGE_KEY, subcategoryMap);
+}
+
+function setAdminSettings(settings: Partial<AdminSettings>) {
+  const normalizedSettings = cacheAdminSettingsSnapshot(normalizeSettings(settings));
+
+  writeStorage(SETTINGS_STORAGE_KEY, normalizedSettings);
+
   if (canUseStorage()) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(machines));
+    window.dispatchEvent(new Event(SETTINGS_CHANGE_EVENT));
   }
 
-  return machines;
+  return normalizedSettings;
+}
+
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isStringArrayRecord(value: unknown): value is Record<string, string[]> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return Object.values(value).every(isStringArray);
+}
+
+async function hashSecret(secret: string) {
+  const content = secret.trim();
+  const encoder = new TextEncoder();
+  const buffer = encoder.encode(content);
+
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    const digest = await crypto.subtle.digest("SHA-256", buffer);
+    return Array.from(new Uint8Array(digest))
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  return Array.from(buffer)
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export function getMachines() {
+  return readStorage(MACHINE_STORAGE_KEY, dummyMachines);
 }
 
 export function seedMachines(force = false) {
   const current = getMachines();
   if (!force && current.length > 0) {
-    if (canUseStorage() && !window.localStorage.getItem(STORAGE_KEY)) {
+    if (canUseStorage() && !window.localStorage.getItem(MACHINE_STORAGE_KEY)) {
       return setMachines(dummyMachines);
     }
     return current;
@@ -296,11 +445,11 @@ export function deleteMachine(id: string) {
 }
 
 export function getCategoryOptions() {
-  return categories;
+  return readStorage(CATEGORY_STORAGE_KEY, defaultCategories);
 }
 
 export function getSubcategoryMap() {
-  return subcategoryMap;
+  return readStorage(SUBCATEGORY_STORAGE_KEY, defaultSubcategoryMap);
 }
 
 export function getLeads() {
@@ -311,12 +460,159 @@ export function getUsers() {
   return dummyUsers;
 }
 
+export function getAdminSettings() {
+  return readAdminSettingsSnapshot();
+}
+
+export function getDefaultAdminSettings() {
+  return defaultAdminSettingsSnapshot;
+}
+
+export function subscribeAdminSettings(onStoreChange: () => void) {
+  if (!canUseStorage()) {
+    return () => undefined;
+  }
+
+  const handleChange = (event: Event) => {
+    if (typeof StorageEvent !== "undefined" && event instanceof StorageEvent) {
+      if (event.key && event.key !== SETTINGS_STORAGE_KEY) {
+        return;
+      }
+    }
+
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(SETTINGS_CHANGE_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(SETTINGS_CHANGE_EVENT, handleChange);
+  };
+}
+
+export function updateProfileSettings(profile: AdminSettings["profile"]) {
+  return setAdminSettings({
+    ...getAdminSettings(),
+    profile,
+  });
+}
+
+export function updateSmtpSettings(smtp: AdminSettings["smtp"]) {
+  return setAdminSettings({
+    ...getAdminSettings(),
+    smtp,
+  });
+}
+
+export function updateTrackingSettings(tracking: AdminSettings["tracking"]) {
+  return setAdminSettings({
+    ...getAdminSettings(),
+    tracking,
+  });
+}
+
+export function getActiveTrackingCount(tracking: TrackingSettings = getAdminSettings().tracking) {
+  return Object.values(tracking).filter(Boolean).length;
+}
+
+export function sendTestEmail(recipientEmail: string) {
+  const settings = getAdminSettings();
+  const { smtp } = settings;
+  const requiredFields = [smtp.host, smtp.port, smtp.username, smtp.password, smtp.fromEmail, smtp.fromName];
+
+  if (requiredFields.some((value) => !value.trim())) {
+    return {
+      ok: false,
+      message: "SMTP details complete kijiye, phir test email bhej sakte hain.",
+    };
+  }
+
+  if (!isEmail(recipientEmail.trim())) {
+    return {
+      ok: false,
+      message: "Valid recipient email enter kijiye.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: `Test email ${recipientEmail.trim()} ke liye queued hai. Delivery backend integration ke baad live SMTP par jayegi.`,
+  };
+}
+
+export async function changeAdminPassword(password: string) {
+  const settings = getAdminSettings();
+  const passwordHash = await hashSecret(password);
+
+  return setAdminSettings({
+    ...settings,
+    security: {
+      passwordHash,
+      passwordUpdatedAt: new Date().toISOString(),
+    },
+  });
+}
+
+export function buildWorkspaceSnapshot(): WorkspaceSnapshot {
+  return {
+    version: "novatech-admin/v1",
+    exportedAt: new Date().toISOString(),
+    machines: getMachines(),
+    categories: getCategoryOptions(),
+    subcategoryMap: getSubcategoryMap(),
+    leads: getLeads(),
+    users: getUsers(),
+    settings: getAdminSettings(),
+  };
+}
+
+export function importWorkspaceSnapshot(rawSnapshot: string) {
+  const parsed = JSON.parse(rawSnapshot) as Partial<WorkspaceSnapshot>;
+
+  let importedSomething = false;
+
+  if (Array.isArray(parsed.machines)) {
+    setMachines(parsed.machines as Machine[]);
+    importedSomething = true;
+  }
+
+  if (isStringArray(parsed.categories)) {
+    setCategoryOptions(parsed.categories);
+    importedSomething = true;
+  }
+
+  if (isStringArrayRecord(parsed.subcategoryMap)) {
+    setSubcategoryMap(parsed.subcategoryMap);
+    importedSomething = true;
+  }
+
+  if (parsed.settings && typeof parsed.settings === "object") {
+    setAdminSettings(parsed.settings);
+    importedSomething = true;
+  }
+
+  if (!importedSomething) {
+    throw new Error("Snapshot me import karne layak data nahi mila.");
+  }
+
+  return {
+    machines: getMachines().length,
+    categories: getCategoryOptions().length,
+    subcategories: Object.values(getSubcategoryMap()).flat().length,
+    trackingTools: getActiveTrackingCount(),
+  };
+}
+
 export function getLeadStageCount(stage: LeadStage) {
   return dummyLeads.filter((lead) => lead.stage === stage).length;
 }
 
 export function getMachineStats() {
   const machines = getMachines();
+  const categories = getCategoryOptions();
+  const subcategoryMap = getSubcategoryMap();
 
   return {
     totalMachines: machines.length,

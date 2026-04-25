@@ -1,23 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import MachineForm from "@/components/forms/machine-form";
 import AdminShell from "@/components/layout/admin-shell";
 import MachineTable from "@/components/tables/machine-table";
 import { createMachine, deleteMachine, seedMachines, updateMachine } from "@/lib/api";
+import { formatMachinePrice } from "@/lib/format";
 import type { Machine, MachineFormValues } from "@/types/machine";
 
 export default function MachinesPage() {
-  const [machines, setMachines] = useState<Machine[]>([]);
+  const [machines, setMachines] = useState<Machine[]>(() => seedMachines());
   const [viewingMachine, setViewingMachine] = useState<Machine | null>(null);
   const [editingMachine, setEditingMachine] = useState<Machine | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Machine | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    setMachines(seedMachines());
-  }, []);
 
   const filteredMachines = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -192,7 +189,7 @@ export default function MachinesPage() {
                 </div>
                 <div className="detail-stack">
                   <strong>Price</strong>
-                  <span>${viewingMachine.price.toLocaleString()}</span>
+                  <span>{formatMachinePrice(viewingMachine.price)}</span>
                 </div>
               </div>
               <div className="detail-stack">

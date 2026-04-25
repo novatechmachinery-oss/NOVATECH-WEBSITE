@@ -1,31 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/admin-shell";
 import { getLeadPipeline, getLeads, getMachineStats, getMachines } from "@/lib/api";
-import type { Lead, Machine } from "@/types/machine";
+import { formatMachinePrice } from "@/lib/format";
 
 export default function DashboardPage() {
-  const [latestMachines, setLatestMachines] = useState<Machine[]>([]);
-  const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
-  const [stats, setStats] = useState({
-    totalMachines: 0,
-    availableMachines: 0,
-    reservedMachines: 0,
-    totalLeads: 0,
-    newToday: 0,
-    dealsWon: 0,
-    totalCategories: 0,
-    totalSubcategories: 0,
-  });
-  const [pipeline, setPipeline] = useState<{ stage: string; count: number }[]>([]);
-
-  useEffect(() => {
-    setLatestMachines(getMachines().slice(0, 5));
-    setRecentLeads(getLeads());
-    setStats(getMachineStats());
-    setPipeline(getLeadPipeline());
-  }, []);
+  const latestMachines = getMachines().slice(0, 5);
+  const recentLeads = getLeads();
+  const stats = getMachineStats();
+  const pipeline = getLeadPipeline();
 
   return (
     <AdminShell
@@ -154,7 +137,7 @@ export default function DashboardPage() {
                   <span>{machine.brand}</span>
                 </div>
                 <div className="detail-stack">
-                  <strong>${machine.price.toLocaleString()}</strong>
+                  <strong>{formatMachinePrice(machine.price)}</strong>
                 </div>
                 <div>
                   <span className={machine.stockStatus === "In Stock" ? "badge available" : "badge limited"}>

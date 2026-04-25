@@ -2,6 +2,7 @@
 
 import AdminShell from "@/components/layout/admin-shell";
 import { getMachines } from "@/lib/api";
+import { formatMachinePrice } from "@/lib/format";
 
 export default function InventoryPage() {
   const machines = getMachines();
@@ -14,7 +15,7 @@ export default function InventoryPage() {
       <section className="simple-grid">
         <article className="simple-card">
           <strong>Total Inventory Value</strong>
-          <p>${machines.reduce((total, machine) => total + machine.price, 0).toLocaleString()}</p>
+          <p>{formatMachinePrice(machines.reduce((total, machine) => total + machine.price, 0))}</p>
         </article>
         <article className="simple-card">
           <strong>In Stock Units</strong>

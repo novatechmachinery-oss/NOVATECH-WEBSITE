@@ -5,11 +5,12 @@ type CategoryRow = {
   slug: string;
   parent: string;
   description?: string;
+  
   isSubcategory?: boolean;
 };
 
 type CategoryTableProps = {
-  rows: CategoryRow[];
+  rows: readonly CategoryRow[];
 };
 
 export default function CategoryTable({ rows }: CategoryTableProps) {
