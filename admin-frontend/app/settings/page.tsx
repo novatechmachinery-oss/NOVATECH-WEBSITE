@@ -143,7 +143,7 @@ export default function SettingsPage() {
     if (newPassword.trim().length < 8) {
       setSecurityNotice({
         tone: "error",
-        text: "Password kam se kam 8 characters ka rakhiye.",
+        text: "Password should be of 8 characters.",
       });
       return;
     }
@@ -151,7 +151,7 @@ export default function SettingsPage() {
     if (newPassword !== confirmPassword) {
       setSecurityNotice({
         tone: "error",
-        text: "Confirm password match nahi kar raha.",
+        text: "Confirm password does not match.",
       });
       return;
     }
