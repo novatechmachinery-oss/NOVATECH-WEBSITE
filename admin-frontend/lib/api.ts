@@ -6,6 +6,12 @@ import type {
   MachineSpecification,
   UserRecord,
 } from "@/types/machine";
+import type {
+  SeoGlobalSettings,
+  SeoMachineTemplate,
+  SeoPageRecord,
+  SeoWorkspace,
+} from "@/types/seo";
 import type { AdminSettings, TrackingSettings, WorkspaceSnapshot } from "@/types/settings";
 
 const MACHINE_STORAGE_KEY = "novatech-admin-machines";
@@ -13,6 +19,8 @@ const SETTINGS_STORAGE_KEY = "novatech-admin-settings";
 const CATEGORY_STORAGE_KEY = "novatech-admin-categories";
 const SUBCATEGORY_STORAGE_KEY = "novatech-admin-subcategories";
 const SETTINGS_CHANGE_EVENT = "novatech:settings-change";
+const SEO_STORAGE_KEY = "novatech-admin-seo";
+const SEO_CHANGE_EVENT = "novatech:seo-change";
 
 const defaultCategories = [
   "Metal Working Machinery",
@@ -60,9 +68,77 @@ const defaultSettings: AdminSettings = {
   },
 };
 
+const defaultSeoGlobalSettings: SeoGlobalSettings = {
+  siteName: "Novatech Machinery",
+  siteUrl: "https://novatechmachinery.com",
+  titleSuffix: "| Novatech Machinery",
+  defaultMetaDescription:
+    "Used industrial machinery, CNC systems, fabrication equipment and production lines sourced by Novatech Machinery.",
+  defaultKeywords:
+    "used machinery, industrial machines, cnc machines, novatech machinery, machine dealers",
+  defaultOgImage: "/images/seo/novatech-default-og.jpg",
+  twitterHandle: "@novatechmachinery",
+};
+
+const defaultSeoMachineTemplate: SeoMachineTemplate = {
+  machineTitleTemplate: "{machineName} {brand} {model} {titleSuffix}",
+  machineDescriptionTemplate:
+    "Explore {machineName} from {brand}. Category: {category}. Condition: {condition}. Source premium used machinery with Novatech Machinery.",
+  categoryTitleTemplate: "{categoryName} Machines {titleSuffix}",
+  categoryDescriptionTemplate:
+    "Browse {categoryName} machines curated by Novatech Machinery for production-ready industrial requirements.",
+};
+
 const defaultAdminSettingsSnapshot = normalizeSettings(defaultSettings);
 let cachedAdminSettingsSnapshot = defaultAdminSettingsSnapshot;
 let cachedAdminSettingsRaw: string | null = null;
+
+function slugifySegment(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildSeoId(source: SeoPageRecord["source"], path: string) {
+  return `${source}:${path || "/"}`;
+}
+
+function formatTitleWithSuffix(title: string) {
+  return `${title} ${defaultSeoGlobalSettings.titleSuffix}`.trim();
+}
+
+function createSeoPageRecord(
+  source: SeoPageRecord["source"],
+  path: string,
+  pageTitle: string,
+  options?: Partial<SeoPageRecord>,
+): SeoPageRecord {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const metaTitle = options?.metaTitle ?? formatTitleWithSuffix(pageTitle);
+  const metaDescription =
+    options?.metaDescription ??
+    `${pageTitle} page on Novatech Machinery with focused metadata for search visibility and catalogue discovery.`;
+
+  return {
+    id: options?.id ?? buildSeoId(source, normalizedPath),
+    path: normalizedPath,
+    pageTitle,
+    metaTitle,
+    metaDescription,
+    keywords: options?.keywords ?? "",
+    canonicalUrl: options?.canonicalUrl ?? normalizedPath,
+    ogTitle: options?.ogTitle ?? metaTitle,
+    ogDescription: options?.ogDescription ?? metaDescription,
+    noIndex: options?.noIndex ?? false,
+    noFollow: options?.noFollow ?? false,
+    source,
+    lockedPath: options?.lockedPath ?? source !== "custom",
+    updatedAt: options?.updatedAt ?? null,
+  };
+}
 
 const dummyMachines: Machine[] = [
   {
@@ -234,6 +310,111 @@ const dummyUsers: UserRecord[] = [
   },
 ];
 
+function buildDefaultSeoPages() {
+  const systemPages = [
+    createSeoPageRecord("system", "/", "Home", {
+      metaDescription:
+        "Used industrial machinery marketplace by Novatech Machinery featuring CNC, fabrication and production equipment.",
+      keywords: "novatech machinery, used industrial machinery, cnc machines",
+    }),
+    createSeoPageRecord("system", "/about", "About Us", {
+      metaDescription:
+        "Learn about Novatech Machinery, our sourcing network and expertise in industrial machine trading.",
+    }),
+    createSeoPageRecord("system", "/categories", "Machine Categories", {
+      metaDescription:
+        "Browse machine categories, production equipment groups and industrial segments offered by Novatech Machinery.",
+    }),
+    createSeoPageRecord("system", "/contact", "Contact Us", {
+      metaDescription:
+        "Contact Novatech Machinery for machine sourcing, pricing, inventory support and industrial equipment assistance.",
+    }),
+    createSeoPageRecord("system", "/machines", "All Machines", {
+      metaDescription:
+        "Explore all listed machines including CNC, fabrication, forming and production equipment available with Novatech Machinery.",
+    }),
+  ];
+
+  const categoryPages = getCategoryOptions().map((category) =>
+    createSeoPageRecord(
+      "category",
+      `/machines/category/${slugifySegment(category)}`,
+      category,
+      {
+        metaTitle: formatTitleWithSuffix(`${category} Machines`),
+        metaDescription:
+          defaultSeoMachineTemplate.categoryDescriptionTemplate.replace("{categoryName}", category),
+      },
+    ),
+  );
+
+  const machinePages = getMachines().map((machine) =>
+    createSeoPageRecord("machine", `/machines/${slugifySegment(machine.name)}`, machine.name, {
+      metaTitle: defaultSeoMachineTemplate.machineTitleTemplate
+        .replace("{machineName}", machine.name)
+        .replace("{brand}", machine.brand)
+        .replace("{model}", machine.model)
+        .replace("{titleSuffix}", defaultSeoGlobalSettings.titleSuffix),
+      metaDescription: defaultSeoMachineTemplate.machineDescriptionTemplate
+        .replace("{machineName}", machine.name)
+        .replace("{brand}", machine.brand)
+        .replace("{category}", machine.category)
+        .replace("{condition}", machine.condition),
+      keywords: [machine.category, machine.subcategory, machine.brand, machine.model]
+        .filter(Boolean)
+        .join(", "),
+    }),
+  );
+
+  return [...systemPages, ...categoryPages, ...machinePages];
+}
+
+function normalizeSeoWorkspace(value?: Partial<SeoWorkspace>): SeoWorkspace {
+  const defaultPages = buildDefaultSeoPages();
+  const storedPages = Array.isArray(value?.pages) ? value.pages : [];
+  const storedById = new Map(storedPages.map((page) => [page.id, page]));
+  const defaultIds = new Set(defaultPages.map((page) => page.id));
+
+  const mergedDefaultPages = defaultPages.map((page) => {
+    const storedPage = storedById.get(page.id);
+
+    if (!storedPage) {
+      return page;
+    }
+
+    return {
+      ...page,
+      ...storedPage,
+      id: page.id,
+      path: page.path,
+      source: page.source,
+      lockedPath: page.lockedPath,
+    };
+  });
+
+  const customPages = storedPages
+    .filter((page) => page.source === "custom" && !defaultIds.has(page.id))
+    .map((page) => ({
+      ...createSeoPageRecord("custom", page.path, page.pageTitle),
+      ...page,
+      id: page.id || buildSeoId("custom", page.path),
+      source: "custom" as const,
+      lockedPath: false,
+    }));
+
+  return {
+    pages: [...mergedDefaultPages, ...customPages],
+    global: {
+      ...defaultSeoGlobalSettings,
+      ...(value?.global ?? {}),
+    },
+    machineTemplate: {
+      ...defaultSeoMachineTemplate,
+      ...(value?.machineTemplate ?? {}),
+    },
+  };
+}
+
 function canUseStorage() {
   return typeof window !== "undefined";
 }
@@ -284,10 +465,20 @@ function normalizeSettings(value?: Partial<AdminSettings>): AdminSettings {
   };
 }
 
+const defaultSeoWorkspaceSnapshot = normalizeSeoWorkspace();
+let cachedSeoWorkspaceSnapshot = defaultSeoWorkspaceSnapshot;
+let cachedSeoWorkspaceRaw: string | null = null;
+
 function cacheAdminSettingsSnapshot(settings: AdminSettings) {
   cachedAdminSettingsSnapshot = settings;
   cachedAdminSettingsRaw = JSON.stringify(settings);
   return settings;
+}
+
+function cacheSeoWorkspaceSnapshot(workspace: SeoWorkspace) {
+  cachedSeoWorkspaceSnapshot = workspace;
+  cachedSeoWorkspaceRaw = JSON.stringify(workspace);
+  return workspace;
 }
 
 function readAdminSettingsSnapshot() {
@@ -313,6 +504,32 @@ function readAdminSettingsSnapshot() {
     cachedAdminSettingsRaw = null;
     cachedAdminSettingsSnapshot = defaultAdminSettingsSnapshot;
     return cachedAdminSettingsSnapshot;
+  }
+}
+
+function readSeoWorkspaceSnapshot() {
+  if (!canUseStorage()) {
+    return defaultSeoWorkspaceSnapshot;
+  }
+
+  const raw = window.localStorage.getItem(SEO_STORAGE_KEY);
+
+  if (!raw) {
+    cachedSeoWorkspaceRaw = null;
+    cachedSeoWorkspaceSnapshot = defaultSeoWorkspaceSnapshot;
+    return cachedSeoWorkspaceSnapshot;
+  }
+
+  if (raw === cachedSeoWorkspaceRaw) {
+    return normalizeSeoWorkspace(cachedSeoWorkspaceSnapshot);
+  }
+
+  try {
+    return cacheSeoWorkspaceSnapshot(normalizeSeoWorkspace(JSON.parse(raw) as Partial<SeoWorkspace>));
+  } catch {
+    cachedSeoWorkspaceRaw = null;
+    cachedSeoWorkspaceSnapshot = defaultSeoWorkspaceSnapshot;
+    return cachedSeoWorkspaceSnapshot;
   }
 }
 
@@ -379,6 +596,18 @@ function setAdminSettings(settings: Partial<AdminSettings>) {
   }
 
   return normalizedSettings;
+}
+
+function setSeoWorkspace(workspace: Partial<SeoWorkspace>) {
+  const normalizedWorkspace = cacheSeoWorkspaceSnapshot(normalizeSeoWorkspace(workspace));
+
+  writeStorage(SEO_STORAGE_KEY, normalizedWorkspace);
+
+  if (canUseStorage()) {
+    window.dispatchEvent(new Event(SEO_CHANGE_EVENT));
+  }
+
+  return normalizedWorkspace;
 }
 
 function isEmail(value: string) {
@@ -490,6 +719,110 @@ export function subscribeAdminSettings(onStoreChange: () => void) {
     window.removeEventListener("storage", handleChange);
     window.removeEventListener(SETTINGS_CHANGE_EVENT, handleChange);
   };
+}
+
+export function getSeoWorkspace() {
+  return readSeoWorkspaceSnapshot();
+}
+
+export function getDefaultSeoWorkspace() {
+  return defaultSeoWorkspaceSnapshot;
+}
+
+export function subscribeSeoWorkspace(onStoreChange: () => void) {
+  if (!canUseStorage()) {
+    return () => undefined;
+  }
+
+  const handleChange = (event: Event) => {
+    if (typeof StorageEvent !== "undefined" && event instanceof StorageEvent) {
+      if (event.key && event.key !== SEO_STORAGE_KEY) {
+        return;
+      }
+    }
+
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(SEO_CHANGE_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(SEO_CHANGE_EVENT, handleChange);
+  };
+}
+
+export function createSeoPage(values: Pick<SeoPageRecord, "path" | "pageTitle">) {
+  const workspace = getSeoWorkspace();
+  const normalizedPath = values.path.trim().startsWith("/") ? values.path.trim() : `/${values.path.trim()}`;
+  const id = buildSeoId("custom", normalizedPath);
+
+  const nextPages = [
+    createSeoPageRecord("custom", normalizedPath, values.pageTitle.trim() || "New Page", {
+      id,
+      updatedAt: new Date().toISOString(),
+    }),
+    ...workspace.pages.filter((page) => page.id !== id),
+  ];
+
+  return setSeoWorkspace({
+    ...workspace,
+    pages: nextPages,
+  });
+}
+
+export function updateSeoPage(id: string, updates: Partial<SeoPageRecord>) {
+  const workspace = getSeoWorkspace();
+
+  return setSeoWorkspace({
+    ...workspace,
+    pages: workspace.pages.map((page) => {
+      if (page.id !== id) {
+        return page;
+      }
+
+      const nextPath = page.lockedPath ? page.path : updates.path?.trim() || page.path;
+
+      return {
+        ...page,
+        ...updates,
+        id: page.lockedPath ? page.id : buildSeoId(page.source, nextPath),
+        path: nextPath.startsWith("/") ? nextPath : `/${nextPath}`,
+        source: page.source,
+        lockedPath: page.lockedPath,
+        updatedAt: new Date().toISOString(),
+      };
+    }),
+  });
+}
+
+export function deleteSeoPage(id: string) {
+  const workspace = getSeoWorkspace();
+  const page = workspace.pages.find((entry) => entry.id === id);
+
+  if (!page || page.source !== "custom") {
+    return workspace;
+  }
+
+  return setSeoWorkspace({
+    ...workspace,
+    pages: workspace.pages.filter((entry) => entry.id !== id),
+  });
+}
+
+export function updateSeoGlobalSettings(global: SeoGlobalSettings) {
+  return setSeoWorkspace({
+    ...getSeoWorkspace(),
+    global,
+  });
+}
+
+export function updateSeoMachineTemplate(machineTemplate: SeoMachineTemplate) {
+  return setSeoWorkspace({
+    ...getSeoWorkspace(),
+    machineTemplate,
+  });
 }
 
 export function updateProfileSettings(profile: AdminSettings["profile"]) {
