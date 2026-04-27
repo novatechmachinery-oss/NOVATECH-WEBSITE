@@ -102,6 +102,9 @@ const categoryRows = [
   { name: "Saws", slug: "saws", parent: "" },
   { name: "Horizontal Band Saws", slug: "horizontal-band-saws", parent: "Saws", isSubcategory: true },
   { name: "Vertical Band Saws", slug: "vertical-band-saws", parent: "Saws", isSubcategory: true },
+
+
+  
 ] as const;
 
 export default function CategoriesPage() {
