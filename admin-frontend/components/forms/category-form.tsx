@@ -4,19 +4,55 @@ import { FormEvent, useState } from "react";
 
 type CategoryFormProps = {
   onCancel: () => void;
-  onSave?: (values: { categoryName: string; subcategoryName: string }) => void;
+  onSave?: () => void;
 };
 
 export default function CategoryForm({ onCancel, onSave }: CategoryFormProps) {
   const [categoryName, setCategoryName] = useState("");
   const [subcategoryName, setSubcategoryName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSave?.({
-      categoryName: categoryName.trim(),
-      subcategoryName: subcategoryName.trim(),
-    });
+    if (!categoryName.trim()) return;
+    setSaving(true);
+    setError(null);
+
+    try {
+      // Create the parent category
+      const catRes = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: categoryName.trim() }),
+      });
+      const catJson = await catRes.json();
+      if (!catRes.ok) throw new Error(catJson.error ?? "Failed to create category");
+
+      // Optionally create a subcategory under it
+      if (subcategoryName.trim()) {
+        const subRes = await fetch("/api/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: subcategoryName.trim(),
+            parentId: catJson.data.id,
+          }),
+        });
+        if (!subRes.ok) {
+          const subJson = await subRes.json();
+          throw new Error(subJson.error ?? "Failed to create subcategory");
+        }
+      }
+
+      setCategoryName("");
+      setSubcategoryName("");
+      onSave?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -40,12 +76,14 @@ export default function CategoryForm({ onCancel, onSave }: CategoryFormProps) {
         />
       </label>
 
+      {error ? <p className="settings-notice error">{error}</p> : null}
+
       <div className="category-popup-actions">
         <button className="secondary-button" onClick={onCancel} type="button">
           Cancel
         </button>
-        <button className="primary-button" type="submit">
-          Save
+        <button className="primary-button" type="submit" disabled={saving}>
+          {saving ? "Saving..." : "Save"}
         </button>
       </div>
     </form>

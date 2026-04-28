@@ -1,5 +1,3 @@
-import { OutgoingMessage } from "http";
-
 export type SeoPageSource = "system" | "category" | "machine" | "custom";
 
 export type SeoPageRecord = {

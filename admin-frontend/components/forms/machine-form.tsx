@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getCategoryOptions, getSubcategoryMap } from "@/lib/api";
 import type { Machine, MachineFormValues } from "@/types/machine";
 
@@ -17,10 +17,10 @@ const emptyValues: MachineFormValues = {
   countryOfOrigin: "",
   price: 0,
   category: "Metal Working Machinery",
-  subcategory: "CNC Machines",
+  subcategory: "",
   condition: "Used",
   stockStatus: "In Stock",
-  machineType: "Industrial",
+  machineType: "CNC",
   description: "",
   specificationsText: "Power: 10kW, Capacity: 120 units/hr",
   imagesText: "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7",
@@ -53,9 +53,18 @@ function toFormValues(machine?: Machine | null): MachineFormValues {
 
 export default function MachineForm({ initialValues, onSubmit }: MachineFormProps) {
   const [values, setValues] = useState<MachineFormValues>(toFormValues(initialValues));
-  const categories = getCategoryOptions();
-  const subcategoryMap = getSubcategoryMap();
+  const [categories, setCategories] = useState<string[]>(["Metal Working Machinery"]);
+  const [subcategoryMap, setSubcategoryMap] = useState<Record<string, string[]>>({});
   const subcategoryOptions = subcategoryMap[values.category] ?? [];
+
+  useEffect(() => {
+    Promise.all([getCategoryOptions(), getSubcategoryMap()])
+      .then(([cats, subMap]) => {
+        setCategories(cats.length ? cats : ["Metal Working Machinery"]);
+        setSubcategoryMap(subMap);
+      })
+      .catch(console.error);
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -158,6 +167,17 @@ export default function MachineForm({ initialValues, onSubmit }: MachineFormProp
           </select>
         </label>
         <label>
+          <span>Condition</span>
+          <select
+            value={values.condition}
+            onChange={(event) => setValues({ ...values, condition: event.target.value })}
+          >
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+            <option value="Refurbished">Refurbished</option>
+          </select>
+        </label>
+        <label>
           <span>Stock status</span>
           <select
             value={values.stockStatus}
@@ -174,10 +194,8 @@ export default function MachineForm({ initialValues, onSubmit }: MachineFormProp
             value={values.machineType}
             onChange={(event) => setValues({ ...values, machineType: event.target.value })}
           >
-            <option value="Industrial">Industrial</option>
-            <option value="Production Line">Production Line</option>
-            <option value="Packaging">Packaging</option>
-            <option value="Heavy Duty">Heavy Duty</option>
+            <option value="CNC">CNC</option>
+            <option value="Conventional">Conventional</option>
           </select>
         </label>
       </div>

@@ -1,17 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import AdminShell from "@/components/layout/admin-shell";
 import { getMachines } from "@/lib/api";
 import { formatMachinePrice } from "@/lib/format";
+import type { Machine } from "@/types/machine";
 
 export default function InventoryPage() {
-  const machines = getMachines();
+  const [machines, setMachines] = useState<Machine[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMachines().then(setMachines).catch(console.error).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <AdminShell title="Inventory" description="Loading..."><p className="muted-text">Loading inventory...</p></AdminShell>;
+  }
 
   return (
-    <AdminShell
-      title="Inventory"
-      description="Current stock positions and category coverage across the machine catalog."
-    >
+    <AdminShell title="Inventory" description="Current stock positions and category coverage across the machine catalog.">
       <section className="simple-grid">
         <article className="simple-card">
           <strong>Total Inventory Value</strong>
