@@ -140,7 +140,7 @@ export default async function CategoriesPage() {
             ) : null}
 
             <div className="px-5 py-4 sm:px-7 lg:px-9 lg:py-5">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
               {activeCategories.map((category) => {
                 const hiddenCount = Math.max(category.subcategories.length - 4, 0);
 
@@ -148,39 +148,44 @@ export default async function CategoriesPage() {
                   <Link
                     key={category.name}
                     href={category.href}
-                    className="group block cursor-pointer overflow-hidden rounded-[1.4rem] border border-sky-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] shadow-[0_18px_38px_rgba(15,23,42,0.08),0_6px_18px_rgba(14,116,144,0.08)] transition duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-[0_28px_52px_rgba(20,91,147,0.16),0_10px_24px_rgba(14,116,144,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
+                    className="group block cursor-pointer overflow-hidden rounded-[1.1rem] border border-sky-100 bg-white shadow-[0_16px_34px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-[0_26px_48px_rgba(20,91,147,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
                   >
-                    <div className="relative overflow-hidden border-b border-[#d9b24a] bg-[linear-gradient(135deg,#9b6a06_0%,#c89112_55%,#f0c44d_100%)] px-4.5 pb-3.5 pt-3.5 text-white">
-                      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/12 blur-2xl transition duration-300 group-hover:scale-110" />
-                      <div className="absolute bottom-0 left-0 h-20 w-20 rounded-full bg-amber-100/20 blur-2xl transition duration-300 group-hover:scale-110" />
+                    <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-4.5 pb-3.5 pt-3.5 text-white">
+                      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/15 blur-2xl transition duration-300 group-hover:scale-110" />
+                      <div className="absolute bottom-0 left-0 h-20 w-20 rounded-full bg-cyan-100/15 blur-2xl transition duration-300 group-hover:scale-110" />
                       <div className="relative flex items-start justify-between gap-4">
-                        <h2 className="pr-3 text-[1.18rem] font-bold leading-6 text-white sm:text-[1.24rem]">
-                          {category.name}
-                        </h2>
-                        <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#8e5d04] shadow-[0_8px_20px_rgba(91,58,8,0.16)]">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/18 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+                            <category.Icon className="h-4.5 w-4.5" />
+                          </span>
+                          <h2 className="pr-2 text-[1.12rem] font-bold leading-6 text-white sm:text-[1.2rem]">
+                            {category.name}
+                          </h2>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#145b93] shadow-[0_8px_20px_rgba(15,23,42,0.16)]">
                           {category.countLabel}
                         </span>
                       </div>
                     </div>
 
-                    <div className="px-4.5 pb-4 pt-3">
-                      <div className="rounded-[1rem] border border-slate-100 bg-white/90 p-3">
+                    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-4.5 pb-4 pt-3">
+                      <div className="rounded-[0.9rem] border border-sky-100/80 bg-white p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
                         <div className="flex flex-wrap gap-2.5">
                           {category.subcategories.slice(0, 4).map((subcategory) => (
                             <span
                               key={subcategory}
-                              className="rounded-full bg-slate-100 px-3 py-1.5 text-[0.76rem] font-medium text-slate-700"
+                              className="rounded-full bg-sky-50 px-3 py-1.5 text-[0.76rem] font-medium text-slate-700 ring-1 ring-sky-100"
                             >
                               {subcategory}
                             </span>
                           ))}
                           {hiddenCount > 0 ? (
-                            <span className="rounded-full bg-amber-50 px-3 py-1.5 text-[0.76rem] font-semibold text-amber-700">
+                            <span className="rounded-full bg-slate-900 px-3 py-1.5 text-[0.76rem] font-semibold text-white">
                               +{hiddenCount} more
                             </span>
                           ) : null}
                           {category.subcategories.length === 0 ? (
-                            <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[0.76rem] text-slate-500">
+                            <span className="rounded-full bg-sky-50 px-3 py-1.5 text-[0.76rem] text-slate-500 ring-1 ring-sky-100">
                               Explore available machines
                             </span>
                           ) : null}
