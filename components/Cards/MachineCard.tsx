@@ -3,6 +3,10 @@ import Link from "next/link";
 type MachineCardProps = {
   title: string;
   description: string;
+  primaryHref?: string;
+  primaryLabel?: string;
+  whatsappHref?: string;
+  whatsappLabel?: string;
 };
 
 const highlights = ["50+ Machine Types", "Quick Response", "Quality Assured"];
@@ -43,43 +47,70 @@ function WhatsAppIcon() {
 
 const highlightIcons = [SearchIcon, ClockIcon, ShieldIcon];
 
-export default function MachineCard({ title, description }: MachineCardProps) {
+export default function MachineCard({
+  title,
+  description,
+  primaryHref = "/metal-working-machinery",
+  primaryLabel = "View All Machines",
+  whatsappHref = "https://wa.me/919646255755",
+  whatsappLabel = "WhatsApp",
+}: MachineCardProps) {
   return (
-    <section className="relative overflow-hidden border-t border-slate-200 bg-white px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
-      <div className="absolute inset-x-0 bottom-0 h-px bg-slate-200" />
+    <section className="relative overflow-hidden px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="relative overflow-hidden rounded-[2rem] border border-fuchsia-200/60 bg-[linear-gradient(135deg,#fff1fb_0%,#ffe4f6_24%,#f7ddff_52%,#fce7f3_100%)] px-5 py-6 shadow-[0_22px_56px_rgba(168,85,247,0.16)] sm:px-8 sm:py-7 lg:px-10 lg:py-8">
+          <div className="absolute -left-10 top-4 h-28 w-28 rounded-full bg-pink-300/35 blur-3xl" />
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-fuchsia-300/30 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-violet-300/25 blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.55),transparent_45%,rgba(255,255,255,0.28)_100%)]" />
+          <div className="absolute inset-x-6 top-0 h-px bg-white/75" />
 
-      <div className="relative mx-auto max-w-4xl text-center">
-        <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-500">
-          {highlights.map((item, index) => {
-            const Icon = highlightIcons[index];
-            return (
-              <span key={item} className="inline-flex items-center gap-2">
-                <Icon />
-                {item}
-              </span>
-            );
-          })}
+      <div className="relative mx-auto max-w-5xl">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 flex-1 text-center lg:text-left">
+            <div className="inline-flex rounded-full border border-fuchsia-200 bg-white/80 px-4 py-1.5 text-[0.64rem] font-black uppercase tracking-[0.22em] text-fuchsia-700">
+              Fast Sourcing Support
+            </div>
+
+            <h2 className="mt-4 text-[1.65rem] font-black leading-tight text-[#4a124f] sm:text-[1.95rem] lg:text-[2.2rem]">
+              {title}
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-fuchsia-950/70 sm:text-[0.98rem] lg:mx-0">
+              {description}
+            </p>
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-fuchsia-900/70 sm:gap-x-4 lg:justify-start">
+              {highlights.map((item, index) => {
+                const Icon = highlightIcons[index];
+                return (
+                  <span key={item} className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1.5 shadow-sm backdrop-blur">
+                    <Icon />
+                    {item}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-3 sm:flex-row lg:w-auto lg:flex-col lg:items-end">
+            <Link
+              href={primaryHref}
+              className="inline-flex min-w-[210px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#ec4899_0%,#db2777_48%,#c026d3_100%)] px-6 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_16px_34px_rgba(219,39,119,0.28)] transition hover:-translate-y-1 hover:shadow-[0_22px_40px_rgba(192,38,211,0.3)]"
+            >
+              {primaryLabel}
+            </Link>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-w-[210px] items-center justify-center gap-2 rounded-full border border-fuchsia-200 bg-white/85 px-6 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-fuchsia-800 shadow-[0_16px_34px_rgba(236,72,153,0.14)] transition hover:-translate-y-1 hover:bg-white"
+            >
+              <WhatsAppIcon />
+              {whatsappLabel}
+            </a>
+          </div>
         </div>
-
-        <h2 className="mt-5 text-[1.8rem] font-extrabold leading-snug text-slate-950 sm:text-[2.15rem]">{title}</h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">{description}</p>
-
-        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-          <Link
-            href="/contact"
-            className="inline-flex min-w-44 items-center justify-center rounded-md bg-amber-500 px-6 py-3 text-sm font-extrabold uppercase tracking-[0.05em] text-white shadow-[0_12px_24px_rgba(245,158,11,0.24)] transition hover:-translate-y-0.5 hover:bg-amber-400"
-          >
-            Send Enquiry
-          </Link>
-          <a
-            href="https://wa.me/919646255755"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex min-w-44 items-center justify-center gap-2 rounded-md bg-emerald-500 px-6 py-3 text-sm font-extrabold uppercase tracking-[0.05em] text-white shadow-[0_12px_24px_rgba(16,185,129,0.22)] transition hover:-translate-y-0.5 hover:bg-emerald-400"
-          >
-            <WhatsAppIcon />
-            WhatsApp
-          </a>
+      </div>
         </div>
       </div>
     </section>

@@ -1,0 +1,52 @@
+{
+  "globalTitleSuffix": " | Novatech Machinery",
+  "defaultTitle": "Novatech Machinery",
+  "defaultDescription": "Used and industrial machinery marketplace for Novatech.",
+  "analytics": {
+    "googleAnalyticsId": "",
+    "metaPixelId": "",
+    "clarityProjectId": ""
+  },
+  "pages": [
+    {
+      "id": "seo-home",
+      "label": "Home",
+      "route": "/",
+      "title": "Novatech Machinery",
+      "description": "Industrial machinery marketplace homepage.",
+      "keywords": "used machines, industrial machines"
+    },
+    {
+      "id": "seo-about",
+      "label": "About Us",
+      "route": "/about",
+      "title": "About Novatech",
+      "description": "About Novatech Machinery.",
+      "keywords": "about novatech"
+    },
+    {
+      "id": "seo-categories",
+      "label": "Categories",
+      "route": "/categories",
+      "title": "Machine Categories",
+      "description": "Browse machine categories.",
+      "keywords": "machine categories"
+    },
+    {
+      "id": "seo-contact",
+      "label": "Contact",
+      "route": "/contact",
+      "title": "Contact Novatech",
+      "description": "Get in touch with Novatech.",
+      "keywords": "contact novatech"
+    },
+    {
+      "id": "seo-used",
+      "label": "Used Machinery",
+      "route": "/used-machinery",
+      "title": "Used Machinery",
+      "description": "Browse used machinery inventory.",
+      "keywords": "used machinery inventory"
+    }
+  ]
+}

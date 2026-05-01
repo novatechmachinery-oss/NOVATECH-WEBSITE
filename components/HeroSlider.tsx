@@ -3,45 +3,49 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const slides = [
-  {
-    src: "/images/hero-banner-Bt56BS_O.webp",
-    alt: "Industrial machinery line overview",
-  },
-  {
-    src: "/images/hero-banner-Bt56BS_O.webp",
-    alt: "Factory metalworking production line",
-  },
-  {
-    src: "/images/hero-banner-Bt56BS_O.webp",
-    alt: "High-performance equipment warehouse",
-  },
-  {
-    src: "/images/hero-banner-Bt56BS_O.webp",
-    alt: "Premium industrial machinery sourcing",
-  },
+type HeroSliderProps = {
+  slides?: Array<{
+    id?: string;
+    src: string;
+    alt: string;
+  }>;
+};
+
+const defaultSlides = [
+  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Industrial machinery line overview" },
+  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Factory metalworking production line" },
+  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "High-performance equipment warehouse" },
+  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Premium industrial machinery sourcing" },
 ];
 
 const AUTO_CHANGE_MS = 5500;
 
-function getPrevIndex(index: number) {
-  return index === 0 ? slides.length - 1 : index - 1;
+function getPrevIndex(index: number, length: number) {
+  if (length <= 1) {
+    return 0;
+  }
+
+  return index === 0 ? length - 1 : index - 1;
 }
 
-function getNextIndex(index: number) {
-  return index === slides.length - 1 ? 0 : index + 1;
+function getNextIndex(index: number, length: number) {
+  if (length <= 1) {
+    return 0;
+  }
+
+  return index === length - 1 ? 0 : index + 1;
 }
 
-export default function HeroSlider() {
+export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setCurrentIndex(getNextIndex(currentIndex));
+      setCurrentIndex(getNextIndex(currentIndex, slides.length));
     }, AUTO_CHANGE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [currentIndex]);
+  }, [currentIndex, slides]);
 
   return (
     <section className="relative h-[320px] overflow-hidden rounded-lg shadow-2xl shadow-slate-950/20 sm:h-[420px]">
@@ -58,7 +62,7 @@ export default function HeroSlider() {
 
       <button
         type="button"
-        onClick={() => setCurrentIndex(getPrevIndex(currentIndex))}
+        onClick={() => setCurrentIndex(getPrevIndex(currentIndex, slides.length))}
         className="absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:left-5 sm:h-12 sm:w-12"
         aria-label="Previous slide"
       >
@@ -67,7 +71,7 @@ export default function HeroSlider() {
 
       <button
         type="button"
-        onClick={() => setCurrentIndex(getNextIndex(currentIndex))}
+        onClick={() => setCurrentIndex(getNextIndex(currentIndex, slides.length))}
         className="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:right-5 sm:h-12 sm:w-12"
         aria-label="Next slide"
       >

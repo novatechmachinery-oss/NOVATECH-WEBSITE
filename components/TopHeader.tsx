@@ -1,4 +1,10 @@
-﻿function MailIcon() {
+type TopHeaderProps = {
+  emailAddress?: string;
+  phonePrimary?: string;
+  phoneSecondary?: string;
+};
+
+function MailIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
       <path d="M4 6.75h16v10.5H4z" />
@@ -15,45 +21,39 @@ function PhoneIcon() {
   );
 }
 
-export default function TopHeader() {
+export default function TopHeader({
+  emailAddress = "info@novatechmachinery.com",
+  phonePrimary = "+91 9646255755",
+  phoneSecondary = "+91 9646255855",
+}: TopHeaderProps) {
   return (
-    <div className="border-b border-slate-200/80 bg-[linear-gradient(90deg,#f8fbff_0%,#ffffff_46%,#f8fafc_100%)] text-slate-700">
-      <div className="mx-auto flex max-w-[1460px] flex-col gap-1 px-4 py-1.5 text-[0.72rem] sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 lg:py-1">
-        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between lg:flex-1 lg:gap-5">
-          <div className="flex min-w-0 items-center justify-center gap-2 sm:justify-start">
-            <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border border-rose-100 bg-white text-rose-500 shadow-sm shadow-slate-900/5 lg:h-9 lg:w-9">
-              <MailIcon />
-            </span>
-            <div className="flex min-w-0 items-center gap-2 text-[0.88rem]">
-              <span className="flex-none text-[0.63rem] font-semibold uppercase tracking-[0.15em] text-slate-400 sm:text-[0.68rem]">
-                Email Us
-              </span>
-              <a
-                href="mailto:info@novatechmachinery.com"
-                className="min-w-0 whitespace-nowrap text-[0.84rem] font-semibold text-slate-950 transition hover:text-[var(--accent)] sm:text-[0.9rem]"
-              >
-                info@novatechmachinery.com
-              </a>
-            </div>
+    <div className="border-b border-slate-200 bg-white text-slate-800">
+      <div className="mx-auto flex max-w-[1460px] flex-col gap-2 px-4 py-2 text-[0.74rem] sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="flex min-w-0 items-center justify-center gap-2 sm:justify-start">
+          <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 lg:h-8 lg:w-8">
+            <MailIcon />
+          </span>
+          <div className="flex min-w-0 items-center gap-2 text-[0.88rem]">
+            <a
+              href={`mailto:${emailAddress}`}
+              className="min-w-0 whitespace-nowrap text-[0.84rem] font-semibold text-slate-900 transition hover:text-sky-700 sm:text-[0.9rem]"
+            >
+              {emailAddress}
+            </a>
           </div>
-
-         
         </div>
 
-        <div className="flex items-center justify-center gap-2 text-sm text-slate-700 lg:ml-3 lg:flex-none lg:justify-end">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-rose-100 bg-white text-rose-500 shadow-sm shadow-slate-900/5 lg:h-9 lg:w-9">
+        <div className="flex items-center justify-center gap-2 text-sm text-slate-900 lg:ml-3 lg:flex-none lg:justify-end">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 lg:h-8 lg:w-8">
             <PhoneIcon />
           </span>
           <div className="flex min-w-0 items-center justify-center gap-1.5 text-center sm:text-left">
-            <span className="flex-none text-[0.63rem] font-semibold uppercase tracking-[0.15em] text-slate-400 sm:text-[0.68rem]">
-              Call
-            </span>
-            <a href="tel:+919646255755" className="whitespace-nowrap text-[0.84rem] font-semibold text-slate-950 transition hover:text-cyan-700 sm:text-[0.9rem]">
-              +91 9646255755
+            <a href={`tel:${phonePrimary.replace(/\s+/g, "")}`} className="whitespace-nowrap text-[0.84rem] font-semibold text-slate-900 transition hover:text-sky-700 sm:text-[0.9rem]">
+              {phonePrimary}
             </a>
-            <span className="text-slate-300">|</span>
-            <a href="tel:+919646255855" className="whitespace-nowrap text-[0.84rem] font-semibold text-slate-950 transition hover:text-cyan-700 sm:text-[0.9rem]">
-              +91 9646255855
+            <span className="text-slate-500">|</span>
+            <a href={`tel:${phoneSecondary.replace(/\s+/g, "")}`} className="whitespace-nowrap text-[0.84rem] font-semibold text-slate-900 transition hover:text-sky-700 sm:text-[0.9rem]">
+              {phoneSecondary}
             </a>
           </div>
         </div>

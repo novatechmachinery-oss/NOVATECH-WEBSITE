@@ -1,55 +1,51 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase";
-import { z } from "zod";
+import { NextResponse } from "next/server";
+import {
+  hasContactFormErrors,
+  normalizeContactForm,
+  validateContactForm,
+} from "@/lib/contactForm";
+import { saveLeadRecord } from "@/lib/leads.service";
 
-const ContactSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().default(""),
-  phone: z.string().min(1, "Phone is required"),
-  email: z.string().email("Valid email is required"),
-  message: z.string().min(1, "Message is required"),
-});
+export async function POST(request: Request) {
+  let payload: unknown;
 
-export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const parsed = ContactSchema.safeParse(body);
+    payload = await request.json();
+  } catch {
+    return NextResponse.json(
+      { message: "Invalid request body. Please refresh and try again." },
+      { status: 400 },
+    );
+  }
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.issues },
-        { status: 400 }
-      );
-    }
+  const values = normalizeContactForm((payload ?? {}) as Record<string, unknown>);
+  const errors = validateContactForm(values);
 
-    const { firstName, lastName, phone, email, message } = parsed.data;
+  if (hasContactFormErrors(errors)) {
+    return NextResponse.json(
+      {
+        message: "Please check the form fields and try again.",
+        errors,
+      },
+      { status: 400 },
+    );
+  }
 
-    // Store as contact enquiry
-    const { data: enquiry, error: enquiryErr } = await supabaseServer
-      .from("contact_enquiries")
-      .insert({ first_name: firstName, last_name: lastName, phone, email, message })
-      .select()
-      .single();
+  try {
+    await saveLeadRecord(values);
 
-    if (enquiryErr) throw new Error(enquiryErr.message);
-
-    // Also create a lead so it appears in the admin panel
-    await supabaseServer.from("leads").insert({
-      name: `${firstName} ${lastName}`.trim(),
-      email,
-      phone,
-      interested_in: "General Enquiry",
-      message,
-      stage: "New",
-      source: "contact_form",
+    return NextResponse.json({
+      message: "Thanks for reaching out. Our team will contact you within 24 hours.",
     });
+  } catch (error) {
+    console.error("Failed to save contact enquiry.", error);
 
     return NextResponse.json(
-      { data: { id: enquiry.id, message: "Enquiry submitted successfully" } },
-      { status: 201 }
+      {
+        message:
+          "Your enquiry could not be saved right now. Please try again in a moment.",
+      },
+      { status: 500 },
     );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Server error";
-    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

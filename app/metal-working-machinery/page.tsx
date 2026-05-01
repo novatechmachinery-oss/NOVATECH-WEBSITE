@@ -1,22 +1,31 @@
-import MachineCard from "../../components/Cards/MachineCard";
-import Footer from "../../components/Footer";
-import MetalWorkingCatalogue from "../../components/MetalWorkingCatalogue";
-import SiteHeader from "../../components/SiteHeader";
+import UsedMachineryPage from "../../components/UsedMachineryPage";
+import { getMachineCatalogData } from "@/lib/machines";
 
-export default function MetalWorkingMachineryPage() {
+type SearchParamsInput = Promise<{
+  category?: string | string[];
+  subcategory?: string | string[];
+  machine?: string | string[];
+}>;
+
+function readParam(value: string | string[] | undefined) {
+  return typeof value === "string" ? value : null;
+}
+
+export default async function MetalWorkingMachineryPage({
+  searchParams,
+}: {
+  searchParams: SearchParamsInput;
+}) {
+  const params = await searchParams;
+  const { machineCategories, machineInventory } = await getMachineCatalogData();
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <SiteHeader />
-
-      <main>
-        <MetalWorkingCatalogue />
-      </main>
-
-      <MachineCard
-        title="Looking for a Specific Machine?"
-        description="Tell us what you need and we'll find the right machine at the best price."
-      />
-      <Footer />
-    </div>
+    <UsedMachineryPage
+      machineCategories={machineCategories}
+      machineInventory={machineInventory}
+      initialCategory={readParam(params.category)}
+      initialSubcategory={readParam(params.subcategory)}
+      initialMachineId={readParam(params.machine)}
+    />
   );
 }
