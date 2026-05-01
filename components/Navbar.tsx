@@ -37,9 +37,14 @@ function isActiveNavItem(pathname: string | null, href: string) {
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isCategoriesPage = pathname === "/categories" || pathname?.startsWith("/categories/");
 
   return (
-    <nav className="border-b border-sky-900/30 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+    <nav
+      className={`border-b border-sky-900/30 text-white shadow-[0_12px_28px_rgba(15,23,42,0.08)] ${
+        isCategoriesPage ? "bg-transparent" : "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)]"
+      }`}
+    >
       <div className="mx-auto flex max-w-[1460px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:hidden">
         <Link href="/" className="flex min-w-0 shrink-0 items-center gap-3 transition hover:opacity-95">
           <div className="relative h-12 w-12 flex-none overflow-hidden rounded-full border border-white/30 bg-white shadow-md">

@@ -493,9 +493,9 @@ export default function MetalWorkingCatalogue({
                     onClick={() => handleCategoryClick(cat.name, hasChildren)}
                     className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition ${
                       isCategoryActive
-                        ? "bg-[#145b93] text-white"
+                        ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                         : isOpen
-                          ? "bg-[#145b93] text-white"
+                          ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                           : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
                     }`}
                   >
@@ -580,7 +580,7 @@ export default function MetalWorkingCatalogue({
                   onClick={() => handleMachineModeChange(btn.value as MachineMode)}
                   className={`rounded-[2px] border px-4 py-2 text-[0.82rem] font-bold transition ${
                     machineMode === btn.value
-                      ? "border-[#145b93] bg-[#145b93] text-white"
+                      ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                       : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"
                   }`}
                 >
@@ -772,7 +772,7 @@ export default function MetalWorkingCatalogue({
                   onClick={() => handleMachineModeChange(btn.value as MachineMode)}
                   className={`rounded-[2px] border px-4 py-2 text-[0.82rem] font-bold transition ${
                     machineMode === btn.value
-                      ? "border-[#145b93] bg-[#145b93] text-white"
+                      ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                         : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"
                     }`}
                   >
