@@ -727,7 +727,7 @@ export default function MetalWorkingCatalogue({
                   <div className="overflow-hidden border border-slate-200 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
                     {machineSpecifications.map((spec, index) => (
                       <div
-                        key={spec.label}
+                        key={`${spec.label}-${index}`}
                         className={`grid grid-cols-1 gap-1 px-3 py-2.5 sm:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.1fr)] ${
                           index === 0 ? "" : "border-t border-slate-200"
                         }`}

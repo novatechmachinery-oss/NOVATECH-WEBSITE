@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
   FolderTree,
-  Globe,
   ImagePlus,
   LayoutDashboard,
   Package2,
@@ -565,7 +564,6 @@ export default function AdminPanel() {
     { id: "machines", label: "Machines", icon: Package2 },
     { id: "categories", label: "Categories", icon: FolderTree },
     { id: "leads", label: "Leads", icon: Users },
-    { id: "homepage", label: "Homepage", icon: Globe },
     { id: "seo", label: "SEO", icon: ShieldCheck },
     { id: "settings", label: "Settings", icon: Settings2 },
   ] as const;
