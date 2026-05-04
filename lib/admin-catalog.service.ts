@@ -283,21 +283,39 @@ export async function upsertAdminCategory(input: AdminCategoryInput) {
   const now = new Date().toISOString();
 
   let categories = catalog.categories;
+  const isUpdate = Boolean(input.id);
+  const newId = input.id || createId("cat");
 
-  if (input.id) {
-    categories = categories.map((item) =>
-      item.id === input.id ? { ...item, ...normalized, updatedAt: now } : item,
-    );
+  const newCategory: AdminCategory = {
+    id: newId,
+    createdAt: isUpdate ? (categories.find(c => c.id === input.id)?.createdAt ?? now) : now,
+    updatedAt: now,
+    ...normalized,
+  };
+
+  if (isUpdate) {
+    categories = categories.map((item) => (item.id === newId ? newCategory : item));
   } else {
-    categories = [
-      {
-        id: createId("cat"),
-        createdAt: now,
-        updatedAt: now,
-        ...normalized,
-      },
-      ...categories,
-    ];
+    categories = [newCategory, ...categories];
+  }
+
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest("categories", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
+        body: JSON.stringify([{
+          id: newCategory.id,
+          name: newCategory.name,
+          slug: newCategory.slug,
+          description: newCategory.description ?? null,
+          parent_id: newCategory.parentId ?? null,
+          created_at: newCategory.createdAt
+        }])
+      });
+    } catch (error) {
+      console.error("Supabase sync failed for category:", error);
+    }
   }
 
   return saveAdminCatalog({ ...catalog, categories });
@@ -313,6 +331,14 @@ export async function deleteAdminCategory(id: string) {
     throw new Error("Delete linked machines first before removing this category.");
   }
 
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest(`categories?id=in.(${Array.from(relatedIds).join(',')})`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Supabase sync failed for category deletion:", error);
+    }
+  }
+
   return saveAdminCatalog({
     ...catalog,
     categories: catalog.categories.filter((item) => !relatedIds.has(item.id)),
@@ -325,21 +351,51 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
   const now = new Date().toISOString();
 
   let machines = catalog.machines;
+  const isUpdate = Boolean(input.id);
+  const newId = input.id || createId("machine");
 
-  if (input.id) {
-    machines = machines.map((item) =>
-      item.id === input.id ? { ...item, ...normalized, updatedAt: now } : item,
-    );
+  const newMachine: AdminMachine = {
+    id: newId,
+    createdAt: isUpdate ? (machines.find(m => m.id === input.id)?.createdAt ?? now) : now,
+    updatedAt: now,
+    ...normalized,
+  };
+
+  if (isUpdate) {
+    machines = machines.map((item) => (item.id === newId ? newMachine : item));
   } else {
-    machines = [
-      {
-        id: createId("machine"),
-        createdAt: now,
-        updatedAt: now,
-        ...normalized,
-      },
-      ...machines,
-    ];
+    machines = [newMachine, ...machines];
+  }
+
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest("machines", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
+        body: JSON.stringify([{
+          id: newMachine.id,
+          name: newMachine.name,
+          brand: newMachine.brand ?? null,
+          model: newMachine.model ?? null,
+          serial_number: newMachine.serialNumber ?? null,
+          inventory_number: newMachine.inventoryNumber ?? null,
+          country_of_origin: newMachine.countryOfOrigin ?? null,
+          price: newMachine.price ?? null,
+          condition: newMachine.condition,
+          stock_status: newMachine.stockStatus,
+          machine_type: newMachine.machineType,
+          description: newMachine.description ?? null,
+          category_id: newMachine.categoryId,
+          special_deal: newMachine.specialDeal,
+          featured: newMachine.specialDeal,
+          images: newMachine.images,
+          specifications: newMachine.specifications,
+          created_at: newMachine.createdAt
+        }])
+      });
+    } catch (error) {
+      console.error("Supabase sync failed for machine:", error);
+    }
   }
 
   return saveAdminCatalog({ ...catalog, machines });
@@ -347,6 +403,15 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
 
 export async function deleteAdminMachine(id: string) {
   const catalog = await getAdminCatalog();
+
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest(`machines?id=eq.${id}`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Supabase sync failed for machine deletion:", error);
+    }
+  }
+
   return saveAdminCatalog({
     ...catalog,
     machines: catalog.machines.filter((item) => item.id !== id),

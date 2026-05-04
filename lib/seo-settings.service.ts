@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { SeoSettings } from "@/lib/seo-settings.types";
+import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
 const seoFilePath = path.join(process.cwd(), "data", "seo-settings.json");
 
@@ -30,6 +31,17 @@ async function ensureSeoDir() {
 }
 
 export async function getSeoSettings() {
+  if (hasSupabaseConfig()) {
+    try {
+      const data = await supabaseRest<{settings: SeoSettings}[]>("seo_settings?id=eq.main&select=settings");
+      if (data && data.length > 0 && data[0].settings) {
+        return data[0].settings;
+      }
+    } catch (error) {
+      console.error("Failed to fetch seo settings from Supabase, falling back to local.", error);
+    }
+  }
+
   try {
     const content = await readFile(seoFilePath, "utf8");
     return JSON.parse(content) as SeoSettings;
@@ -44,7 +56,24 @@ export async function getSeoSettings() {
 }
 
 export async function saveSeoSettings(settings: SeoSettings) {
-  await ensureSeoDir();
-  await writeFile(seoFilePath, JSON.stringify(settings, null, 2), "utf8");
+  try {
+    await ensureSeoDir();
+    await writeFile(seoFilePath, JSON.stringify(settings, null, 2), "utf8");
+  } catch (error) {
+    console.error("Failed to write seo settings locally:", error);
+  }
+
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest("seo_settings", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
+        body: JSON.stringify([{ id: "main", settings }]),
+      });
+    } catch (error) {
+      console.error("Failed to sync seo settings to Supabase", error);
+    }
+  }
+
   return settings;
 }

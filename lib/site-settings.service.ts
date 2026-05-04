@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { SiteSettings } from "@/lib/site-settings.types";
+import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
 const settingsFilePath = path.join(process.cwd(), "data", "site-settings.json");
 
@@ -126,6 +127,30 @@ async function ensureSettingsDir() {
 }
 
 export async function getSiteSettings() {
+  if (hasSupabaseConfig()) {
+    try {
+      const data = await supabaseRest<{settings: Partial<SiteSettings>}[]>("site_settings?id=eq.main&select=settings");
+      if (data && data.length > 0 && data[0].settings) {
+        const parsed = data[0].settings;
+        return {
+          ...defaultSettings,
+          ...parsed,
+          adminProfile: { ...defaultSettings.adminProfile, ...parsed.adminProfile },
+          home: { ...defaultSettings.home, ...parsed.home },
+          navigation: { ...defaultSettings.navigation, ...parsed.navigation },
+          contact: { ...defaultSettings.contact, ...parsed.contact },
+          footer: { ...defaultSettings.footer, ...parsed.footer },
+          operations: {
+            smtp: { ...defaultSettings.operations.smtp, ...parsed.operations?.smtp },
+            analytics: { ...defaultSettings.operations.analytics, ...parsed.operations?.analytics },
+          },
+        } satisfies SiteSettings;
+      }
+    } catch (error) {
+      console.error("Failed to fetch site settings from Supabase, falling back to local.", error);
+    }
+  }
+
   try {
     const content = await readFile(settingsFilePath, "utf8");
     const parsed = JSON.parse(content) as Partial<SiteSettings>;
@@ -153,7 +178,24 @@ export async function getSiteSettings() {
 }
 
 export async function saveSiteSettings(settings: SiteSettings) {
-  await ensureSettingsDir();
-  await writeFile(settingsFilePath, JSON.stringify(settings, null, 2), "utf8");
+  try {
+    await ensureSettingsDir();
+    await writeFile(settingsFilePath, JSON.stringify(settings, null, 2), "utf8");
+  } catch (error) {
+    console.error("Failed to write site settings locally:", error);
+  }
+
+  if (hasSupabaseConfig()) {
+    try {
+      await supabaseRest("site_settings", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
+        body: JSON.stringify([{ id: "main", settings }]),
+      });
+    } catch (error) {
+      console.error("Failed to sync site settings to Supabase", error);
+    }
+  }
+
   return settings;
 }
