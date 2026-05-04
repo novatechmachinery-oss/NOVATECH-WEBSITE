@@ -45,6 +45,7 @@ type CategoryFormState = {
   id?: string;
   mode: CategoryMode;
   name: string;
+  subcategoryName: string;
   parentId: string;
 };
 
@@ -71,6 +72,7 @@ type MachineFormState = {
 const defaultCategoryForm: CategoryFormState = {
   mode: "category",
   name: "",
+  subcategoryName: "",
   parentId: "",
 };
 
@@ -99,6 +101,10 @@ function slugify(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function normalizeCategoryName(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function formatDate(value: string) {
@@ -179,10 +185,13 @@ export default function AdminPanel() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [machineSearch, setMachineSearch] = useState("");
+  const [categorySearch, setCategorySearch] = useState("");
   const [machineModalOpen, setMachineModalOpen] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [machineForm, setMachineForm] = useState<MachineFormState>(defaultMachineForm);
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(defaultCategoryForm);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [editingSubcategoryName, setEditingSubcategoryName] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function confirmDelete(label: string) {
@@ -211,7 +220,7 @@ export default function AdminPanel() {
       const seoData = (await seoResponse.json()) as SeoSettings;
 
       if (!catalogResponse.ok || !dashboardResponse.ok || !settingsResponse.ok || !seoResponse.ok) {
-        throw new Error("Admin data load nahi ho paaya.");
+        throw new Error("Admin data could not be loaded.");
       }
 
       setCatalog(catalogData);
@@ -306,6 +315,106 @@ export default function AdminPanel() {
     ? childCategories.get(machineForm.categoryId) ?? []
     : [];
 
+  const categoryRows = useMemo(() => {
+    const query = categorySearch.trim().toLowerCase();
+
+    if (!query) {
+      return topCategories;
+    }
+
+    return topCategories.filter((category) => {
+      const subcategories = childCategories.get(category.id) ?? [];
+
+      return (
+        category.name.toLowerCase().includes(query) ||
+        subcategories.some((subcategory) => subcategory.name.toLowerCase().includes(query))
+      );
+    });
+  }, [categorySearch, childCategories, topCategories]);
+
+  const categoryDuplicate = useMemo(() => {
+    if (!catalog || !categoryForm.name.trim()) {
+      return undefined;
+    }
+
+    const normalizedName = normalizeCategoryName(categoryForm.name);
+    return catalog.categories.find((category) => {
+      if (category.id === categoryForm.id) {
+        return false;
+      }
+
+      return !category.parentId && normalizeCategoryName(category.name) === normalizedName;
+    });
+  }, [catalog, categoryForm.id, categoryForm.name]);
+
+  const subcategoryDuplicate = useMemo(() => {
+    if (!catalog) {
+      return undefined;
+    }
+
+    const subcategoryName =
+      categoryForm.id && categoryForm.mode === "subcategory" ? categoryForm.name : categoryForm.subcategoryName;
+
+    if (!subcategoryName.trim()) {
+      return undefined;
+    }
+
+    const parentId =
+      categoryForm.id && categoryForm.mode === "subcategory"
+        ? categoryForm.parentId
+        : categoryForm.id && categoryForm.mode === "category"
+          ? categoryForm.id
+        : categoryDuplicate?.id;
+
+    if (!parentId) {
+      return undefined;
+    }
+
+    const normalizedName = normalizeCategoryName(subcategoryName);
+    return catalog.categories.find((category) => {
+      if (category.id === categoryForm.id) {
+        return false;
+      }
+
+      return category.parentId === parentId && normalizeCategoryName(category.name) === normalizedName;
+    });
+  }, [catalog, categoryDuplicate, categoryForm]);
+
+  const categoryNameError =
+    categoryDuplicate && (categoryForm.mode === "category" || !categoryForm.id)
+      ? "This category already exists."
+      : null;
+
+  const subcategoryNameError = subcategoryDuplicate
+    ? "This subcategory already exists in the selected category."
+    : null;
+
+  const categoryParentError =
+    categoryForm.id && categoryForm.mode === "subcategory" && !categoryForm.parentId
+      ? "Select a parent category first."
+      : null;
+
+  const requiresSubcategoryName = Boolean(categoryForm.id && categoryForm.mode === "category");
+
+  const modalSubcategories = useMemo(
+    () => (categoryForm.id && categoryForm.mode === "category" ? childCategories.get(categoryForm.id) ?? [] : []),
+    [categoryForm.id, categoryForm.mode, childCategories],
+  );
+
+  const editingSubcategoryError = useMemo(() => {
+    if (!editingSubcategoryId || !editingSubcategoryName.trim()) {
+      return null;
+    }
+
+    const duplicate = modalSubcategories.find(
+      (subcategory) =>
+        subcategory.id !== editingSubcategoryId &&
+        normalizeCategoryName(subcategory.name) === normalizeCategoryName(editingSubcategoryName),
+    );
+
+    return duplicate ? "This subcategory already exists in the selected category." : null;
+  }, [editingSubcategoryId, editingSubcategoryName, modalSubcategories]);
+
   function openMachineModal(machine?: AdminMachine) {
     if (!catalog || !machine) {
       setMachineForm(defaultMachineForm);
@@ -343,15 +452,20 @@ export default function AdminPanel() {
   }
 
   function openCategoryModal(category?: AdminCategory) {
+    setError(null);
+    setMessage(null);
+    setEditingSubcategoryId(null);
+    setEditingSubcategoryName("");
     setCategoryForm(
       category
         ? {
             id: category.id,
             mode: category.parentId ? "subcategory" : "category",
             name: category.name,
+            subcategoryName: "",
             parentId: category.parentId ?? "",
           }
-        : defaultCategoryForm,
+        : { ...defaultCategoryForm },
     );
     setCategoryModalOpen(true);
   }
@@ -391,7 +505,7 @@ export default function AdminPanel() {
       setCatalog(data);
       setMachineForm(defaultMachineForm);
       setMachineModalOpen(false);
-      setMessage(machineForm.id ? "Machine update ho gayi." : "Machine add ho gayi.");
+      setMessage(machineForm.id ? "Machine updated successfully." : "Machine added successfully.");
       await loadAdminData();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Machine save failed.");
@@ -401,9 +515,104 @@ export default function AdminPanel() {
   }
 
   async function saveCategory() {
+    const name = categoryForm.name.trim();
+    const subcategoryName = categoryForm.subcategoryName.trim();
+
+    if (!name) {
+      setError(categoryForm.id && categoryForm.mode === "subcategory" ? "Enter a subcategory name." : "Enter a category name.");
+      return;
+    }
+
+    if (requiresSubcategoryName && !subcategoryName) {
+      setError("Enter a subcategory name.");
+      return;
+    }
+
+    if (categoryNameError || subcategoryNameError || categoryParentError) {
+      setError(categoryNameError ?? subcategoryNameError ?? categoryParentError);
+      return;
+    }
+
     setSaving(true);
     setError(null);
     try {
+      if (!categoryForm.id) {
+        const categoryResponse = await fetch("/api/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            slug: slugify(name),
+            parentId: null,
+          }),
+        });
+
+        const categoryData = (await categoryResponse.json()) as AdminCatalogSnapshot | { error: string };
+        if (!categoryResponse.ok || "error" in categoryData) {
+          throw new Error("error" in categoryData ? categoryData.error : "Category save failed.");
+        }
+
+        let nextCatalog = categoryData;
+
+        if (subcategoryName) {
+          const parentCategory = categoryData.categories.find(
+            (category) => !category.parentId && normalizeCategoryName(category.name) === normalizeCategoryName(name),
+          );
+
+          if (!parentCategory) {
+            throw new Error("Category was saved, but the parent category for the subcategory was not found.");
+          }
+
+          const subcategoryResponse = await fetch("/api/admin/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: subcategoryName,
+              slug: slugify(subcategoryName),
+              parentId: parentCategory.id,
+            }),
+          });
+
+          const subcategoryData = (await subcategoryResponse.json()) as AdminCatalogSnapshot | { error: string };
+          if (!subcategoryResponse.ok || "error" in subcategoryData) {
+            throw new Error("error" in subcategoryData ? subcategoryData.error : "Subcategory save failed.");
+          }
+
+          nextCatalog = subcategoryData;
+        }
+
+        setCatalog(nextCatalog);
+        setCategoryForm({ ...defaultCategoryForm });
+        setCategoryModalOpen(false);
+        setMessage(subcategoryName ? "Category and subcategory saved successfully." : "Category saved successfully.");
+        await loadAdminData();
+        return;
+      }
+
+      if (categoryForm.id && categoryForm.mode === "category") {
+        const subcategoryResponse = await fetch("/api/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: subcategoryName,
+            slug: slugify(subcategoryName),
+            parentId: categoryForm.id,
+          }),
+        });
+
+        const subcategoryData = (await subcategoryResponse.json()) as AdminCatalogSnapshot | { error: string };
+        if (!subcategoryResponse.ok || "error" in subcategoryData) {
+          throw new Error("error" in subcategoryData ? subcategoryData.error : "Subcategory save failed.");
+        }
+
+        setCatalog(subcategoryData);
+        setCategoryForm({ ...defaultCategoryForm });
+        setCategoryModalOpen(false);
+        setMessage("Subcategory saved successfully.");
+        await loadAdminData();
+        return;
+      }
+
       const parentId = categoryForm.mode === "subcategory" ? categoryForm.parentId || null : null;
       const response = await fetch(
         categoryForm.id ? `/api/admin/categories/${categoryForm.id}` : "/api/admin/categories",
@@ -411,8 +620,8 @@ export default function AdminPanel() {
           method: categoryForm.id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: categoryForm.name,
-            slug: slugify(categoryForm.name),
+            name,
+            slug: slugify(name),
             parentId,
           }),
         },
@@ -424,12 +633,86 @@ export default function AdminPanel() {
       }
 
       setCatalog(data);
-      setCategoryForm(defaultCategoryForm);
+      setCategoryForm({ ...defaultCategoryForm });
       setCategoryModalOpen(false);
-      setMessage(categoryForm.id ? "Category update ho gayi." : "Category save ho gayi.");
+      setMessage(categoryForm.id ? "Category updated successfully." : "Category saved successfully.");
       await loadAdminData();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Category save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveInlineSubcategory() {
+    if (!categoryForm.id || !editingSubcategoryId) {
+      return;
+    }
+
+    const name = editingSubcategoryName.trim();
+    if (!name) {
+      setError("Enter a subcategory name.");
+      return;
+    }
+
+    if (editingSubcategoryError) {
+      setError(editingSubcategoryError);
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/categories/${editingSubcategoryId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          slug: slugify(name),
+          parentId: categoryForm.id,
+        }),
+      });
+
+      const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
+      if (!response.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : "Subcategory update failed.");
+      }
+
+      setCatalog(data);
+      setEditingSubcategoryId(null);
+      setEditingSubcategoryName("");
+      setMessage("Subcategory updated successfully.");
+      await loadAdminData();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Subcategory update failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeSubcategory(id: string) {
+    if (!confirmDelete("subcategory")) {
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
+      if (!response.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : "Subcategory delete failed.");
+      }
+
+      setCatalog(data);
+      if (editingSubcategoryId === id) {
+        setEditingSubcategoryId(null);
+        setEditingSubcategoryName("");
+      }
+      setMessage("Subcategory deleted successfully.");
+      await loadAdminData();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Subcategory delete failed.");
     } finally {
       setSaving(false);
     }
@@ -448,7 +731,7 @@ export default function AdminPanel() {
         throw new Error("error" in data ? data.error : "Machine delete failed.");
       }
       setCatalog(data);
-      setMessage("Machine delete ho gayi.");
+      setMessage("Machine deleted successfully.");
       await loadAdminData();
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : "Machine delete failed.");
@@ -470,7 +753,7 @@ export default function AdminPanel() {
         throw new Error("error" in data ? data.error : "Category delete failed.");
       }
       setCatalog(data);
-      setMessage("Category delete ho gayi.");
+      setMessage("Category deleted successfully.");
       await loadAdminData();
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : "Category delete failed.");
@@ -494,7 +777,7 @@ export default function AdminPanel() {
       }
       setSiteSettings(data);
       setSiteSettingsDraft(data);
-      setMessage("Settings save ho gayi.");
+      setMessage("Settings saved successfully.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Settings save failed.");
     } finally {
@@ -516,7 +799,7 @@ export default function AdminPanel() {
         throw new Error("error" in data ? data.error : "SEO save failed.");
       }
       setSeoDraft(data);
-      setMessage("SEO settings save ho gayi.");
+      setMessage("SEO settings saved successfully.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "SEO save failed.");
     } finally {
@@ -545,7 +828,7 @@ export default function AdminPanel() {
         images: [...current.images, ...results],
       }));
     } catch {
-      setError("Images upload nahi ho payi.");
+      setError("Images could not be uploaded.");
     }
   }
 
@@ -617,7 +900,7 @@ export default function AdminPanel() {
                 <h1 className="text-[2rem] font-black">
                   {sidebarItems.find((item) => item.id === activeSection)?.label}
                 </h1>
-                <p className="mt-1 text-sm text-slate-500">Site ka full control yahin se manage hoga.</p>
+                <p className="mt-1 text-sm text-slate-500">Manage full site control from here.</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -693,7 +976,7 @@ export default function AdminPanel() {
                             <p className="font-semibold text-slate-900">{machine.name}</p>
                             <p className="mt-1 text-xs text-slate-500">{formatDate(machine.createdAt)}</p>
                           </div>
-                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">Aaj abhi koi machine add nahi hui.</p>}
+                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">No machines have been added today.</p>}
                       </div>
                     </div>
 
@@ -706,7 +989,7 @@ export default function AdminPanel() {
                             <p className="mt-1 text-xs text-slate-500">{lead.machineInterested}</p>
                             <p className="mt-1 text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
                           </div>
-                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">Abhi tak koi lead nahi aayi.</p>}
+                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">No leads have been received yet.</p>}
                       </div>
                     </div>
                   </div>
@@ -789,10 +1072,15 @@ export default function AdminPanel() {
 
             {activeSection === "categories" ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-black">Category Control</h2>
-                    <p className="mt-1 text-sm text-slate-500">Simple add form: category ya subcategory choose karo aur save karo.</p>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="relative w-full lg:w-80">
+                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      value={categorySearch}
+                      onChange={(event) => setCategorySearch(event.target.value)}
+                      placeholder="Search categories..."
+                      className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-slate-400"
+                    />
                   </div>
                   <button
                     type="button"
@@ -814,7 +1102,7 @@ export default function AdminPanel() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {topCategories.map((category) => (
+                      {categoryRows.map((category) => (
                         <tr key={category.id}>
                           <td className="px-4 py-4">
                             <p className="font-semibold text-slate-900">{category.name}</p>
@@ -822,8 +1110,16 @@ export default function AdminPanel() {
                           <td className="px-4 py-4">
                             <div className="flex flex-wrap gap-2">
                               {(childCategories.get(category.id) ?? []).map((sub) => (
-                                <span key={sub.id} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+                                <span key={sub.id} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
                                   {sub.name}
+                                  <button
+                                    type="button"
+                                    onClick={() => openCategoryModal(sub)}
+                                    className="rounded-full text-slate-500 transition hover:text-[#145b93]"
+                                    aria-label={`Edit ${sub.name}`}
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
                                 </span>
                               ))}
                             </div>
@@ -836,6 +1132,13 @@ export default function AdminPanel() {
                           </td>
                         </tr>
                       ))}
+                      {categoryRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">
+                            No categories found.
+                          </td>
+                        </tr>
+                      ) : null}
                     </tbody>
                   </table>
                 </div>
@@ -878,7 +1181,7 @@ export default function AdminPanel() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-black">Homepage Settings</h2>
-                      <p className="mt-1 text-sm text-slate-500">Hero, cards, nav strip aur CTA text yahin se manage karo.</p>
+                      <p className="mt-1 text-sm text-slate-500">Manage hero content, cards, navigation strip, and CTA text here.</p>
                     </div>
                     <button type="button" onClick={() => void saveSiteSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
                       <Save className="h-4 w-4" />
@@ -939,7 +1242,7 @@ export default function AdminPanel() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-black">SEO Management</h2>
-                      <p className="mt-1 text-sm text-slate-500">Global meta aur page wise SEO yahin se manage karo.</p>
+                      <p className="mt-1 text-sm text-slate-500">Manage global metadata and page-specific SEO here.</p>
                     </div>
                     <button type="button" onClick={() => void saveSeoSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
                       <Save className="h-4 w-4" />
@@ -986,7 +1289,7 @@ export default function AdminPanel() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-black">Settings</h2>
-                      <p className="mt-1 text-sm text-slate-500">Profile, SMTP aur analytics store yahin rahega.</p>
+                      <p className="mt-1 text-sm text-slate-500">Store profile, SMTP, and analytics settings here.</p>
                     </div>
                     <button type="button" onClick={() => void saveSiteSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
                       <Save className="h-4 w-4" />
@@ -1034,49 +1337,210 @@ export default function AdminPanel() {
 
       {categoryModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-md rounded-[1.6rem] bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-[1.6rem] bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-black">{categoryForm.id ? "Edit Category" : "Add Category"}</h3>
+              <h3 className="text-2xl font-black">
+                {categoryForm.id
+                  ? categoryForm.mode === "subcategory"
+                    ? "Edit Subcategory"
+                    : "Add Subcategory"
+                  : "Add Category"}
+              </h3>
               <button type="button" onClick={() => setCategoryModalOpen(false)} className="rounded-full border border-slate-200 p-2 text-slate-500">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="mt-5 grid gap-4">
-              <label className="grid gap-2 text-sm font-medium text-slate-700">
-                Type
-                <select
-                  value={categoryForm.mode}
-                  onChange={(event) => setCategoryForm((current) => ({ ...current, mode: event.target.value as CategoryMode, parentId: event.target.value === "category" ? "" : current.parentId }))}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-400"
-                >
-                  <option value="category">Category</option>
-                  <option value="subcategory">Subcategory</option>
-                </select>
-              </label>
+              {!categoryForm.id ? (
+                <>
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    Add Category Name
+                    <input
+                      type="text"
+                      value={categoryForm.name}
+                      onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))}
+                      className={`rounded-2xl border bg-white px-4 py-3 outline-none transition focus:border-slate-400 ${
+                        categoryNameError ? "border-rose-300 bg-rose-50/50 text-rose-900" : "border-slate-200"
+                      }`}
+                    />
+                    {categoryNameError ? <span className="text-xs font-semibold text-rose-600">{categoryNameError}</span> : null}
+                  </label>
 
-              {categoryForm.mode === "subcategory" ? (
-                <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Select Category
-                  <select
-                    value={categoryForm.parentId}
-                    onChange={(event) => setCategoryForm((current) => ({ ...current, parentId: event.target.value }))}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-400"
-                  >
-                    <option value="">Choose category</option>
-                    {topCategories.map((item) => (
-                      <option key={item.id} value={item.id}>{item.name}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    Add Subcategory Name
+                    <input
+                      type="text"
+                      value={categoryForm.subcategoryName}
+                      onChange={(event) => setCategoryForm((current) => ({ ...current, subcategoryName: event.target.value }))}
+                      className={`rounded-2xl border bg-white px-4 py-3 outline-none transition focus:border-slate-400 ${
+                        subcategoryNameError ? "border-rose-300 bg-rose-50/50 text-rose-900" : "border-slate-200"
+                      }`}
+                    />
+                    {subcategoryNameError ? <span className="text-xs font-semibold text-rose-600">{subcategoryNameError}</span> : null}
+                  </label>
+                </>
+              ) : categoryForm.mode === "category" ? (
+                <>
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    Category Name
+                    <input
+                      type="text"
+                      value={categoryForm.name}
+                      readOnly
+                      className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-700 outline-none"
+                    />
+                  </label>
 
-              <Field label={categoryForm.mode === "subcategory" ? "Subcategory Name" : "Category Name"} value={categoryForm.name} onChange={(value) => setCategoryForm((current) => ({ ...current, name: value }))} />
+                  <div className="grid gap-2">
+                    <p className="text-sm font-medium text-slate-700">Subcategories</p>
+                    <div className="max-h-64 space-y-2 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-2">
+                      {modalSubcategories.length ? (
+                        modalSubcategories.map((subcategory) => {
+                          const isEditing = editingSubcategoryId === subcategory.id;
+
+                          return (
+                            <div key={subcategory.id} className="rounded-xl border border-slate-200 bg-white p-2">
+                              {isEditing ? (
+                                <div className="grid gap-2">
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      value={editingSubcategoryName}
+                                      onChange={(event) => setEditingSubcategoryName(event.target.value)}
+                                      className={`min-w-0 flex-1 rounded-xl border bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-400 ${
+                                        editingSubcategoryError ? "border-rose-300 bg-rose-50/50 text-rose-900" : "border-slate-200"
+                                      }`}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => void saveInlineSubcategory()}
+                                      disabled={saving || !editingSubcategoryName.trim() || Boolean(editingSubcategoryError)}
+                                      className="rounded-xl bg-[#145b93] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:bg-slate-300"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                  {editingSubcategoryError ? <span className="text-xs font-semibold text-rose-600">{editingSubcategoryError}</span> : null}
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">{subcategory.name}</span>
+                                  <div className="flex shrink-0 gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingSubcategoryId(subcategory.id);
+                                        setEditingSubcategoryName(subcategory.name);
+                                        setError(null);
+                                      }}
+                                      className="rounded-full border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50"
+                                      aria-label={`Edit ${subcategory.name}`}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => void removeSubcategory(subcategory.id)}
+                                      className="rounded-full border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50"
+                                      aria-label={`Delete ${subcategory.name}`}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="rounded-xl border border-dashed border-slate-200 bg-white px-3 py-4 text-sm text-slate-500">
+                          No subcategories yet.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    New Subcategory Name
+                    <input
+                      type="text"
+                      value={categoryForm.subcategoryName}
+                      onChange={(event) => setCategoryForm((current) => ({ ...current, subcategoryName: event.target.value }))}
+                      className={`rounded-2xl border bg-white px-4 py-3 outline-none transition focus:border-slate-400 ${
+                        subcategoryNameError ? "border-rose-300 bg-rose-50/50 text-rose-900" : "border-slate-200"
+                      }`}
+                    />
+                    {subcategoryNameError ? <span className="text-xs font-semibold text-rose-600">{subcategoryNameError}</span> : null}
+                  </label>
+                </>
+              ) : (
+                <>
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    Type
+                    <select
+                      value={categoryForm.mode}
+                      onChange={(event) => setCategoryForm((current) => ({ ...current, mode: event.target.value as CategoryMode, parentId: event.target.value === "category" ? "" : current.parentId }))}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-slate-400"
+                    >
+                      <option value="category">Category</option>
+                      <option value="subcategory">Subcategory</option>
+                    </select>
+                  </label>
+
+                  {categoryForm.mode === "subcategory" ? (
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Select Category
+                      <select
+                        value={categoryForm.parentId}
+                        onChange={(event) => setCategoryForm((current) => ({ ...current, parentId: event.target.value }))}
+                        className={`rounded-2xl border bg-white px-4 py-3 outline-none focus:border-slate-400 ${
+                          categoryParentError ? "border-rose-300 bg-rose-50/50" : "border-slate-200"
+                        }`}
+                      >
+                        <option value="">Choose category</option>
+                        {topCategories.map((item) => (
+                          <option key={item.id} value={item.id}>{item.name}</option>
+                        ))}
+                      </select>
+                      {categoryParentError ? <span className="text-xs font-semibold text-rose-600">{categoryParentError}</span> : null}
+                    </label>
+                  ) : null}
+
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                    {categoryForm.mode === "subcategory" ? "Subcategory Name" : "Category Name"}
+                    <input
+                      type="text"
+                      value={categoryForm.name}
+                      onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))}
+                      className={`rounded-2xl border bg-white px-4 py-3 outline-none transition focus:border-slate-400 ${
+                        categoryNameError || subcategoryNameError ? "border-rose-300 bg-rose-50/50 text-rose-900" : "border-slate-200"
+                      }`}
+                    />
+                    {categoryNameError ? <span className="text-xs font-semibold text-rose-600">{categoryNameError}</span> : null}
+                    {subcategoryNameError ? <span className="text-xs font-semibold text-rose-600">{subcategoryNameError}</span> : null}
+                  </label>
+                </>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" onClick={() => setCategoryModalOpen(false)} className="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
-              <button type="button" onClick={() => void saveCategory()} className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white">{saving ? "Saving..." : "Save"}</button>
+              <button
+                type="button"
+                onClick={() => void saveCategory()}
+                disabled={
+                  saving ||
+                  Boolean(categoryNameError) ||
+                  Boolean(subcategoryNameError) ||
+                  Boolean(categoryParentError) ||
+                  !categoryForm.name.trim() ||
+                  (requiresSubcategoryName && !categoryForm.subcategoryName.trim())
+                }
+                className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
             </div>
           </div>
         </div>
@@ -1159,7 +1623,7 @@ export default function AdminPanel() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Machine Images</p>
-                    <p className="text-xs text-slate-500">Box par click karo, file manager khulega. Multiple images select kar sakte ho.</p>
+                    <p className="text-xs text-slate-500">Click the box to open the file manager. You can select multiple images.</p>
                   </div>
                   <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
                     <ImagePlus className="h-4 w-4" />
