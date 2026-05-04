@@ -257,6 +257,13 @@ export default function MetalWorkingCatalogue({
   function handleMachineModeChange(value: MachineMode) {
     setCurrentPage(1);
     setMachineMode(value);
+    setSelectedMachineId(null);
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setOpenCategories(() =>
+      Object.fromEntries(machineCategories.map((category) => [category.name, false]))
+    );
+    router.push(pathname);
   }
 
   function handleMachineSearchChange(value: string) {
@@ -598,147 +605,149 @@ export default function MetalWorkingCatalogue({
               Back to {backLabel}
             </button>
 
-            <div className="mt-5 grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(340px,0.88fr)]">
-              <div>
-                <div className="mb-4 border border-slate-200 bg-white px-4 py-3 sm:px-5 sm:py-4">
-                  <div className="min-w-0">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#145b93]">
-                      {selectedMachine.machineType.toUpperCase()}
-                      {selectedMachine.subcategory ? ` / ${selectedMachine.subcategory}` : ` / ${selectedMachine.category}`}
-                    </p>
-                    <h3 className="mt-1.5 text-[1.45rem] font-semibold leading-tight text-slate-950 sm:text-[1.7rem]">
-                      {selectedMachine.title}
-                    </h3>
-                  </div>
-
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <a
-                      href="https://wa.me/919646255855"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0f4c7c]"
-                    >
-                      <CircleDollarSign className="h-4 w-4" />
-                      Request Price
-                    </a>
-                    <a
-                      href="https://wa.me/919646255855"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      WhatsApp
-                    </a>
-                    <a
-                      href="tel:+919646255855"
-                      className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
-                    >
-                      <Phone className="h-4 w-4" />
-                      Call Now
-                    </a>
-                  </div>
+            <div className="mt-5">
+              <div className="mb-4 border border-slate-200 bg-white px-4 py-3 sm:px-5 sm:py-4">
+                <div className="min-w-0">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#145b93]">
+                    {selectedMachine.machineType.toUpperCase()}
+                    {selectedMachine.subcategory ? ` / ${selectedMachine.subcategory}` : ` / ${selectedMachine.category}`}
+                  </p>
+                  <h3 className="mt-1.5 text-[1.45rem] font-semibold leading-tight text-slate-950 sm:text-[1.7rem]">
+                    {selectedMachine.title}
+                  </h3>
                 </div>
 
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <a
+                    href="https://wa.me/919646255855"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0f4c7c]"
+                  >
+                    <CircleDollarSign className="h-4 w-4" />
+                    Request Price
+                  </a>
+                  <a
+                    href="https://wa.me/919646255855"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
+                  <a
+                    href="tel:+919646255855"
+                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Call Now
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(340px,0.88fr)]">
                 <div>
-                  <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                    <div className="flex h-[280px] w-full items-center justify-center overflow-hidden bg-white sm:h-[350px] lg:h-[420px]">
-                      <Image
-                        src={activeGalleryImage?.src ?? selectedMachine.imageSrc}
-                        alt={activeGalleryImage?.alt ?? selectedMachine.imageAlt}
-                        width={1400}
-                        height={920}
-                        priority
-                        unoptimized
-                        quality={100}
-                        sizes="(min-width: 1280px) 55vw, 100vw"
-                        className="h-full w-full object-contain"
-                        style={{ objectPosition: "center" }}
-                      />
+                  <div>
+                    <div className="overflow-hidden border border-slate-200 bg-slate-50">
+                      <div className="flex h-[280px] w-full items-center justify-center overflow-hidden bg-white sm:h-[350px] lg:h-[420px]">
+                        <Image
+                          src={activeGalleryImage?.src ?? selectedMachine.imageSrc}
+                          alt={activeGalleryImage?.alt ?? selectedMachine.imageAlt}
+                          width={1400}
+                          height={920}
+                          priority
+                          unoptimized
+                          quality={100}
+                          sizes="(min-width: 1280px) 55vw, 100vw"
+                          className="h-full w-full object-contain"
+                          style={{ objectPosition: "center" }}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-3 overflow-hidden rounded-[2px] border border-slate-200 bg-white p-2">
-                    <div className="relative">
-                      {machineDetailGallery.length > 5 && canScrollThumbnailsLeft ? (
-                        <button
-                          type="button"
-                          onClick={() => scrollThumbnailStrip("left")}
-                          className="absolute left-2 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-slate-50/95 text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.14)] transition hover:border-[#145b93] hover:text-[#145b93]"
-                          aria-label="Scroll thumbnails left"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                      ) : null}
-
-                      <div
-                        ref={thumbnailStripRef}
-                        className="grid grid-flow-col auto-cols-[72px] gap-2 overflow-x-auto pb-1 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] sm:auto-cols-[96px] [&::-webkit-scrollbar]:hidden"
-                      >
-                        {machineDetailGallery.map((image, index) => (
+                    <div className="mt-3 overflow-hidden rounded-[2px] border border-slate-200 bg-white p-2">
+                      <div className="relative">
+                        {machineDetailGallery.length > 5 && canScrollThumbnailsLeft ? (
                           <button
-                            key={image.id}
                             type="button"
-                            onClick={() => selectGalleryImage(index)}
-                            className={`overflow-hidden border bg-white transition hover:border-[#145b93] ${
-                              index === activeImageIndex ? "border-[#145b93]" : "border-slate-200"
-                            }`}
+                            onClick={() => scrollThumbnailStrip("left")}
+                            className="absolute left-2 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-slate-50/95 text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.14)] transition hover:border-[#145b93] hover:text-[#145b93]"
+                            aria-label="Scroll thumbnails left"
                           >
-                            <Image
-                              src={image.src}
-                              alt={image.alt}
-                              width={150}
-                              height={110}
-                              loading="eager"
-                              className="h-[72px] w-[72px] object-cover sm:h-20 sm:w-24"
-                              style={{ objectPosition: image.position }}
-                            />
+                            <ChevronLeft className="h-4 w-4" />
                           </button>
-                        ))}
-                      </div>
+                        ) : null}
 
-                      {machineDetailGallery.length > 5 && canScrollThumbnailsRight ? (
-                        <button
-                          type="button"
-                          onClick={() => scrollThumbnailStrip("right")}
-                          className="absolute right-2 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-slate-50/95 text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.14)] transition hover:border-[#145b93] hover:text-[#145b93]"
-                          aria-label="Scroll thumbnails right"
+                        <div
+                          ref={thumbnailStripRef}
+                          className="grid grid-flow-col auto-cols-[72px] gap-2 overflow-x-auto pb-1 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] sm:auto-cols-[96px] [&::-webkit-scrollbar]:hidden"
                         >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      ) : null}
+                          {machineDetailGallery.map((image, index) => (
+                            <button
+                              key={image.id}
+                              type="button"
+                              onClick={() => selectGalleryImage(index)}
+                              className={`overflow-hidden border bg-white transition hover:border-[#145b93] ${
+                                index === activeImageIndex ? "border-[#145b93]" : "border-slate-200"
+                              }`}
+                            >
+                              <Image
+                                src={image.src}
+                                alt={image.alt}
+                                width={150}
+                                height={110}
+                                loading="eager"
+                                className="h-[72px] w-[72px] object-cover sm:h-20 sm:w-24"
+                                style={{ objectPosition: image.position }}
+                              />
+                            </button>
+                          ))}
+                        </div>
+
+                        {machineDetailGallery.length > 5 && canScrollThumbnailsRight ? (
+                          <button
+                            type="button"
+                            onClick={() => scrollThumbnailStrip("right")}
+                            className="absolute right-2 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-slate-50/95 text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.14)] transition hover:border-[#145b93] hover:text-[#145b93]"
+                            aria-label="Scroll thumbnails right"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-              </div>
+                <div className="flex flex-col gap-4 xl:h-full">
+                  <div
+                    className="h-[697px] min-h-[697px] max-h-[697px] border border-slate-200 bg-white p-4 sm:p-5 xl:flex xl:flex-col xl:overflow-hidden"
+                  >
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
+                        Specifications
+                      </span>
+                      <span className="h-[2px] flex-1 bg-[#145b93]" />
+                    </div>
 
-              <div className="flex flex-col gap-4 xl:h-full">
-                <div
-                  className="h-[697px] min-h-[697px] max-h-[697px] border border-slate-200 bg-white p-4 sm:p-5 xl:flex xl:flex-col xl:overflow-hidden"
-                >
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
-                      Specifications
-                    </span>
-                    <span className="h-[2px] flex-1 bg-[#145b93]" />
-                  </div>
-
-                  <div className="overflow-hidden border border-slate-200 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
-                    {machineSpecifications.map((spec, index) => (
-                      <div
-                        key={`${spec.label}-${index}`}
-                        className={`grid grid-cols-1 gap-1 px-3 py-2.5 sm:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.1fr)] ${
-                          index === 0 ? "" : "border-t border-slate-200"
-                        }`}
-                      >
-                        <span className="text-[0.95rem] font-semibold leading-6 text-slate-500">{spec.label}</span>
-                        <span className="text-[0.95rem] font-semibold leading-6 text-slate-900">{spec.value}</span>
-                      </div>
-                    ))}
+                    <div className="overflow-hidden border border-slate-200 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
+                      {machineSpecifications.map((spec, index) => (
+                        <div
+                          key={`${spec.label}-${index}`}
+                          className={`grid grid-cols-1 gap-1 px-3 py-2.5 sm:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.1fr)] ${
+                            index === 0 ? "" : "border-t border-slate-200"
+                          }`}
+                        >
+                          <span className="text-[0.95rem] font-semibold leading-6 text-slate-500">{spec.label}</span>
+                          <span className="text-[0.95rem] font-semibold leading-6 text-slate-900">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
             <div className="mt-4 border border-slate-200 bg-white p-4 sm:p-5">
