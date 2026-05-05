@@ -397,7 +397,7 @@ export default function MetalWorkingCatalogue({
         </div>
 
         <h1 className="mt-3 text-[2rem] font-black tracking-tight text-slate-950 sm:text-[2.5rem] lg:text-[3rem]">
-          Industrial Machinery
+          Metal Working Machinery
         </h1>
 
         <p className="mt-2 max-w-2xl text-slate-600">
@@ -451,8 +451,8 @@ export default function MetalWorkingCatalogue({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[20%_80%]">
-        <div className="lg:hidden">
+      <div className="mt-6 grid min-w-0 gap-4 md:grid-cols-[minmax(220px,25%)_minmax(0,1fr)] lg:grid-cols-[minmax(240px,20%)_minmax(0,1fr)]">
+        <div className="md:hidden">
           <button
             type="button"
             onClick={() => setIsMobileSidebarOpen((current) => !current)}
@@ -464,9 +464,9 @@ export default function MetalWorkingCatalogue({
         </div>
 
         <aside
-          className={`border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:self-start lg:overflow-hidden ${
+          className={`border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] md:sticky md:top-20 md:flex md:max-h-[calc(100vh-10rem)] md:flex-col md:self-start md:overflow-hidden lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:self-start lg:overflow-hidden ${
             isMobileSidebarOpen ? "block" : "hidden"
-          } lg:flex`}
+          } md:flex`}
         >
           <div className="border-b border-slate-200 px-2 pb-3">
             <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#145b93]">
@@ -578,14 +578,14 @@ export default function MetalWorkingCatalogue({
 
         {/* PRODUCTS */}
         {selectedMachine ? (
-          <div className="border border-slate-200 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="min-w-0 overflow-hidden border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
+            <div className="mb-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap">
               {toolbarButtons.map((btn) => (
                 <button
                   key={btn.value}
                   type="button"
                   onClick={() => handleMachineModeChange(btn.value as MachineMode)}
-                  className={`rounded-[2px] border px-4 py-2 text-[0.82rem] font-bold transition ${
+                  className={`min-h-11 rounded-[2px] border px-3 py-2 text-[0.82rem] font-bold leading-tight transition sm:px-4 ${
                     machineMode === btn.value
                       ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                       : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"
@@ -605,52 +605,52 @@ export default function MetalWorkingCatalogue({
               Back to {backLabel}
             </button>
 
-            <div className="mt-5">
-              <div className="mb-4 border border-slate-200 bg-white px-4 py-3 sm:px-5 sm:py-4">
+            <div className="mt-5 min-w-0">
+              <div className="mb-4 min-w-0 border border-slate-200 bg-white px-3 py-3 sm:px-5 sm:py-4">
                 <div className="min-w-0">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#145b93]">
+                  <p className="break-words text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#145b93] sm:text-[0.72rem] sm:tracking-[0.18em]">
                     {selectedMachine.machineType.toUpperCase()}
                     {selectedMachine.subcategory ? ` / ${selectedMachine.subcategory}` : ` / ${selectedMachine.category}`}
                   </p>
-                  <h3 className="mt-1.5 text-[1.45rem] font-semibold leading-tight text-slate-950 sm:text-[1.7rem]">
+                  <h3 className="mt-1.5 break-words text-[1.25rem] font-semibold leading-tight text-slate-950 sm:text-[1.55rem] lg:text-[1.7rem]">
                     {selectedMachine.title}
                   </h3>
                 </div>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3 lg:gap-3">
                   <a
                     href="https://wa.me/919646255855"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0f4c7c]"
+                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-3 py-2 text-center text-sm font-semibold leading-tight text-white transition hover:bg-[#0f4c7c]"
                   >
-                    <CircleDollarSign className="h-4 w-4" />
-                    Request Price
+                    <CircleDollarSign className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 break-words">Request Price</span>
                   </a>
                   <a
                     href="https://wa.me/919646255855"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
+                    <MessageCircle className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 break-words">WhatsApp</span>
                   </a>
                   <a
                     href="tel:+919646255855"
-                    className="inline-flex min-h-[42px] items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
                   >
-                    <Phone className="h-4 w-4" />
-                    Call Now
+                    <Phone className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 break-words">Call Now</span>
                   </a>
                 </div>
               </div>
 
-              <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.12fr)_minmax(340px,0.88fr)]">
-                <div>
-                  <div>
+              <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
+                <div className="min-w-0">
+                  <div className="min-w-0">
                     <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                      <div className="flex h-[280px] w-full items-center justify-center overflow-hidden bg-white sm:h-[350px] lg:h-[420px]">
+                      <div className="flex h-[220px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
                         <Image
                           src={activeGalleryImage?.src ?? selectedMachine.imageSrc}
                           alt={activeGalleryImage?.alt ?? selectedMachine.imageAlt}
@@ -720,27 +720,27 @@ export default function MetalWorkingCatalogue({
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 xl:h-full">
+                <div className="min-w-0 flex flex-col gap-4 xl:h-full">
                   <div
-                    className="h-[697px] min-h-[697px] max-h-[697px] border border-slate-200 bg-white p-4 sm:p-5 xl:flex xl:flex-col xl:overflow-hidden"
+                    className="min-w-0 border border-slate-200 bg-white p-3 sm:p-5 xl:flex xl:flex-col xl:overflow-hidden"
                   >
                     <div className="mb-3 flex items-center gap-3">
-                      <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
+                      <span className="text-[0.9rem] font-semibold uppercase tracking-[0.08em] text-slate-950 sm:text-[0.98rem]">
                         Specifications
                       </span>
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="overflow-hidden border border-slate-200 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
+                    <div className="min-w-0 overflow-hidden xl:flex-1 xl:overflow-y-auto">
                       {machineSpecifications.map((spec, index) => (
                         <div
                           key={`${spec.label}-${index}`}
-                          className={`grid grid-cols-1 gap-1 px-3 py-2.5 sm:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.1fr)] ${
+                          className={`grid min-w-0 grid-cols-1 gap-1 px-2 py-2.5 sm:grid-cols-[minmax(130px,0.9fr)_minmax(0,1.1fr)] sm:px-3 ${
                             index === 0 ? "" : "border-t border-slate-200"
                           }`}
                         >
-                          <span className="text-[0.95rem] font-semibold leading-6 text-slate-500">{spec.label}</span>
-                          <span className="text-[0.95rem] font-semibold leading-6 text-slate-900">{spec.value}</span>
+                          <span className="min-w-0 break-words text-[0.92rem] font-semibold leading-6 text-slate-500 sm:text-[0.95rem]">{spec.label}</span>
+                          <span className="min-w-0 break-words text-[0.92rem] font-semibold leading-6 text-slate-900 sm:text-[0.95rem]">{spec.value}</span>
                         </div>
                       ))}
                     </div>
@@ -750,7 +750,7 @@ export default function MetalWorkingCatalogue({
 
             </div>
 
-            <div className="mt-4 border border-slate-200 bg-white p-4 sm:p-5">
+            <div className="mt-4 min-w-0 border border-slate-200 bg-white p-3 sm:p-5">
               <div className="mb-3 flex items-center gap-3">
                 <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
                   Description
@@ -758,7 +758,7 @@ export default function MetalWorkingCatalogue({
                 <span className="h-[2px] flex-1 bg-[#145b93]" />
               </div>
 
-              <div className="space-y-2.5 text-[0.98rem] leading-7 text-slate-600">
+              <div className="min-w-0 space-y-2.5 break-words text-[0.95rem] leading-7 text-slate-600 sm:text-[0.98rem]">
                 {machineDetailDescription.length > 0 ? (
                   machineDetailDescription.map((line) => (
                     <p key={line}>{line}</p>
@@ -806,7 +806,7 @@ export default function MetalWorkingCatalogue({
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {paginatedMachines.length > 0 ? (
                 paginatedMachines.map((m) => (
                   <button
