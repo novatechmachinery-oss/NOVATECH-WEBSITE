@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
@@ -19,6 +20,7 @@ import {
   Upload,
   Users,
   X,
+  LogOut,
 } from "lucide-react";
 
 import type {
@@ -174,6 +176,7 @@ function Area({
 }
 
 export default function AdminPanel() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<AdminSection>("dashboard");
   const [catalog, setCatalog] = useState<AdminCatalogSnapshot | null>(null);
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
@@ -870,6 +873,7 @@ export default function AdminPanel() {
     { id: "machines", label: "Machines", icon: Package2 },
     { id: "categories", label: "Categories", icon: FolderTree },
     { id: "leads", label: "Leads", icon: Users },
+    { id: "homepage", label: "Homepage", icon: LayoutDashboard },
     { id: "seo", label: "SEO", icon: ShieldCheck },
     { id: "settings", label: "Settings", icon: Settings2 },
   ] as const;
@@ -942,6 +946,18 @@ export default function AdminPanel() {
                 >
                   View Site
                 </a>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await fetch("/api/admin/logout", { method: "POST" });
+                    const isStandalone = typeof window !== "undefined" && !window.location.pathname.startsWith("/admin");
+                    router.replace(isStandalone ? "/login" : "/admin/login");
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
               </div>
             </div>
           </div>
@@ -1359,7 +1375,7 @@ export default function AdminPanel() {
                         <Field label="SMTP Host" value={siteSettingsDraft.operations.smtp.host} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, host: value } } } : current)} />
                         <Field label="SMTP Port" value={siteSettingsDraft.operations.smtp.port} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, port: value } } } : current)} />
                         <Field label="SMTP Username / Email" value={siteSettingsDraft.operations.smtp.username} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, username: value } } } : current)} />
-                        <Field label="SMTP Password / App Password" value={siteSettingsDraft.operations.smtp.password} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, password: value } } } : current)} />
+                        <Field label="SMTP Password / App Password" type="password" value={siteSettingsDraft.operations.smtp.password} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, password: value } } } : current)} />
                         <Field label="From Email" value={siteSettingsDraft.operations.smtp.fromEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromEmail: value } } } : current)} />
                         <Field label="From Name" value={siteSettingsDraft.operations.smtp.fromName} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromName: value } } } : current)} />
                         <Field label="Send Test Email" value={siteSettingsDraft.operations.smtp.testEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, testEmail: value } } } : current)} />
