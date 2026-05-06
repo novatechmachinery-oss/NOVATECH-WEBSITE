@@ -2,6 +2,27 @@
   "companyName": "Novatech",
   "companyTagline": "Machinery Corporation",
   "adminEmail": "admin@novatechmachinery.com",
+  "adminProfile": {
+    "fullName": "Admin Novatech Machinery",
+    "phone": "+91 9646255855"
+  },
+  "operations": {
+    "smtp": {
+      "host": "smtp.gmail.com",
+      "port": "587",
+      "username": "",
+      "password": "",
+      "fromEmail": "",
+      "fromName": "Novatech Machinery",
+      "secure": false,
+      "testEmail": ""
+    },
+    "analytics": {
+      "googleAnalyticsId": "",
+      "metaPixelId": "",
+      "clarityProjectId": ""
+    }
+  },
   "home": {
     "heroSlides": [
       {
