@@ -45,12 +45,19 @@ function buildTouchedState() {
 
 export default function ContactPageClient({ settings }: ContactPageClientProps) {
   const mapsQuery = encodeURIComponent(settings.mapLocation);
+  const emailAddress = settings.emailAddress.trim();
+  const emailComposeQuery = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+    to: emailAddress,
+    su: "Machinery enquiry",
+  }).toString();
   const contactLinks = {
     mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
     mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
     whatsappLink: `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`,
     primaryCallLink: `tel:${settings.phonePrimary.replace(/\s+/g, "")}`,
-    emailLink: `mailto:${settings.emailAddress}`,
+    emailLink: `https://mail.google.com/mail/?${emailComposeQuery}`,
   };
   const contactCards = [
     {
@@ -63,7 +70,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
     {
       icon: Mail,
       label: "Email Us",
-      title: settings.emailAddress,
+      title: emailAddress,
       detail: "We reply within 24 hours.",
       href: contactLinks.emailLink,
     },
@@ -503,6 +510,8 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   href={item.href}
                   target={item.href.startsWith("http") ? "_blank" : undefined}
                   rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                  aria-label={`${item.label}: ${item.title}`}
+                  title={item.title}
                   className="group rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_22px_42px_rgba(20,91,147,0.12)]"
                 >
                   <div className="flex items-start gap-3">

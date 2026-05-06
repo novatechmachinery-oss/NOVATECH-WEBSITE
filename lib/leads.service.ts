@@ -58,6 +58,34 @@ function buildLeadRecord(values: ContactFormValues): LeadRecord {
   };
 }
 
+function leadDeletePath(record: LeadRecord) {
+  const params = new URLSearchParams({
+    email: `eq.${record.email}`,
+    phone: `eq.${record.phone}`,
+    machine_interested: `eq.${record.machineInterested}`,
+    lead_source: `eq.${record.source}`,
+  });
+
+  return `leads?${params.toString()}`;
+}
+
+async function deleteLeadFromSupabase(record: LeadRecord) {
+  if (!hasSupabaseConfig()) {
+    return;
+  }
+
+  try {
+    await supabaseRest(leadDeletePath(record), {
+      method: "DELETE",
+      headers: {
+        Prefer: "return=minimal",
+      },
+    });
+  } catch (error) {
+    console.error("Supabase lead delete sync failed. Local lead was deleted.", error);
+  }
+}
+
 export async function saveLeadRecord(values: ContactFormValues) {
   const record = buildLeadRecord(values);
   const leads = await readLeadsFile();
@@ -92,4 +120,18 @@ export async function saveLeadRecord(values: ContactFormValues) {
 export async function getLeadRecords() {
   const leads = await readLeadsFile();
   return [...leads].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+export async function deleteLeadRecord(id: string) {
+  const leads = await readLeadsFile();
+  const targetLead = leads.find((lead) => lead.id === id);
+
+  if (!targetLead) {
+    throw new Error("Lead was not found.");
+  }
+
+  await writeLeadsFile(leads.filter((lead) => lead.id !== id));
+  await deleteLeadFromSupabase(targetLead);
+
+  return targetLead;
 }

@@ -4,7 +4,10 @@ import {
   normalizeContactForm,
   validateContactForm,
 } from "@/lib/contactForm";
+import { sendContactEnquiryEmail } from "@/lib/contact-email.service";
 import { saveLeadRecord } from "@/lib/leads.service";
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   let payload: unknown;
@@ -33,6 +36,12 @@ export async function POST(request: Request) {
 
   try {
     await saveLeadRecord(values);
+
+    try {
+      await sendContactEnquiryEmail(values);
+    } catch (emailError) {
+      console.error("Failed to send contact enquiry email.", emailError);
+    }
 
     return NextResponse.json({
       message: "Thanks for reaching out. Our team will contact you within 24 hours.",
