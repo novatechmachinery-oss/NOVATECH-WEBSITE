@@ -762,6 +762,29 @@ export default function AdminPanel() {
     }
   }
 
+  async function removeLead(id: string) {
+    if (!confirmDelete("lead")) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/leads/${id}`, { method: "DELETE" });
+      const data = (await response.json()) as AdminDashboardData | { error: string };
+      if (!response.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : "Lead delete failed.");
+      }
+
+      setDashboard(data);
+      setMessage("Lead deleted successfully.");
+      await loadAdminData();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Lead delete failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function saveSiteSettings() {
     if (!siteSettingsDraft) return;
     setSaving(true);
@@ -985,9 +1008,22 @@ export default function AdminPanel() {
                       <div className="mt-4 space-y-3">
                         {dashboard.recentLeads.length > 0 ? dashboard.recentLeads.map((lead) => (
                           <div key={lead.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="font-semibold text-slate-900">{lead.name}</p>
-                            <p className="mt-1 text-xs text-slate-500">{lead.machineInterested}</p>
-                            <p className="mt-1 text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900">{lead.name}</p>
+                                <p className="mt-1 text-xs text-slate-500">{lead.machineInterested}</p>
+                                <p className="mt-1 text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeLead(lead.id)}
+                                disabled={saving}
+                                className="shrink-0 rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                aria-label={`Delete lead from ${lead.name}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
                         )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">No leads have been received yet.</p>}
                       </div>
@@ -1164,7 +1200,18 @@ export default function AdminPanel() {
                           <p className="mt-1 text-sm text-slate-500">{lead.email}</p>
                           <p className="mt-1 text-sm text-slate-500">{lead.phone}</p>
                         </div>
-                        <p className="text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <p className="text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                          <button
+                            type="button"
+                            onClick={() => void removeLead(lead.id)}
+                            disabled={saving}
+                            className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label={`Delete lead from ${lead.name}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                       <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
                         Interested in: {lead.machineInterested}
