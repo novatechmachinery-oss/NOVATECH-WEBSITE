@@ -949,8 +949,9 @@ export default function AdminPanel() {
                 <button
                   type="button"
                   onClick={async () => {
-                    await fetch("/api/admin/logout", { method: "POST" });
                     const isStandalone = typeof window !== "undefined" && !window.location.pathname.startsWith("/admin");
+                    const logoutUrl = isStandalone ? "/api/auth/logout" : "/api/admin/logout";
+                    await fetch(logoutUrl, { method: "POST" });
                     router.replace(isStandalone ? "/login" : "/admin/login");
                   }}
                   className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
