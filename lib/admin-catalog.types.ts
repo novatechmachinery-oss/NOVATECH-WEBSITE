@@ -82,6 +82,7 @@ export type DashboardLeadRecord = {
   email: string;
   phone: string;
   machineInterested: string;
+  message: string;
   createdAt: string;
 };
 

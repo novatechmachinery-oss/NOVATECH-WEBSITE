@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import HeroSlider from "../components/HeroSlider";
 
 import CategoryCard from "../components/Cards/CategoryCard";
@@ -6,7 +8,17 @@ import Footer from "../components/Footer";
 import SiteHeader from "../components/SiteHeader";
 import SpecialDealsSlider from "../components/SpecialDealsSlider";
 import { getSpecialDeals } from "@/lib/machines";
+import { getSeoMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-settings.service";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getSeoMetadata("/", {
+    title: "Used Industrial Machines in India",
+    description:
+      "Browse used industrial machines, CNC machines, boring mills, lathes, and heavy machinery with trusted sourcing from Novatech Machinery.",
+    keywords: ["used industrial machines", "cnc machines india", "used machinery dealer", "industrial machinery supplier"],
+  });
+}
 
 export default async function Home() {
   const [specialDeals, settings] = await Promise.all([getSpecialDeals(), getSiteSettings()]);

@@ -4,12 +4,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  BarChart3,
+  ChevronDown,
   FolderTree,
+  Globe,
   ImagePlus,
   LayoutDashboard,
+  Mail,
+  MessageSquareQuote,
   Package2,
   Pencil,
+  Phone,
   Plus,
   RefreshCcw,
   Save,
@@ -29,7 +33,7 @@ import type {
   AdminDashboardData,
   AdminMachine,
 } from "@/lib/admin-catalog.types";
-import type { SeoSettings } from "@/lib/seo-settings.types";
+import type { SeoPageRecord, SeoSettings } from "@/lib/seo-settings.types";
 import type { SiteSettings } from "@/lib/site-settings.types";
 
 type AdminSection =
@@ -37,7 +41,6 @@ type AdminSection =
   | "machines"
   | "categories"
   | "leads"
-  | "homepage"
   | "seo"
   | "settings";
 
@@ -69,6 +72,14 @@ type MachineFormState = {
   specialDeal: boolean;
   images: string[];
   specifications: string;
+};
+
+type DeleteModalState = {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  tone?: "danger" | "default";
+  action: () => Promise<void>;
 };
 
 const defaultCategoryForm: CategoryFormState = {
@@ -117,8 +128,8 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function money(value: number) {
-  return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value);
+function formatStatusLabel(value: string) {
+  return value.replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function Field({
@@ -175,6 +186,58 @@ function Area({
   );
 }
 
+function buildSeoKeywords(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).join(", ");
+}
+
+function mergeSeoPage(existingPage: SeoPageRecord | undefined, nextPage: SeoPageRecord) {
+  return {
+    ...nextPage,
+    title: existingPage?.title || nextPage.title,
+    description: existingPage?.description || nextPage.description,
+    keywords: existingPage?.keywords || nextPage.keywords,
+    canonicalUrl: existingPage?.canonicalUrl || nextPage.canonicalUrl,
+    ogTitle: existingPage?.ogTitle || nextPage.ogTitle,
+    ogDescription: existingPage?.ogDescription || nextPage.ogDescription,
+    ogImageUrl: existingPage?.ogImageUrl || nextPage.ogImageUrl,
+    noIndex: existingPage?.noIndex ?? nextPage.noIndex,
+    noFollow: existingPage?.noFollow ?? nextPage.noFollow,
+  };
+}
+
+function ToggleField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+        checked ? "border-[#145b93] bg-sky-50 text-[#145b93]" : "border-slate-200 bg-white text-slate-700"
+      }`}
+    >
+      <span className="text-sm font-medium">{label}</span>
+      <span
+        className={`relative h-6 w-11 rounded-full transition ${
+          checked ? "bg-[#145b93]" : "bg-slate-200"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+            checked ? "left-[22px]" : "left-0.5"
+          }`}
+        />
+      </span>
+    </button>
+  );
+}
+
 export default function AdminPanel() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<AdminSection>("dashboard");
@@ -183,6 +246,7 @@ export default function AdminPanel() {
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [siteSettingsDraft, setSiteSettingsDraft] = useState<SiteSettings | null>(null);
   const [seoDraft, setSeoDraft] = useState<SeoSettings | null>(null);
+  const [expandedSeoPageId, setExpandedSeoPageId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -195,14 +259,29 @@ export default function AdminPanel() {
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(defaultCategoryForm);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
   const [editingSubcategoryName, setEditingSubcategoryName] = useState("");
+  const [deleteModal, setDeleteModal] = useState<DeleteModalState | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const seoBaseInitializedRef = useRef(false);
 
-  function confirmDelete(label: string) {
-    if (typeof window === "undefined") {
-      return false;
+  function requestDeleteConfirmation(config: DeleteModalState) {
+    setDeleteModal(config);
+  }
+
+  async function confirmDeleteAction() {
+    if (!deleteModal) {
+      return;
     }
 
-    return window.confirm(`Are you sure you want to delete this ${label}?`);
+    setSaving(true);
+    setError(null);
+    try {
+      await deleteModal.action();
+      setDeleteModal(null);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Delete action failed.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function loadAdminData() {
@@ -231,6 +310,7 @@ export default function AdminPanel() {
       setSiteSettings(settingsData);
       setSiteSettingsDraft(settingsData);
       setSeoDraft(seoData);
+      setExpandedSeoPageId((current) => current ?? seoData.pages[0]?.id ?? null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Admin data load failed.");
     } finally {
@@ -417,6 +497,302 @@ export default function AdminPanel() {
 
     return duplicate ? "This subcategory already exists in the selected category." : null;
   }, [editingSubcategoryId, editingSubcategoryName, modalSubcategories]);
+
+  const filteredMetrics = useMemo(
+    () => (dashboard?.metrics ?? []).filter((metric) => metric.label !== "Inventory Value"),
+    [dashboard],
+  );
+
+  const sideMetrics = useMemo(() => {
+    const metrics = filteredMetrics.filter((metric) => metric.label !== "Total Machines");
+    const availableStock = metrics.find((metric) => metric.label === "Available Stock");
+    const remaining = metrics.filter((metric) => metric.label !== "Available Stock");
+
+    return availableStock ? [availableStock, ...remaining] : remaining;
+  }, [filteredMetrics]);
+
+  const categoryMachineStats = useMemo(() => {
+    if (!catalog) {
+      return [] as Array<{
+        id: string;
+        name: string;
+        machineCount: number;
+        color: string;
+        percent: number;
+      }>;
+    }
+
+    const palette = [
+      "#3b82f6",
+      "#fb923c",
+      "#60a5fa",
+      "#f97316",
+      "#0f766e",
+      "#ec4899",
+      "#8b5cf6",
+      "#14b8a6",
+      "#f59e0b",
+      "#6366f1",
+      "#10b981",
+      "#ef4444",
+      "#06b6d4",
+      "#84cc16",
+      "#a855f7",
+      "#f43f5e",
+    ];
+
+    const stats = topCategories
+      .map((category, index) => {
+        const relatedIds = new Set([
+          category.id,
+          ...(childCategories.get(category.id) ?? []).map((item) => item.id),
+        ]);
+        const relatedMachines = (catalog.machines ?? []).filter((machine) =>
+          relatedIds.has(machine.categoryId),
+        );
+
+        return {
+          id: category.id,
+          name: category.name,
+          machineCount: relatedMachines.length,
+          color: palette[index % palette.length],
+        };
+      })
+      .filter((item) => item.machineCount > 0)
+      .sort((left, right) => right.machineCount - left.machineCount || left.name.localeCompare(right.name));
+
+    const totalMachines = stats.reduce((sum, item) => sum + item.machineCount, 0) || 1;
+    return stats.map((item) => ({
+      ...item,
+      percent: Math.round((item.machineCount / totalMachines) * 100),
+    }));
+  }, [catalog, childCategories, topCategories]);
+
+  const categoryChartBars = useMemo(() => {
+    return categoryMachineStats;
+  }, [categoryMachineStats]);
+
+  const categoryBarMax = useMemo(
+    () => Math.max(...categoryChartBars.map((item) => item.machineCount), 1),
+    [categoryChartBars],
+  );
+
+  const generatedSeoPages = useMemo(() => {
+    const companyName = siteSettings?.companyName?.trim() || "Novatech Machinery";
+    const existingPagesById = new Map((seoDraft?.pages ?? []).map((page) => [page.id, page]));
+
+    const corePages: SeoPageRecord[] = [
+      {
+        id: "seo-home",
+        label: "Home",
+        route: "/",
+        title: `Used Industrial Machines in India`,
+        description: `${companyName} offers used industrial machines, CNC machines, turning centres, boring mills, and heavy machinery with trusted sourcing and support.`,
+        keywords: buildSeoKeywords([
+          companyName,
+          "used industrial machines",
+          "used machinery dealer india",
+          "cnc machines india",
+          "industrial machinery supplier",
+        ]),
+        canonicalUrl: "/",
+        ogTitle: `${companyName} | Used Industrial Machines`,
+        ogDescription: `${companyName} supplies used industrial machinery, CNC machines, and workshop equipment across India.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-about",
+        label: "About Us",
+        route: "/about",
+        title: `About ${companyName}`,
+        description: `Learn about ${companyName}, our machinery sourcing experience, industrial trading expertise, and commitment to quality used machines.`,
+        keywords: buildSeoKeywords([`about ${companyName}`, "industrial machinery company", "used machinery exporter", "machine dealer profile"]),
+        canonicalUrl: "/about",
+        ogTitle: `About ${companyName}`,
+        ogDescription: `Know more about ${companyName} and our industrial machinery expertise.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-categories",
+        label: "Machine Categories",
+        route: "/categories",
+        title: `Machine Categories | ${companyName}`,
+        description: `Browse machine categories including CNC, boring, milling, turning, drilling, grinding, forging, and more industrial equipment.`,
+        keywords: buildSeoKeywords(["machine categories", "industrial machine categories", "used cnc categories", "machinery catalogue"]),
+        canonicalUrl: "/categories",
+        ogTitle: `Machine Categories | ${companyName}`,
+        ogDescription: `Explore machinery categories available from ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-contact",
+        label: "Contact Us",
+        route: "/contact",
+        title: `Contact ${companyName} for Industrial Machinery`,
+        description: `Contact ${companyName} for used industrial machines, machine quotations, sourcing support, and technical guidance.`,
+        keywords: buildSeoKeywords([`contact ${companyName}`, "industrial machine enquiry", "used machinery quote", "buy industrial machine"]),
+        canonicalUrl: "/contact",
+        ogTitle: `Contact ${companyName}`,
+        ogDescription: `Send your machine requirement and get in touch with the ${companyName} team.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-used",
+        label: "Used Machinery",
+        route: "/used-machinery",
+        title: `Used Machinery for Sale | ${companyName}`,
+        description: `Explore used machinery for sale including CNC machines, machining centres, turning lathes, boring mills, presses, and other industrial machines.`,
+        keywords: buildSeoKeywords(["used machinery for sale", "used cnc machines", "second hand industrial machinery", "used machine inventory"]),
+        canonicalUrl: "/used-machinery",
+        ogTitle: `Used Machinery for Sale | ${companyName}`,
+        ogDescription: `Browse used industrial machinery and send enquiries directly to ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-metal-working",
+        label: "Metal Working Machinery",
+        route: "/metal-working-machinery",
+        title: `Metal Working Machinery | ${companyName}`,
+        description: `Browse metal working machinery including turning, milling, boring, drilling, grinding, forming, and sheet metal equipment.`,
+        keywords: buildSeoKeywords(["metal working machinery", "metalworking machines", "used metal machinery", "industrial metal machines"]),
+        canonicalUrl: "/metal-working-machinery",
+        ogTitle: `Metal Working Machinery | ${companyName}`,
+        ogDescription: `Professional metal working machinery catalogue from ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-textile",
+        label: "Textile Machinery",
+        route: "/textile-machinery",
+        title: `Textile Machinery | ${companyName}`,
+        description: `Find textile machinery solutions with reliable listings, industrial sourcing support, and expert assistance from ${companyName}.`,
+        keywords: buildSeoKeywords(["textile machinery", "used textile machines", "industrial textile equipment"]),
+        canonicalUrl: "/textile-machinery",
+        ogTitle: `Textile Machinery | ${companyName}`,
+        ogDescription: `Explore textile machinery listings from ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-plastic",
+        label: "Plastic Machinery",
+        route: "/plastic-machinery",
+        title: `Plastic Machinery | ${companyName}`,
+        description: `Discover plastic machinery, processing machines, and industrial equipment with sourcing support from ${companyName}.`,
+        keywords: buildSeoKeywords(["plastic machinery", "used plastic machinery", "plastic processing machines"]),
+        canonicalUrl: "/plastic-machinery",
+        ogTitle: `Plastic Machinery | ${companyName}`,
+        ogDescription: `Browse plastic machinery opportunities with ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+      {
+        id: "seo-pharma",
+        label: "Pharmaceutical Machinery",
+        route: "/pharmaceutical-machinery",
+        title: `Pharmaceutical Machinery | ${companyName}`,
+        description: `Explore pharmaceutical machinery and industrial equipment with trusted support from ${companyName}.`,
+        keywords: buildSeoKeywords(["pharmaceutical machinery", "used pharma machines", "pharma equipment"]),
+        canonicalUrl: "/pharmaceutical-machinery",
+        ogTitle: `Pharmaceutical Machinery | ${companyName}`,
+        ogDescription: `Professional pharmaceutical machinery support from ${companyName}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      },
+    ];
+
+    const categoryPages = topCategories.map((category) => {
+      const childItems = childCategories.get(category.id) ?? [];
+      const machineCount = categoryMachineStats.find((item) => item.id === category.id)?.machineCount ?? 0;
+      const route = `/used-machinery?category=${category.slug}`;
+
+      return {
+        id: `seo-category-${category.slug}`,
+        label: category.name,
+        route,
+        title: `${category.name} for Sale | ${companyName}`,
+        description: `Browse ${category.name.toLowerCase()} at ${companyName}. Explore ${machineCount || "available"} used machines, related equipment, and expert sourcing support.`,
+        keywords: buildSeoKeywords([
+          category.name,
+          `${category.name} for sale`,
+          `used ${category.name.toLowerCase()}`,
+          `${category.name.toLowerCase()} india`,
+          companyName,
+        ]),
+        canonicalUrl: route,
+        ogTitle: `${category.name} | ${companyName}`,
+        ogDescription: `Explore ${category.name.toLowerCase()} with ${companyName}${childItems.length ? ` including ${childItems.slice(0, 3).map((item) => item.name).join(", ")}` : ""}.`,
+        ogImageUrl: "",
+        noIndex: false,
+        noFollow: false,
+      } satisfies SeoPageRecord;
+    });
+
+    const subcategoryPages = topCategories.flatMap((category) => {
+      const childItems = childCategories.get(category.id) ?? [];
+
+      return childItems.map((subcategory) => {
+        const route = `/used-machinery?category=${category.slug}&subcategory=${subcategory.slug}`;
+        const machineCount = (catalog?.machines ?? []).filter((machine) => machine.categoryId === subcategory.id).length;
+
+        return {
+          id: `seo-subcategory-${category.slug}-${subcategory.slug}`,
+          label: subcategory.name,
+          route,
+          title: `${subcategory.name} for Sale | ${companyName}`,
+          description: `Find ${subcategory.name.toLowerCase()} listings at ${companyName}. View used machine options, technical support, and fast enquiry assistance.`,
+          keywords: buildSeoKeywords([
+            subcategory.name,
+            `${subcategory.name} for sale`,
+            `used ${subcategory.name.toLowerCase()}`,
+            category.name,
+            companyName,
+          ]),
+          canonicalUrl: route,
+          ogTitle: `${subcategory.name} | ${companyName}`,
+          ogDescription: `${machineCount || "Available"} listings for ${subcategory.name.toLowerCase()} under ${category.name.toLowerCase()}.`,
+          ogImageUrl: "",
+          noIndex: false,
+          noFollow: false,
+        } satisfies SeoPageRecord;
+      });
+    });
+
+    return [...corePages, ...categoryPages, ...subcategoryPages].map((page) =>
+      mergeSeoPage(existingPagesById.get(page.id), page),
+    );
+  }, [catalog?.machines, categoryMachineStats, childCategories, seoDraft?.pages, siteSettings?.companyName, topCategories]);
+
+  useEffect(() => {
+    if (!seoDraft || seoBaseInitializedRef.current) {
+      return;
+    }
+
+    const hasGeneratedCategoryPages = seoDraft.pages.some((page) => page.id.startsWith("seo-category-"));
+    if (hasGeneratedCategoryPages || generatedSeoPages.length === 0) {
+      seoBaseInitializedRef.current = true;
+      return;
+    }
+
+    setSeoDraft((current) => (current ? { ...current, pages: generatedSeoPages } : current));
+    setExpandedSeoPageId(generatedSeoPages[0]?.id ?? null);
+    seoBaseInitializedRef.current = true;
+  }, [generatedSeoPages, seoDraft]);
 
   function openMachineModal(machine?: AdminMachine) {
     if (!catalog || !machine) {
@@ -693,99 +1069,86 @@ export default function AdminPanel() {
     }
   }
 
-  async function removeSubcategory(id: string) {
-    if (!confirmDelete("subcategory")) {
-      return;
-    }
+  async function removeSubcategory(id: string, name: string) {
+    requestDeleteConfirmation({
+      title: `Delete ${name}?`,
+      description: "This subcategory will be removed from the admin catalog. Continue only if you are sure.",
+      confirmLabel: "Yes, Delete",
+      tone: "danger",
+      action: async () => {
+        const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+        const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
+        if (!response.ok || "error" in data) {
+          throw new Error("error" in data ? data.error : "Subcategory delete failed.");
+        }
 
-    setSaving(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
-      const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Subcategory delete failed.");
-      }
-
-      setCatalog(data);
-      if (editingSubcategoryId === id) {
-        setEditingSubcategoryId(null);
-        setEditingSubcategoryName("");
-      }
-      setMessage("Subcategory deleted successfully.");
-      await loadAdminData();
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : "Subcategory delete failed.");
-    } finally {
-      setSaving(false);
-    }
+        setCatalog(data);
+        if (editingSubcategoryId === id) {
+          setEditingSubcategoryId(null);
+          setEditingSubcategoryName("");
+        }
+        setMessage("Subcategory deleted successfully.");
+        await loadAdminData();
+      },
+    });
   }
 
-  async function removeMachine(id: string) {
-    if (!confirmDelete("machine")) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const response = await fetch(`/api/admin/machines/${id}`, { method: "DELETE" });
-      const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Machine delete failed.");
-      }
-      setCatalog(data);
-      setMessage("Machine deleted successfully.");
-      await loadAdminData();
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : "Machine delete failed.");
-    } finally {
-      setSaving(false);
-    }
+  async function removeMachine(id: string, name: string) {
+    requestDeleteConfirmation({
+      title: `Delete ${name}?`,
+      description: "This machine entry, images, and its admin listing references will be removed from the dashboard view.",
+      confirmLabel: "Yes, Delete",
+      tone: "danger",
+      action: async () => {
+        const response = await fetch(`/api/admin/machines/${id}`, { method: "DELETE" });
+        const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
+        if (!response.ok || "error" in data) {
+          throw new Error("error" in data ? data.error : "Machine delete failed.");
+        }
+        setCatalog(data);
+        setMessage("Machine deleted successfully.");
+        await loadAdminData();
+      },
+    });
   }
 
-  async function removeCategory(id: string) {
-    if (!confirmDelete("category")) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
-      const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Category delete failed.");
-      }
-      setCatalog(data);
-      setMessage("Category deleted successfully.");
-      await loadAdminData();
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : "Category delete failed.");
-    } finally {
-      setSaving(false);
-    }
+  async function removeCategory(id: string, name: string) {
+    requestDeleteConfirmation({
+      title: `Delete ${name}?`,
+      description: "Deleting a category can affect related subcategories and machine assignments in the admin catalog.",
+      confirmLabel: "Yes, Delete",
+      tone: "danger",
+      action: async () => {
+        const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+        const data = (await response.json()) as AdminCatalogSnapshot | { error: string };
+        if (!response.ok || "error" in data) {
+          throw new Error("error" in data ? data.error : "Category delete failed.");
+        }
+        setCatalog(data);
+        setMessage("Category deleted successfully.");
+        await loadAdminData();
+      },
+    });
   }
 
-  async function removeLead(id: string) {
-    if (!confirmDelete("lead")) {
-      return;
-    }
+  async function removeLead(id: string, name: string) {
+    requestDeleteConfirmation({
+      title: `Delete lead from ${name}?`,
+      description: "This enquiry will be removed from the lead inbox and the dashboard metrics will update immediately.",
+      confirmLabel: "Yes, Delete",
+      tone: "danger",
+      action: async () => {
+        const response = await fetch(`/api/admin/leads/${id}`, { method: "DELETE" });
+        const data = (await response.json()) as AdminDashboardData | { error: string };
+        if (!response.ok || "error" in data) {
+          throw new Error("error" in data ? data.error : "Lead delete failed.");
+        }
 
-    setSaving(true);
-    try {
-      const response = await fetch(`/api/admin/leads/${id}`, { method: "DELETE" });
-      const data = (await response.json()) as AdminDashboardData | { error: string };
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Lead delete failed.");
-      }
-
-      setDashboard(data);
-      setMessage("Lead deleted successfully.");
-      await loadAdminData();
-    } catch (removeError) {
-      setError(removeError instanceof Error ? removeError.message : "Lead delete failed.");
-    } finally {
-      setSaving(false);
-    }
+        setDashboard(data);
+        setMessage("Lead deleted successfully.");
+        await loadAdminData();
+      },
+    });
   }
 
   async function saveSiteSettings() {
@@ -833,6 +1196,65 @@ export default function AdminPanel() {
     }
   }
 
+  function updateSeoPage(
+    pageId: string,
+    updater: (page: SeoSettings["pages"][number]) => SeoSettings["pages"][number],
+  ) {
+    setSeoDraft((current) =>
+      current
+        ? {
+            ...current,
+            pages: current.pages.map((page) => (page.id === pageId ? updater(page) : page)),
+          }
+        : current,
+    );
+  }
+
+  function addSeoPage() {
+    const nextPageNumber = (seoDraft?.pages.length ?? 0) + 1;
+    const pageId = `seo-page-${Date.now()}`;
+
+    setSeoDraft((current) =>
+      current
+        ? {
+            ...current,
+            pages: [
+              ...current.pages,
+              {
+                id: pageId,
+                label: `New Page ${nextPageNumber}`,
+                route: `/new-page-${nextPageNumber}`,
+                title: "",
+                description: "",
+                keywords: "",
+                canonicalUrl: "",
+                ogTitle: "",
+                ogDescription: "",
+                ogImageUrl: "",
+                noIndex: false,
+                noFollow: false,
+              },
+            ],
+          }
+        : current,
+    );
+    setExpandedSeoPageId(pageId);
+  }
+
+  function applyGeneratedSeoBase() {
+    setSeoDraft((current) =>
+      current
+        ? {
+            ...current,
+            pages: generatedSeoPages,
+          }
+        : current,
+    );
+    setExpandedSeoPageId(generatedSeoPages[0]?.id ?? null);
+    setMessage("Professional SEO base generated for site pages and machinery categories.");
+    setError(null);
+  }
+
   async function handleImageFiles(files: FileList | null) {
     if (!files) return;
 
@@ -873,7 +1295,6 @@ export default function AdminPanel() {
     { id: "machines", label: "Machines", icon: Package2 },
     { id: "categories", label: "Categories", icon: FolderTree },
     { id: "leads", label: "Leads", icon: Users },
-    { id: "homepage", label: "Homepage", icon: LayoutDashboard },
     { id: "seo", label: "SEO", icon: ShieldCheck },
     { id: "settings", label: "Settings", icon: Settings2 },
   ] as const;
@@ -969,81 +1390,161 @@ export default function AdminPanel() {
 
             {activeSection === "dashboard" && dashboard ? (
               <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  {dashboard.metrics.map((metric, index) => (
-                    <div key={metric.label} className={`rounded-[1.6rem] border p-5 shadow-sm ${index === 0 ? "border-sky-200 bg-[linear-gradient(135deg,#0d3f66_0%,#155b92_60%,#2f7fc7_100%)] text-white" : "border-slate-200 bg-white"}`}>
-                      <p className={`text-xs font-black uppercase tracking-[0.2em] ${index === 0 ? "text-sky-100" : "text-slate-400"}`}>{metric.label}</p>
-                      <p className="mt-3 text-3xl font-black">{metric.label === "Inventory Value" ? `Rs ${money(metric.value)}` : metric.value}</p>
-                      <p className={`mt-2 text-sm ${index === 0 ? "text-sky-100/90" : "text-slate-500"}`}>{metric.hint}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Performance</p>
-                        <h2 className="mt-2 text-xl font-black">Category wise machine graph</h2>
-                      </div>
-                      <BarChart3 className="h-5 w-5 text-slate-400" />
-                    </div>
-                    <div className="mt-6 space-y-4">
-                      {dashboard.categories.map((category) => (
-                        <div key={category.id}>
-                          <div className="mb-2 flex items-center justify-between gap-3">
-                            <div>
-                              <p className="font-semibold text-slate-900">{category.name}</p>
-                              <p className="text-xs text-slate-400">{category.subcategoryCount} subcategories</p>
-                            </div>
-                            <p className="text-sm font-bold text-slate-700">{category.machineCount}</p>
-                          </div>
-                          <div className="h-3 rounded-full bg-slate-100">
-                            <div className="h-3 rounded-full bg-[linear-gradient(90deg,#145b93_0%,#2f7fc7_100%)]" style={{ width: `${category.barWidth}%` }} />
-                          </div>
+                <div className="grid w-full gap-3 xl:grid-cols-[minmax(0,70%)_minmax(0,30%)] xl:items-stretch">
+                  <div className="p-1">
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+                      <div className="mb-4 flex items-end justify-between gap-4">
+                        <div />
+                        <div className="text-right">
+                          <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Total Machines</p>
+                          <p className="mt-1 text-3xl font-black text-slate-900">
+                            {categoryMachineStats.reduce((sum, item) => sum + item.machineCount, 0)}
+                          </p>
                         </div>
-                      ))}
+                      </div>
+
+                      {categoryChartBars.length ? (
+                        <div className="max-h-[460px] space-y-2.5 overflow-y-auto pr-1">
+                          {categoryChartBars.map((category) => (
+                            <div
+                              key={category.id}
+                              className="grid items-center gap-2.5 rounded-[1rem] bg-white/65 px-3 py-2"
+                              style={{ gridTemplateColumns: "minmax(160px, 205px) minmax(0, 1fr) 52px" }}
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-800">{category.name}</p>
+                              </div>
+
+                              <div className="relative h-10 rounded-full bg-slate-100">
+                                <div
+                                  className="absolute left-0 top-0 h-full rounded-full shadow-[0_10px_24px_rgba(59,130,246,0.16)] transition-all duration-300"
+                                  style={{
+                                    width: `${Math.min(100, Math.max(4, (category.machineCount / categoryBarMax) * 100))}%`,
+                                    background: `linear-gradient(90deg, ${category.color} 0%, ${category.color} 100%)`,
+                                  }}
+                                />
+                              </div>
+
+                              <div className="text-right">
+                                <div className="inline-flex min-w-[40px] items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                                  <p className="text-base font-black leading-none text-slate-900">
+                                    {category.machineCount}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                          No category machines found yet.
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Today</p>
-                      <h2 className="mt-2 text-xl font-black">{dashboard.machinesAddedToday} machines added today</h2>
-                      <div className="mt-4 space-y-3">
-                        {dashboard.todayMachines.length > 0 ? dashboard.todayMachines.map((machine) => (
-                          <div key={machine.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="font-semibold text-slate-900">{machine.name}</p>
-                            <p className="mt-1 text-xs text-slate-500">{formatDate(machine.createdAt)}</p>
+                  <div className="grid gap-2 sm:grid-cols-2 xl:h-[560px] xl:grid-cols-1 xl:grid-rows-4 xl:self-stretch">
+                    {sideMetrics.map((metric) => (
+                      <div
+                        key={metric.label}
+                        className="relative flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f4f8fd_100%)] px-4 py-3 text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.06)] transition-all"
+                      >
+                        <div className="flex h-full items-center gap-4 pl-2">
+                          <div className="flex min-w-0 flex-[0_0_60%] flex-col justify-center">
+                            <p className="text-[21px] font-normal leading-8 text-black">
+                              {metric.label}
+                            </p>
                           </div>
-                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">No machines have been added today.</p>}
+                          <div className="flex flex-[0_0_40%] items-center justify-start">
+                            <p className="text-[3.6rem] font-black leading-none text-slate-900">{metric.value}</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
 
-                    <div className="rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Recent Leads</p>
-                      <div className="mt-4 space-y-3">
-                        {dashboard.recentLeads.length > 0 ? dashboard.recentLeads.map((lead) => (
-                          <div key={lead.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="grid gap-6 xl:grid-cols-2">
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Website Messages</p>
+                        <h2 className="mt-2 text-xl font-black">Latest enquiries from site</h2>
+                      </div>
+                      <Users className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      {dashboard.recentLeads.slice(0, 5).length ? (
+                        dashboard.recentLeads.slice(0, 5).map((lead) => (
+                          <div key={lead.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="font-semibold text-slate-900">{lead.name}</p>
-                                <p className="mt-1 text-xs text-slate-500">{lead.machineInterested}</p>
-                                <p className="mt-1 text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                                <p className="mt-1 text-sm text-slate-500">{lead.machineInterested}</p>
+                                <p className="mt-1 text-xs text-slate-400">{lead.email} • {lead.phone}</p>
+                                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
+                                  {lead.message || "Website enquiry record"}
+                                </p>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => void removeLead(lead.id)}
-                                disabled={saving}
-                                className="shrink-0 rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                aria-label={`Delete lead from ${lead.name}`}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <p className="text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeLead(lead.id, lead.name)}
+                                  disabled={saving}
+                                  className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  aria-label={`Delete lead from ${lead.name}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        )) : <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">No leads have been received yet.</p>}
+                        ))
+                      ) : (
+                        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                          Website contact and newsletter enquiries will appear here.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">New Machines</p>
+                        <h2 className="mt-2 text-xl font-black">Latest 8 machines added</h2>
                       </div>
+                      <Package2 className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <div className="mt-5 max-h-[780px] space-y-3 overflow-y-auto pr-1">
+                      {dashboard.recentMachines.slice(0, 8).length ? (
+                        dashboard.recentMachines.slice(0, 8).map((machine) => {
+                          const machineRow = machineRows.find((item) => item.id === machine.id);
+
+                          return (
+                            <div key={machine.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-slate-900">{machine.name}</p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    {machineRow?.categoryLabel ?? "Unassigned"}
+                                    {machineRow?.subcategoryLabel ? ` • ${machineRow.subcategoryLabel}` : ""}
+                                  </p>
+                                  <p className="mt-1 text-xs text-slate-400">
+                                    {machine.brand || machine.model || formatStatusLabel(machine.stockStatus)}
+                                  </p>
+                                </div>
+                                <p className="shrink-0 text-xs text-slate-400">{formatDate(machine.createdAt)}</p>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                          No machines added recently.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1112,7 +1613,7 @@ export default function AdminPanel() {
                           <td className="px-4 py-4">
                             <div className="flex justify-end gap-2">
                               <button type="button" onClick={() => openMachineModal(machine)} className="rounded-full border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"><Pencil className="h-4 w-4" /></button>
-                              <button type="button" onClick={() => void removeMachine(machine.id)} className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
+                              <button type="button" onClick={() => void removeMachine(machine.id, machine.name)} className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -1180,7 +1681,7 @@ export default function AdminPanel() {
                           <td className="px-4 py-4">
                             <div className="flex justify-end gap-2">
                               <button type="button" onClick={() => openCategoryModal(category)} className="rounded-full border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"><Pencil className="h-4 w-4" /></button>
-                              <button type="button" onClick={() => void removeCategory(category.id)} className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
+                              <button type="button" onClick={() => void removeCategory(category.id, category.name)} className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -1200,101 +1701,103 @@ export default function AdminPanel() {
 
             {activeSection === "leads" && dashboard ? (
               <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Recent Leads</p>
-                    <p className="mt-3 text-3xl font-black">{dashboard.recentLeads.length}</p>
-                    <p className="mt-2 text-sm text-slate-500">Latest enquiries from contact form</p>
-                  </div>
-                </div>
+                <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Lead Inbox</p>
+                    <h2 className="mt-2 text-2xl font-black text-slate-900">Website enquiries</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Contact form, newsletter, and website messages will appear here as soon as visitors submit them.
+                    </p>
 
-                <div className="grid gap-4 lg:grid-cols-2">
-                  {dashboard.recentLeads.map((lead) => (
-                    <div key={lead.id} className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-slate-900">{lead.name}</p>
-                          <p className="mt-1 text-sm text-slate-500">{lead.email}</p>
-                          <p className="mt-1 text-sm text-slate-500">{lead.phone}</p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <p className="text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
-                          <button
-                            type="button"
-                            onClick={() => void removeLead(lead.id)}
-                            disabled={saving}
-                            className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            aria-label={`Delete lead from ${lead.name}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                        Interested in: {lead.machineInterested}
+                    <div className="mt-6 rounded-[1.5rem] bg-[linear-gradient(145deg,#0f3b63_0%,#145b93_58%,#2f7fc7_100%)] p-5 text-white shadow-[0_18px_40px_rgba(20,91,147,0.22)]">
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-100">Total Leads</p>
+                      <p className="mt-3 text-5xl font-black leading-none">{dashboard.recentLeads.length}</p>
+                      <p className="mt-3 text-sm leading-6 text-sky-100/90">
+                        Latest enquiry records from your live website forms.
+                      </p>
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                      <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">What shows here</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          Name, phone number, email, machine interest, message, and enquiry date.
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+                  </div>
 
-            {activeSection === "homepage" && siteSettingsDraft ? (
-              <div className="space-y-6">
-                <div className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl font-black">Homepage Settings</h2>
-                      <p className="mt-1 text-sm text-slate-500">Manage hero content, cards, navigation strip, and CTA text here.</p>
+                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Recent Messages</p>
+                        <h2 className="mt-2 text-2xl font-black text-slate-900">Latest lead records</h2>
+                      </div>
+                      <MessageSquareQuote className="h-5 w-5 text-slate-400" />
                     </div>
-                    <button type="button" onClick={() => void saveSiteSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
-                      <Save className="h-4 w-4" />
-                      Save Homepage
-                    </button>
-                  </div>
 
-                  <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                    <Field label="Company Name" value={siteSettingsDraft.companyName} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, companyName: value } : current)} />
-                    <Field label="Company Tagline" value={siteSettingsDraft.companyTagline} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, companyTagline: value } : current)} />
-                    <Field label="Special Deals Heading" value={siteSettingsDraft.home.sectionTitle} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, home: { ...current.home, sectionTitle: value } } : current)} />
-                    <Field label="CTA Title" value={siteSettingsDraft.home.machineCtaTitle} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, home: { ...current.home, machineCtaTitle: value } } : current)} />
-                  </div>
+                    {dashboard.recentLeads.length ? (
+                      <div className="mt-5 space-y-4">
+                        {dashboard.recentLeads.map((lead) => (
+                          <div key={lead.id} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-5">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <p className="text-lg font-black text-slate-900">{lead.name}</p>
+                                <p className="mt-1 text-sm text-slate-500">{lead.machineInterested || "General website enquiry"}</p>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <p className="text-xs font-semibold text-slate-400">{formatDate(lead.createdAt)}</p>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeLead(lead.id, lead.name)}
+                                  disabled={saving}
+                                  className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  aria-label={`Delete lead from ${lead.name}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
 
-                  <div className="mt-4">
-                    <Area label="CTA Description" value={siteSettingsDraft.home.machineCtaDescription} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, home: { ...current.home, machineCtaDescription: value } } : current)} rows={4} />
-                  </div>
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Phone</p>
+                                <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
+                                  <Phone className="h-4 w-4 text-slate-400" />
+                                  {lead.phone || "Not provided"}
+                                </p>
+                              </div>
+                              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Email</p>
+                                <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-800 break-all">
+                                  <Mail className="h-4 w-4 text-slate-400" />
+                                  {lead.email || "Not provided"}
+                                </p>
+                              </div>
+                            </div>
 
-                  <div className="mt-4 grid gap-4">
-                    <Area
-                      label="Hero Slides JSON"
-                      value={JSON.stringify(siteSettingsDraft.home.heroSlides, null, 2)}
-                      onChange={(value) => {
-                        try {
-                          setSiteSettingsDraft((current) => current ? { ...current, home: { ...current.home, heroSlides: JSON.parse(value) } } : current);
-                        } catch {}
-                      }}
-                      rows={8}
-                    />
-                    <Area
-                      label="Homepage Feature Cards JSON"
-                      value={JSON.stringify(siteSettingsDraft.home.featureCards, null, 2)}
-                      onChange={(value) => {
-                        try {
-                          setSiteSettingsDraft((current) => current ? { ...current, home: { ...current.home, featureCards: JSON.parse(value) } } : current);
-                        } catch {}
-                      }}
-                      rows={10}
-                    />
-                    <Area
-                      label="Top Navigation Strip JSON"
-                      value={JSON.stringify(siteSettingsDraft.navigation.categoryLinks, null, 2)}
-                      onChange={(value) => {
-                        try {
-                          setSiteSettingsDraft((current) => current ? { ...current, navigation: { ...current.navigation, categoryLinks: JSON.parse(value) } } : current);
-                        } catch {}
-                      }}
-                      rows={8}
-                    />
+                            <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white px-4 py-4">
+                              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Message</p>
+                              <p className="mt-2 text-sm leading-7 text-slate-700">
+                                {lead.message || "No message added by the visitor."}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-5 flex min-h-[360px] items-center justify-center rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                        <div className="max-w-md">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                            <MessageSquareQuote className="h-7 w-7" />
+                          </div>
+                          <h3 className="mt-5 text-xl font-black text-slate-900">No enquiries yet</h3>
+                          <p className="mt-3 text-sm leading-7 text-slate-500">
+                            When someone sends a message from the website, their name, phone number, email, machine interest, and message will appear here automatically.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1302,47 +1805,313 @@ export default function AdminPanel() {
 
             {activeSection === "seo" && seoDraft ? (
               <div className="space-y-6">
-                <div className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl font-black">SEO Management</h2>
-                      <p className="mt-1 text-sm text-slate-500">Manage global metadata and page-specific SEO here.</p>
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Full Site SEO</p>
+                        <h2 className="mt-2 text-2xl font-black">Top-level search settings</h2>
+                        <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500">
+                          Control default metadata, indexing behavior, analytics IDs, and route-wise SEO from one place.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={applyGeneratedSeoBase}
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          <RefreshCcw className="h-4 w-4" />
+                          Build SEO Base
+                        </button>
+                        <button
+                          type="button"
+                          onClick={addSeoPage}
+                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Page
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void saveSeoSettings()}
+                          className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]"
+                        >
+                          <Save className="h-4 w-4" />
+                          Save SEO
+                        </button>
+                      </div>
                     </div>
-                    <button type="button" onClick={() => void saveSeoSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
-                      <Save className="h-4 w-4" />
-                      Save SEO
-                    </button>
+
+                    <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                      <Field
+                        label="Default Title"
+                        value={seoDraft.defaultTitle}
+                        onChange={(value) => setSeoDraft((current) => current ? { ...current, defaultTitle: value } : current)}
+                      />
+                      <Field
+                        label="Title Suffix"
+                        value={seoDraft.globalTitleSuffix}
+                        onChange={(value) => setSeoDraft((current) => current ? { ...current, globalTitleSuffix: value } : current)}
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <Area
+                        label="Default Description"
+                        value={seoDraft.defaultDescription}
+                        onChange={(value) => setSeoDraft((current) => current ? { ...current, defaultDescription: value } : current)}
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Configured Pages</p>
+                        <p className="mt-2 text-3xl font-black text-slate-950">{seoDraft.pages.length}</p>
+                      </div>
+                      <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Top Categories</p>
+                        <p className="mt-2 text-3xl font-black text-slate-950">{topCategories.length}</p>
+                      </div>
+                      <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                        <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Subcategory Pages</p>
+                        <p className="mt-2 text-3xl font-black text-slate-950">
+                          {generatedSeoPages.filter((page) => page.id.startsWith("seo-subcategory-")).length}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={applyGeneratedSeoBase}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      >
+                        <RefreshCcw className="h-4 w-4" />
+                        Update SEO Base
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void saveSeoSettings()}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white hover:bg-[#10486f]"
+                      >
+                        <Save className="h-4 w-4" />
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                    <Field label="Default Title" value={seoDraft.defaultTitle} onChange={(value) => setSeoDraft((current) => current ? { ...current, defaultTitle: value } : current)} />
-                    <Field label="Title Suffix" value={seoDraft.globalTitleSuffix} onChange={(value) => setSeoDraft((current) => current ? { ...current, globalTitleSuffix: value } : current)} />
-                  </div>
-                  <div className="mt-4">
-                    <Area label="Default Description" value={seoDraft.defaultDescription} onChange={(value) => setSeoDraft((current) => current ? { ...current, defaultDescription: value } : current)} />
-                  </div>
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f5f9fd_100%)] p-6 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Tracking Stack</p>
+                        <h3 className="mt-2 text-xl font-black text-slate-950">Analytics and crawl tools</h3>
+                      </div>
+                      <div className="rounded-full bg-sky-50 p-3 text-[#145b93]">
+                        <Globe className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <div className="mt-6 grid gap-4">
+                      <Field
+                        label="Google Analytics ID"
+                        value={seoDraft.analytics.googleAnalyticsId}
+                        onChange={(value) =>
+                          setSeoDraft((current) =>
+                            current ? { ...current, analytics: { ...current.analytics, googleAnalyticsId: value } } : current,
+                          )
+                        }
+                        placeholder="G-XXXXXXXXXX"
+                      />
+                      <Field
+                        label="Meta Pixel ID"
+                        value={seoDraft.analytics.metaPixelId}
+                        onChange={(value) =>
+                          setSeoDraft((current) =>
+                            current ? { ...current, analytics: { ...current.analytics, metaPixelId: value } } : current,
+                          )
+                        }
+                        placeholder="1234567890"
+                      />
+                      <Field
+                        label="Microsoft Clarity ID"
+                        value={seoDraft.analytics.clarityProjectId}
+                        onChange={(value) =>
+                          setSeoDraft((current) =>
+                            current ? { ...current, analytics: { ...current.analytics, clarityProjectId: value } } : current,
+                          )
+                        }
+                        placeholder="clarity-project-id"
+                      />
+                    </div>
 
-                  <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                    <Field label="Google Analytics ID" value={seoDraft.analytics.googleAnalyticsId} onChange={(value) => setSeoDraft((current) => current ? { ...current, analytics: { ...current.analytics, googleAnalyticsId: value } } : current)} />
-                    <Field label="Meta Pixel ID" value={seoDraft.analytics.metaPixelId} onChange={(value) => setSeoDraft((current) => current ? { ...current, analytics: { ...current.analytics, metaPixelId: value } } : current)} />
-                    <Field label="Microsoft Clarity ID" value={seoDraft.analytics.clarityProjectId} onChange={(value) => setSeoDraft((current) => current ? { ...current, analytics: { ...current.analytics, clarityProjectId: value } } : current)} />
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => void saveSeoSettings()}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white hover:bg-[#10486f]"
+                      >
+                        <Save className="h-4 w-4" />
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {seoDraft.pages.map((page, index) => (
-                    <div key={page.id} className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <Field label="Page Label" value={page.label} onChange={(value) => setSeoDraft((current) => current ? { ...current, pages: current.pages.map((item, itemIndex) => itemIndex === index ? { ...item, label: value } : item) } : current)} />
-                        <Field label="Route" value={page.route} onChange={(value) => setSeoDraft((current) => current ? { ...current, pages: current.pages.map((item, itemIndex) => itemIndex === index ? { ...item, route: value } : item) } : current)} />
-                        <Field label="Title" value={page.title} onChange={(value) => setSeoDraft((current) => current ? { ...current, pages: current.pages.map((item, itemIndex) => itemIndex === index ? { ...item, title: value } : item) } : current)} />
-                        <Field label="Keywords" value={page.keywords} onChange={(value) => setSeoDraft((current) => current ? { ...current, pages: current.pages.map((item, itemIndex) => itemIndex === index ? { ...item, keywords: value } : item) } : current)} />
-                      </div>
-                      <div className="mt-4">
-                        <Area label="Description" value={page.description} onChange={(value) => setSeoDraft((current) => current ? { ...current, pages: current.pages.map((item, itemIndex) => itemIndex === index ? { ...item, description: value } : item) } : current)} rows={3} />
-                      </div>
+                <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Page SEO</p>
+                      <h2 className="mt-2 text-2xl font-black text-slate-950">Page-wise metadata manager</h2>
                     </div>
-                  ))}
+                    <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
+                      {seoDraft.pages.length} routes configured
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    {seoDraft.pages.map((page) => {
+                      const isExpanded = expandedSeoPageId === page.id;
+                      const hasTitle = page.title.trim().length > 0;
+                      const hasDescription = page.description.trim().length > 0;
+                      const hasOg = page.ogTitle.trim().length > 0 || page.ogDescription.trim().length > 0;
+
+                      return (
+                        <div
+                          key={page.id}
+                          className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 shadow-[0_10px_30px_rgba(15,23,42,0.04)]"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setExpandedSeoPageId((current) => (current === page.id ? null : page.id))}
+                            className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm">
+                                  <Globe className="h-4.5 w-4.5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="truncate text-lg font-black text-slate-950">{page.label || "Untitled Page"}</p>
+                                  <p className="mt-1 truncate text-sm text-slate-500">{page.route || "/"}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${hasTitle ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-slate-200 bg-white text-slate-400"}`}>
+                                Title {hasTitle ? "✓" : ""}
+                              </span>
+                              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${hasDescription ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-slate-200 bg-white text-slate-400"}`}>
+                                Desc {hasDescription ? "✓" : ""}
+                              </span>
+                              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${hasOg ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-slate-200 bg-white text-slate-400"}`}>
+                                OG {hasOg ? "✓" : ""}
+                              </span>
+                              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm">
+                                <ChevronDown className={`h-4 w-4 transition ${isExpanded ? "rotate-180" : ""}`} />
+                              </span>
+                            </div>
+                          </button>
+
+                          {isExpanded ? (
+                            <div className="border-t border-slate-200 bg-white px-5 py-5">
+                              <div className="grid gap-4 xl:grid-cols-2">
+                                <Field
+                                  label="Page Label"
+                                  value={page.label}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, label: value }))}
+                                />
+                                <Field
+                                  label="Route"
+                                  value={page.route}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, route: value }))}
+                                  placeholder="/about"
+                                />
+                                <Field
+                                  label="Meta Title"
+                                  value={page.title}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, title: value }))}
+                                />
+                                <Field
+                                  label="Canonical URL"
+                                  value={page.canonicalUrl}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, canonicalUrl: value }))}
+                                  placeholder="https://..."
+                                />
+                              </div>
+
+                              <div className="mt-4">
+                                <Area
+                                  label="Meta Description"
+                                  value={page.description}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, description: value }))}
+                                  rows={4}
+                                />
+                              </div>
+
+                              <div className="mt-4">
+                                <Field
+                                  label="Meta Keywords"
+                                  value={page.keywords}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, keywords: value }))}
+                                  placeholder="industrial machines, used machinery, cnc machines"
+                                />
+                              </div>
+
+                              <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                                <Field
+                                  label="OG Title"
+                                  value={page.ogTitle}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, ogTitle: value }))}
+                                />
+                                <Field
+                                  label="OG Image URL"
+                                  value={page.ogImageUrl}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, ogImageUrl: value }))}
+                                  placeholder="https://..."
+                                />
+                              </div>
+
+                              <div className="mt-4">
+                                <Area
+                                  label="OG Description"
+                                  value={page.ogDescription}
+                                  onChange={(value) => updateSeoPage(page.id, (current) => ({ ...current, ogDescription: value }))}
+                                  rows={3}
+                                />
+                              </div>
+
+                              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                <ToggleField
+                                  label="No Index"
+                                  checked={page.noIndex}
+                                  onChange={(checked) => updateSeoPage(page.id, (current) => ({ ...current, noIndex: checked }))}
+                                />
+                                <ToggleField
+                                  label="No Follow"
+                                  checked={page.noFollow}
+                                  onChange={(checked) => updateSeoPage(page.id, (current) => ({ ...current, noFollow: checked }))}
+                                />
+                              </div>
+
+                              <div className="mt-5 flex flex-wrap justify-between gap-3">
+                                <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Route SEO Ready
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void saveSeoSettings()}
+                                  className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white hover:bg-[#10486f]"
+                                >
+                                  <Save className="h-4 w-4" />
+                                  Save Changes
+                                </button>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -1505,7 +2274,7 @@ export default function AdminPanel() {
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={() => void removeSubcategory(subcategory.id)}
+                                      onClick={() => void removeSubcategory(subcategory.id, subcategory.name)}
                                       className="rounded-full border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50"
                                       aria-label={`Delete ${subcategory.name}`}
                                     >
@@ -1756,6 +2525,41 @@ export default function AdminPanel() {
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" onClick={() => setMachineModalOpen(false)} className="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
               <button type="button" onClick={() => void saveMachine()} className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white">{saving ? "Saving..." : "Save Machine"}</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteModal ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#020617]/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[1.75rem] bg-white px-6 py-6 shadow-[0_35px_100px_rgba(2,6,23,0.34)]">
+            <div className="flex items-center gap-3 text-black">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-black">Are you sure to delete?</h3>
+                <p className="mt-1 text-sm text-slate-600">{deleteModal.title}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal(null)}
+                  disabled={saving}
+                  className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void confirmDeleteAction()}
+                  disabled={saving}
+                  className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {saving ? "Deleting..." : deleteModal.confirmLabel}
+                </button>
             </div>
           </div>
         </div>

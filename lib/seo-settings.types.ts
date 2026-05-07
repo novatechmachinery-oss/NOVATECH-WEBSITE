@@ -5,6 +5,12 @@ export type SeoPageRecord = {
   title: string;
   description: string;
   keywords: string;
+  canonicalUrl: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImageUrl: string;
+  noIndex: boolean;
+  noFollow: boolean;
 };
 
 export type SeoSettings = {

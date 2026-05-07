@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Award,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import Footer from "../../components/Footer";
 import SiteHeader from "../../components/SiteHeader";
+import { getSeoMetadata } from "@/lib/seo";
 
 const paragraphs = [
   "Novatech Machinery is a leading organization engaged in the trading and export of high-quality used and new metal working and industrial machinery. With a strong global network, we offer a wide range of machines including CNC machines, Horizontal Boring Machines (HBM), Vertical Turret Lathes (VTL), forging and stamping presses, grinding machines, plano millers, CNC portal millers, gear hobbing machines, and more.",
@@ -79,6 +81,15 @@ const machineRangeColumns = [
   machineRange.slice(0, 7),
   machineRange.slice(7),
 ];
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getSeoMetadata("/about", {
+    title: "About Novatech Machinery",
+    description:
+      "Learn about Novatech Machinery, our global sourcing network, industrial expertise, and used machinery solutions for multiple industries.",
+    keywords: ["about novatech machinery", "industrial machinery company", "used machinery supplier india"],
+  });
+}
 
 export default function AboutPage() {
   return (

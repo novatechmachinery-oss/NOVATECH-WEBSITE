@@ -1,33 +1,15 @@
 import { NextResponse } from "next/server";
 
-const COOKIE_NAME = "nv_admin";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
-
-async function createAdminToken(password: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-
-  const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(password));
-  const signatureArray = new Uint8Array(signatureBuffer);
-
-  // Convert to base64url
-  let binary = "";
-  for (const byte of signatureArray) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
+import {
+  COOKIE_MAX_AGE,
+  COOKIE_NAME,
+  createAdminToken,
+  getAdminCredentials,
+  isAdminConfigured,
+} from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
-  let body: { password?: string };
+  let body: { email?: string; password?: string };
 
   try {
     body = await request.json();
@@ -35,23 +17,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
+  const submittedEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const submittedPassword = typeof body.password === "string" ? body.password.trim() : "";
-  const correctPassword = (process.env.ADMIN_PASSWORD ?? "").trim();
+  const { email: correctEmail, password: correctPassword, secret } = getAdminCredentials();
 
-  if (!correctPassword) {
+  if (!isAdminConfigured()) {
     return NextResponse.json(
-      { error: "Admin password is not configured. Set ADMIN_PASSWORD in .env.local" },
+      { error: "Admin credentials are not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD in .env.local" },
       { status: 500 },
     );
   }
 
-  if (!submittedPassword || submittedPassword !== correctPassword) {
-    return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
+  if (!submittedEmail || !submittedPassword) {
+    return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
   }
 
-  const secret = process.env.ADMIN_SESSION_SECRET ?? correctPassword;
-  const token = await createAdminToken(correctPassword, secret);
+  if (submittedEmail !== correctEmail || submittedPassword !== correctPassword) {
+    return NextResponse.json({ error: "Incorrect admin email or password." }, { status: 401 });
+  }
 
+  const token = await createAdminToken(correctEmail, correctPassword, secret);
   const response = NextResponse.json({ message: "Login successful." });
 
   response.cookies.set(COOKIE_NAME, token, {

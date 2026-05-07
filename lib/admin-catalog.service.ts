@@ -480,6 +480,7 @@ export async function getAdminDashboardData() {
       email: lead.email,
       phone: lead.phone,
       machineInterested: lead.machineInterested,
+      message: lead.message,
       createdAt: lead.createdAt,
     })),
   } satisfies AdminDashboardData;

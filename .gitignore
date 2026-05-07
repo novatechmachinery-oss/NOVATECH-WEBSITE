@@ -1,7 +1,11 @@
 node_modules
 .next
+admin/.next
 .env
 .env.local
+.env.*.local
+admin/.env.local
 dist
 build
 *.log
+admin/*.log

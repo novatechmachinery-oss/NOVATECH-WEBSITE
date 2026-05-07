@@ -52,14 +52,49 @@ export default function MetalWorkingCatalogue({
   );
 
   const subcategoryToCategory = useMemo(
-    () =>
-      new Map(
-        machineCategories.flatMap((cat) =>
-          (cat.sub ?? []).map((sub) => [sub, cat.name] as const)
-        )
-      ),
-    [machineCategories]
+    () => {
+      const map = new Map<string, string>();
+
+      for (const machine of machineInventory) {
+        if (!machine.subcategory) {
+          continue;
+        }
+
+        map.set(machine.subcategory, machine.category);
+
+        if (machine.subcategorySlug) {
+          map.set(machine.subcategorySlug, machine.category);
+        }
+      }
+
+      for (const category of machineCategories) {
+        for (const sub of category.sub ?? []) {
+          map.set(sub, category.name);
+        }
+      }
+
+      return map;
+    },
+    [machineCategories, machineInventory]
   );
+
+  const subcategoryValueToName = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const machine of machineInventory) {
+      if (!machine.subcategory) {
+        continue;
+      }
+
+      map.set(machine.subcategory, machine.subcategory);
+
+      if (machine.subcategorySlug) {
+        map.set(machine.subcategorySlug, machine.subcategory);
+      }
+    }
+
+    return map;
+  }, [machineInventory]);
 
   const initialSelectedMachine = initialMachineId ? machineById.get(initialMachineId) ?? null : null;
   const matchedInitialCategory =
@@ -68,7 +103,9 @@ export default function MetalWorkingCatalogue({
     initialSelectedMachine?.category ??
     (initialSubcategory ? subcategoryToCategory.get(initialSubcategory) : null) ??
     matchedInitialCategory;
-  const initialResolvedSubcategory = initialSelectedMachine?.subcategory ?? initialSubcategory;
+  const initialResolvedSubcategory =
+    initialSelectedMachine?.subcategory ??
+    (initialSubcategory ? subcategoryValueToName.get(initialSubcategory) ?? initialSubcategory : null);
 
   const [categorySearch, setCategorySearch] = useState("");
   const [machineSearch, setMachineSearch] = useState("");

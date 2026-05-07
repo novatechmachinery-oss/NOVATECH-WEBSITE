@@ -1,8 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Bolt, Cog, Drill, Factory, Gauge, Hammer, Layers3, ScanLine, Shield, Wrench } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { getMachineCatalogData } from "@/lib/machines";
+import { getSeoMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getSeoMetadata("/categories", {
+    title: "Machine Categories",
+    description:
+      "Explore industrial machine categories including CNC, boring, milling, drilling, forging, grinding, and more from Novatech Machinery.",
+    keywords: ["machine categories", "industrial machinery categories", "used cnc categories"],
+  });
+}
 
 const iconMap = {
   "Bending Machines": Wrench,
@@ -22,10 +33,10 @@ const iconMap = {
   "Vertical Turning Lathes": Layers3,
 } as const;
 
-function getCategoryHref(categoryName: string) {
+function getCategoryHref(categoryValue: string) {
   return {
     pathname: "/used-machinery",
-    query: { category: categoryName },
+    query: { category: categoryValue },
   };
 }
 
@@ -36,7 +47,7 @@ export default async function CategoriesPage() {
     .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
     .map((category) => ({
       name: category.name,
-      href: getCategoryHref(category.name),
+      href: getCategoryHref(category.slug ?? category.name),
       subcategories: category.sub ?? [],
       count: category.count,
       countLabel: `${category.count} machine${category.count === 1 ? "" : "s"}`,
@@ -48,7 +59,7 @@ export default async function CategoriesPage() {
     .filter((category) => !featuredNames.has(category.name))
     .map((category) => ({
       name: category.name,
-      href: getCategoryHref(category.name),
+      href: getCategoryHref(category.slug ?? category.name),
     }));
 
   const totalMachines = activeCategories.reduce((sum, category) => sum + category.count, 0);
