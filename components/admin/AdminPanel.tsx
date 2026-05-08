@@ -275,6 +275,7 @@ export default function AdminPanel() {
   const [showSmtpPassword, setShowSmtpPassword] = useState(false);
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [testingSmtp, setTestingSmtp] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const settingsImportInputRef = useRef<HTMLInputElement | null>(null);
   const seoBaseInitializedRef = useRef(false);
@@ -1217,6 +1218,32 @@ export default function AdminPanel() {
       setError(saveError instanceof Error ? saveError.message : "Settings save failed.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function sendSmtpTestEmail() {
+    if (!siteSettingsDraft) return;
+    setTestingSmtp(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/smtp-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(siteSettingsDraft.operations.smtp),
+      });
+      const data = (await response.json()) as { message?: string; error?: string };
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Test email failed.");
+      }
+
+      setMessage(data.message || "Test email sent successfully.");
+    } catch (testError) {
+      setError(testError instanceof Error ? testError.message : "Test email failed.");
+    } finally {
+      setTestingSmtp(false);
     }
   }
 
@@ -2383,8 +2410,17 @@ export default function AdminPanel() {
                           />
                           <button
                             type="button"
+                            onClick={() => void sendSmtpTestEmail()}
+                            disabled={testingSmtp || !siteSettingsDraft.operations.smtp.testEmail.trim()}
+                            className="inline-flex items-center gap-2 rounded-full border border-[#145b93]/20 bg-white px-5 py-3 text-sm font-semibold text-[#145b93] transition hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Send className="h-4 w-4" />
+                            {testingSmtp ? "Sending..." : "Send Test Email"}
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => void saveSiteSettings()}
-                            disabled={saving}
+                            disabled={saving || testingSmtp}
                             className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <Save className="h-4 w-4" />
