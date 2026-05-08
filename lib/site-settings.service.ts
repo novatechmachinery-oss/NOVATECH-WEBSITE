@@ -3,10 +3,11 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { resolveProjectPath } from "@/lib/project-paths";
 import type { SiteSettings } from "@/lib/site-settings.types";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
-const settingsFilePath = path.join(process.cwd(), "data", "site-settings.json");
+const settingsFilePath = resolveProjectPath("data", "site-settings.json");
 
 const defaultSettings: SiteSettings = {
   companyName: "Novatech",
@@ -108,19 +109,83 @@ const defaultSettings: SiteSettings = {
       host: "smtp.gmail.com",
       port: "587",
       username: "admin@novatechmachinery.com",
-      password: "",
+      password: "lalgpfekfhjmbhjy",
       fromEmail: "info@novatechmachinery.com",
       fromName: "Novatech Machinery",
       secure: false,
       testEmail: "test@example.com",
     },
     analytics: {
-      googleAnalyticsId: "",
-      metaPixelId: "",
-      clarityProjectId: "",
+      googleAnalyticsId: "G-P6982NCZTC",
+      metaPixelId: "1254549116261073",
+      clarityProjectId: "w8ffhp8peo",
     },
   },
 };
+
+function pickString(value: string | undefined, fallback: string) {
+  const normalized = value?.trim();
+  return normalized ? normalized : fallback;
+}
+
+function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
+  return {
+    ...defaultSettings,
+    ...settings,
+    companyName: pickString(settings.companyName, defaultSettings.companyName),
+    companyTagline: pickString(settings.companyTagline, defaultSettings.companyTagline),
+    adminEmail: pickString(settings.adminEmail, defaultSettings.adminEmail),
+    adminProfile: {
+      fullName: pickString(settings.adminProfile?.fullName, defaultSettings.adminProfile.fullName),
+      phone: pickString(settings.adminProfile?.phone, defaultSettings.adminProfile.phone),
+    },
+    home: { ...defaultSettings.home, ...settings.home },
+    navigation: { ...defaultSettings.navigation, ...settings.navigation },
+    contact: { ...defaultSettings.contact, ...settings.contact },
+    footer: { ...defaultSettings.footer, ...settings.footer },
+    operations: {
+      smtp: {
+        host: pickString(settings.operations?.smtp?.host, defaultSettings.operations.smtp.host),
+        port: pickString(settings.operations?.smtp?.port, defaultSettings.operations.smtp.port),
+        username: pickString(
+          settings.operations?.smtp?.username,
+          defaultSettings.operations.smtp.username,
+        ),
+        password: pickString(
+          settings.operations?.smtp?.password,
+          defaultSettings.operations.smtp.password,
+        ),
+        fromEmail: pickString(
+          settings.operations?.smtp?.fromEmail,
+          defaultSettings.operations.smtp.fromEmail,
+        ),
+        fromName: pickString(
+          settings.operations?.smtp?.fromName,
+          defaultSettings.operations.smtp.fromName,
+        ),
+        secure: settings.operations?.smtp?.secure ?? defaultSettings.operations.smtp.secure,
+        testEmail: pickString(
+          settings.operations?.smtp?.testEmail,
+          defaultSettings.operations.smtp.testEmail,
+        ),
+      },
+      analytics: {
+        googleAnalyticsId: pickString(
+          settings.operations?.analytics?.googleAnalyticsId,
+          defaultSettings.operations.analytics.googleAnalyticsId,
+        ),
+        metaPixelId: pickString(
+          settings.operations?.analytics?.metaPixelId,
+          defaultSettings.operations.analytics.metaPixelId,
+        ),
+        clarityProjectId: pickString(
+          settings.operations?.analytics?.clarityProjectId,
+          defaultSettings.operations.analytics.clarityProjectId,
+        ),
+      },
+    },
+  };
+}
 
 async function ensureSettingsDir() {
   await mkdir(path.dirname(settingsFilePath), { recursive: true });
@@ -131,20 +196,7 @@ export async function getSiteSettings() {
     try {
       const data = await supabaseRest<{settings: Partial<SiteSettings>}[]>("site_settings?id=eq.main&select=settings");
       if (data && data.length > 0 && data[0].settings) {
-        const parsed = data[0].settings;
-        return {
-          ...defaultSettings,
-          ...parsed,
-          adminProfile: { ...defaultSettings.adminProfile, ...parsed.adminProfile },
-          home: { ...defaultSettings.home, ...parsed.home },
-          navigation: { ...defaultSettings.navigation, ...parsed.navigation },
-          contact: { ...defaultSettings.contact, ...parsed.contact },
-          footer: { ...defaultSettings.footer, ...parsed.footer },
-          operations: {
-            smtp: { ...defaultSettings.operations.smtp, ...parsed.operations?.smtp },
-            analytics: { ...defaultSettings.operations.analytics, ...parsed.operations?.analytics },
-          },
-        } satisfies SiteSettings;
+        return normalizeSiteSettings(data[0].settings);
       }
     } catch (error) {
       console.error("Failed to fetch site settings from Supabase, falling back to local.", error);
@@ -154,19 +206,7 @@ export async function getSiteSettings() {
   try {
     const content = await readFile(settingsFilePath, "utf8");
     const parsed = JSON.parse(content) as Partial<SiteSettings>;
-    return {
-      ...defaultSettings,
-      ...parsed,
-      adminProfile: { ...defaultSettings.adminProfile, ...parsed.adminProfile },
-      home: { ...defaultSettings.home, ...parsed.home },
-      navigation: { ...defaultSettings.navigation, ...parsed.navigation },
-      contact: { ...defaultSettings.contact, ...parsed.contact },
-      footer: { ...defaultSettings.footer, ...parsed.footer },
-      operations: {
-        smtp: { ...defaultSettings.operations.smtp, ...parsed.operations?.smtp },
-        analytics: { ...defaultSettings.operations.analytics, ...parsed.operations?.analytics },
-      },
-    } satisfies SiteSettings;
+    return normalizeSiteSettings(parsed);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw error;
@@ -178,9 +218,10 @@ export async function getSiteSettings() {
 }
 
 export async function saveSiteSettings(settings: SiteSettings) {
+  const normalizedSettings = normalizeSiteSettings(settings);
   try {
     await ensureSettingsDir();
-    await writeFile(settingsFilePath, JSON.stringify(settings, null, 2), "utf8");
+    await writeFile(settingsFilePath, JSON.stringify(normalizedSettings, null, 2), "utf8");
   } catch (error) {
     console.error("Failed to write site settings locally:", error);
   }
@@ -190,12 +231,12 @@ export async function saveSiteSettings(settings: SiteSettings) {
       await supabaseRest("site_settings", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
-        body: JSON.stringify([{ id: "main", settings }]),
+        body: JSON.stringify([{ id: "main", settings: normalizedSettings }]),
       });
     } catch (error) {
       console.error("Failed to sync site settings to Supabase", error);
     }
   }
 
-  return settings;
+  return normalizedSettings;
 }

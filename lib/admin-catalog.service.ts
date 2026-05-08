@@ -13,9 +13,10 @@ import type {
 } from "@/lib/admin-catalog.types";
 import { getLeadRecords } from "@/lib/leads.service";
 import type { CategoryRow, MachineRow } from "@/lib/machine-catalog.types";
+import { resolveProjectPath } from "@/lib/project-paths";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
-const catalogFilePath = path.join(process.cwd(), "data", "admin-catalog.json");
+const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
 
 function slugify(value: string) {
   return value

@@ -3,10 +3,11 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { resolveProjectPath } from "@/lib/project-paths";
 import type { SeoSettings } from "@/lib/seo-settings.types";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
-const seoFilePath = path.join(process.cwd(), "data", "seo-settings.json");
+const seoFilePath = resolveProjectPath("data", "seo-settings.json");
 
 const defaultSeoSettings: SeoSettings = {
   globalTitleSuffix: " | Novatech Machinery",

@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { ContactFormValues } from "@/lib/contactForm";
+import { resolveProjectPath } from "@/lib/project-paths";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
 export type LeadRecord = {
@@ -17,7 +18,7 @@ export type LeadRecord = {
   createdAt: string;
 };
 
-const leadsFilePath = path.join(process.cwd(), "data", "admin-leads.json");
+const leadsFilePath = resolveProjectPath("data", "admin-leads.json");
 
 function createId() {
   return `lead_${Math.random().toString(36).slice(2, 10)}`;
@@ -134,4 +135,9 @@ export async function deleteLeadRecord(id: string) {
   await deleteLeadFromSupabase(targetLead);
 
   return targetLead;
+}
+
+export async function replaceLeadRecords(leads: LeadRecord[]) {
+  await writeLeadsFile(leads);
+  return getLeadRecords();
 }

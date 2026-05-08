@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
+  Database,
+  Download,
+  Eye,
+  EyeOff,
   FolderTree,
   Globe,
   ImagePlus,
+  KeyRound,
   LayoutDashboard,
   Mail,
   MessageSquareQuote,
@@ -18,6 +23,7 @@ import {
   RefreshCcw,
   Save,
   Search,
+  Send,
   Settings2,
   ShieldCheck,
   Trash2,
@@ -80,6 +86,11 @@ type DeleteModalState = {
   confirmLabel: string;
   tone?: "danger" | "default";
   action: () => Promise<void>;
+};
+
+type AdminAccessDraft = {
+  email: string;
+  password: string;
 };
 
 const defaultCategoryForm: CategoryFormState = {
@@ -260,7 +271,12 @@ export default function AdminPanel() {
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
   const [editingSubcategoryName, setEditingSubcategoryName] = useState("");
   const [deleteModal, setDeleteModal] = useState<DeleteModalState | null>(null);
+  const [adminAccessDraft, setAdminAccessDraft] = useState<AdminAccessDraft | null>(null);
+  const [showSmtpPassword, setShowSmtpPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const settingsImportInputRef = useRef<HTMLInputElement | null>(null);
   const seoBaseInitializedRef = useRef(false);
 
   function requestDeleteConfirmation(config: DeleteModalState) {
@@ -289,19 +305,21 @@ export default function AdminPanel() {
     setError(null);
 
     try {
-      const [catalogResponse, dashboardResponse, settingsResponse, seoResponse] = await Promise.all([
+      const [catalogResponse, dashboardResponse, settingsResponse, seoResponse, accessResponse] = await Promise.all([
         fetch("/api/admin/catalog", { cache: "no-store" }),
         fetch("/api/admin/dashboard", { cache: "no-store" }),
         fetch("/api/admin/settings", { cache: "no-store" }),
         fetch("/api/admin/seo", { cache: "no-store" }),
+        fetch("/api/admin/access", { cache: "no-store" }),
       ]);
 
       const catalogData = (await catalogResponse.json()) as AdminCatalogSnapshot;
       const dashboardData = (await dashboardResponse.json()) as AdminDashboardData;
       const settingsData = (await settingsResponse.json()) as SiteSettings;
       const seoData = (await seoResponse.json()) as SeoSettings;
+      const accessData = (await accessResponse.json()) as AdminAccessDraft;
 
-      if (!catalogResponse.ok || !dashboardResponse.ok || !settingsResponse.ok || !seoResponse.ok) {
+      if (!catalogResponse.ok || !dashboardResponse.ok || !settingsResponse.ok || !seoResponse.ok || !accessResponse.ok) {
         throw new Error("Admin data could not be loaded.");
       }
 
@@ -310,6 +328,7 @@ export default function AdminPanel() {
       setSiteSettings(settingsData);
       setSiteSettingsDraft(settingsData);
       setSeoDraft(seoData);
+      setAdminAccessDraft(accessData);
       setExpandedSeoPageId((current) => current ?? seoData.pages[0]?.id ?? null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Admin data load failed.");
@@ -1155,17 +1174,44 @@ export default function AdminPanel() {
     if (!siteSettingsDraft) return;
     setSaving(true);
     try {
-      const response = await fetch("/api/admin/settings", {
+      const settingsResponse = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(siteSettingsDraft),
       });
-      const data = (await response.json()) as SiteSettings | { error: string };
-      if (!response.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Settings save failed.");
+      const settingsData = (await settingsResponse.json()) as SiteSettings | { error: string };
+      if (!settingsResponse.ok || "error" in settingsData) {
+        throw new Error("error" in settingsData ? settingsData.error : "Settings save failed.");
       }
-      setSiteSettings(data);
-      setSiteSettingsDraft(data);
+
+      let nextSeoDraft = seoDraft;
+      if (seoDraft) {
+        const syncedSeoDraft: SeoSettings = {
+          ...seoDraft,
+          analytics: {
+            googleAnalyticsId: siteSettingsDraft.operations.analytics.googleAnalyticsId,
+            metaPixelId: siteSettingsDraft.operations.analytics.metaPixelId,
+            clarityProjectId: siteSettingsDraft.operations.analytics.clarityProjectId,
+          },
+        };
+
+        const seoResponse = await fetch("/api/admin/seo", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(syncedSeoDraft),
+        });
+        const seoData = (await seoResponse.json()) as SeoSettings | { error: string };
+        if (!seoResponse.ok || "error" in seoData) {
+          throw new Error("error" in seoData ? seoData.error : "SEO save failed.");
+        }
+        nextSeoDraft = seoData;
+      }
+
+      setSiteSettings(settingsData);
+      setSiteSettingsDraft(settingsData);
+      if (nextSeoDraft) {
+        setSeoDraft(nextSeoDraft);
+      }
       setMessage("Settings saved successfully.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Settings save failed.");
@@ -1191,6 +1237,96 @@ export default function AdminPanel() {
       setMessage("SEO settings saved successfully.");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "SEO save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function exportAdminData() {
+    try {
+      const response = await fetch("/api/admin/system-transfer", { cache: "no-store" });
+      const data = (await response.json()) as
+        | {
+            exportedAt: string;
+            catalog: AdminCatalogSnapshot;
+            siteSettings: SiteSettings;
+            seoSettings: SeoSettings;
+            leads: AdminDashboardData["recentLeads"];
+          }
+        | { error: string };
+
+      if (!response.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : "Export failed.");
+      }
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `novatech-admin-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setMessage("Admin export downloaded successfully.");
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : "Export failed.");
+    }
+  }
+
+  async function importAdminData(file: File) {
+    setImporting(true);
+    setError(null);
+
+    try {
+      const content = await file.text();
+      const payload = JSON.parse(content);
+      const response = await fetch("/api/admin/system-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { message?: string; error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error || "Import failed.");
+      }
+
+      await loadAdminData();
+      setMessage(data.message || "Admin data imported successfully.");
+    } catch (importError) {
+      setError(importError instanceof Error ? importError.message : "Import failed.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function saveAdminAccess() {
+    if (!adminAccessDraft) {
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/admin/access", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(adminAccessDraft),
+      });
+      const data = (await response.json()) as
+        | { email: string; password: string; message?: string }
+        | { error: string };
+
+      if (!response.ok || "error" in data) {
+        throw new Error("error" in data ? data.error : "Admin access update failed.");
+      }
+
+      setAdminAccessDraft({ email: data.email, password: data.password });
+      setMessage(data.message || "Admin access updated successfully.");
+    } catch (accessError) {
+      setError(accessError instanceof Error ? accessError.message : "Admin access update failed.");
     } finally {
       setSaving(false);
     }
@@ -1371,7 +1507,7 @@ export default function AdminPanel() {
                   type="button"
                   onClick={async () => {
                     const isStandalone = typeof window !== "undefined" && !window.location.pathname.startsWith("/admin");
-                    const logoutUrl = isStandalone ? "/api/auth/logout" : "/api/admin/logout";
+                    const logoutUrl = "/api/admin/logout";
                     await fetch(logoutUrl, { method: "POST" });
                     router.replace(isStandalone ? "/login" : "/admin/login");
                   }}
@@ -2118,46 +2254,296 @@ export default function AdminPanel() {
 
             {activeSection === "settings" && siteSettingsDraft ? (
               <div className="space-y-6">
-                <div className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl font-black">Settings</h2>
-                      <p className="mt-1 text-sm text-slate-500">Store profile, SMTP, and analytics settings here.</p>
+                <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#081a2f_0%,#113f66_52%,#17635e_100%)] px-6 py-6 text-white">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100">
+                          <Settings2 className="h-3.5 w-3.5" />
+                          Admin Controls
+                        </div>
+                        <h2 className="mt-3 text-[2rem] font-black leading-tight">Settings Workspace</h2>
+                        <p className="mt-2 max-w-2xl text-sm text-slate-200">
+                          Manage your admin profile, email delivery, analytics IDs, backup transfer, and access password from one place.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void saveSiteSettings()}
+                        disabled={saving}
+                        className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#0f3b63] transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Save className="h-4 w-4" />
+                        {saving ? "Saving..." : "Save All Updates"}
+                      </button>
                     </div>
-                    <button type="button" onClick={() => void saveSiteSettings()} className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-3 text-sm font-semibold text-white hover:bg-[#10486f]">
-                      <Save className="h-4 w-4" />
-                      Save Settings
-                    </button>
                   </div>
 
-                  <div className="mt-6 grid gap-6">
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                      <h3 className="text-lg font-black">Profile Information</h3>
-                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div className="grid gap-6 p-6">
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-[#145b93]">
+                          <ShieldCheck className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-[1.75rem] font-black text-slate-950">Profile Information</h3>
+                          <p className="mt-1 text-sm text-slate-500">Update your name and contact details.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-4 lg:grid-cols-2">
                         <Field label="Full Name" value={siteSettingsDraft.adminProfile.fullName} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, adminProfile: { ...current.adminProfile, fullName: value } } : current)} />
                         <Field label="Phone" value={siteSettingsDraft.adminProfile.phone} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, adminProfile: { ...current.adminProfile, phone: value } } : current)} />
                       </div>
-                    </div>
 
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                      <h3 className="text-lg font-black">SMTP Settings</h3>
-                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                        <Field label="SMTP Host" value={siteSettingsDraft.operations.smtp.host} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, host: value } } } : current)} />
-                        <Field label="SMTP Port" value={siteSettingsDraft.operations.smtp.port} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, port: value } } } : current)} />
-                        <Field label="SMTP Username / Email" value={siteSettingsDraft.operations.smtp.username} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, username: value } } } : current)} />
-                        <Field label="SMTP Password / App Password" type="password" value={siteSettingsDraft.operations.smtp.password} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, password: value } } } : current)} />
-                        <Field label="From Email" value={siteSettingsDraft.operations.smtp.fromEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromEmail: value } } } : current)} />
-                        <Field label="From Name" value={siteSettingsDraft.operations.smtp.fromName} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromName: value } } } : current)} />
-                        <Field label="Send Test Email" value={siteSettingsDraft.operations.smtp.testEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, testEmail: value } } } : current)} />
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => void saveSiteSettings()}
+                          disabled={saving}
+                          className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Save className="h-4 w-4" />
+                          Save Profile
+                        </button>
                       </div>
                     </div>
 
-                    <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                      <h3 className="text-lg font-black">Analytics & Tracking</h3>
-                      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-[1.75rem] font-black text-slate-950">Email / SMTP Configuration</h3>
+                          <p className="mt-1 text-sm text-slate-500">Configure SMTP to send confirmation emails to customers.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                        <Field label="SMTP Host" value={siteSettingsDraft.operations.smtp.host} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, host: value } } } : current)} />
+                        <Field label="SMTP Port" value={siteSettingsDraft.operations.smtp.port} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, port: value } } } : current)} />
+                        <div className="lg:col-span-2">
+                          <Field label="SMTP Username / Email" value={siteSettingsDraft.operations.smtp.username} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, username: value } } } : current)} />
+                        </div>
+                        <label className="grid gap-2 text-sm font-medium text-slate-700 lg:col-span-2">
+                          SMTP Password / App Password
+                          <div className="relative">
+                            <input
+                              type={showSmtpPassword ? "text" : "password"}
+                              value={siteSettingsDraft.operations.smtp.password}
+                              onChange={(event) =>
+                                setSiteSettingsDraft((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        operations: {
+                                          ...current.operations,
+                                          smtp: { ...current.operations.smtp, password: event.target.value },
+                                        },
+                                      }
+                                    : current,
+                                )
+                              }
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 outline-none transition focus:border-slate-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSmtpPassword((current) => !current)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                              aria-label={showSmtpPassword ? "Hide password" : "Show password"}
+                            >
+                              {showSmtpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </label>
+                        <Field label="From Email" value={siteSettingsDraft.operations.smtp.fromEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromEmail: value } } } : current)} />
+                        <Field label="From Name" value={siteSettingsDraft.operations.smtp.fromName} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, fromName: value } } } : current)} />
+                      </div>
+
+                      <div className="mt-5 grid gap-4 border-t border-slate-200 pt-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                        <Field label="Send Test Email" value={siteSettingsDraft.operations.smtp.testEmail} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, smtp: { ...current.operations.smtp, testEmail: value } } } : current)} />
+                        <div className="flex flex-wrap items-center gap-3">
+                          <ToggleField
+                            label="Use SSL / TLS (port 465)"
+                            checked={siteSettingsDraft.operations.smtp.secure}
+                            onChange={(checked) =>
+                              setSiteSettingsDraft((current) =>
+                                current
+                                  ? {
+                                      ...current,
+                                      operations: {
+                                        ...current.operations,
+                                        smtp: { ...current.operations.smtp, secure: checked },
+                                      },
+                                    }
+                                  : current,
+                              )
+                            }
+                          />
+                          <button
+                            type="button"
+                            onClick={() => void saveSiteSettings()}
+                            disabled={saving}
+                            className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Save className="h-4 w-4" />
+                            Save SMTP Settings
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+                          <Globe className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-[1.75rem] font-black text-slate-950">Analytics & Tracking</h3>
+                          <p className="mt-1 text-sm text-slate-500">Add tracking IDs to enable analytics. Leave blank to disable.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-4">
                         <Field label="Google Analytics Measurement ID" value={siteSettingsDraft.operations.analytics.googleAnalyticsId} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, analytics: { ...current.operations.analytics, googleAnalyticsId: value } } } : current)} />
+                        <p className="-mt-1 text-xs text-slate-500">Found in Google Analytics to Admin to Data Streams</p>
                         <Field label="Meta Pixel ID" value={siteSettingsDraft.operations.analytics.metaPixelId} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, analytics: { ...current.operations.analytics, metaPixelId: value } } } : current)} />
+                        <p className="-mt-1 text-xs text-slate-500">Found in Meta Events Manager to Settings</p>
                         <Field label="Microsoft Clarity Project ID" value={siteSettingsDraft.operations.analytics.clarityProjectId} onChange={(value) => setSiteSettingsDraft((current) => current ? { ...current, operations: { ...current.operations, analytics: { ...current.operations.analytics, clarityProjectId: value } } } : current)} />
+                        <p className="-mt-1 text-xs text-slate-500">Found in Clarity to Settings to Overview</p>
+                      </div>
+
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => void saveSiteSettings()}
+                          disabled={saving}
+                          className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Save className="h-4 w-4" />
+                          Save Tracking Settings
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                      <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                            <Database className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-[1.75rem] font-black text-slate-950">Database Export & Import</h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                              Export or import machines, categories, leads, settings, and SEO configuration for backup or workspace transfer.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+                          <p>&bull; Exports machines, categories, leads, settings, and SEO data in one JSON file.</p>
+                          <p>&bull; Import replaces current admin data with the selected JSON backup.</p>
+                          <p>&bull; Use this before large edits or when moving the admin workspace.</p>
+                        </div>
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            onClick={() => void exportAdminData()}
+                            className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f]"
+                          >
+                            <Download className="h-4 w-4" />
+                            Export Full Database
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => settingsImportInputRef.current?.click()}
+                            disabled={importing}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {importing ? "Importing..." : "Import from JSON File"}
+                          </button>
+                          <input
+                            ref={settingsImportInputRef}
+                            type="file"
+                            accept="application/json"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                void importAdminData(file);
+                              }
+                              event.currentTarget.value = "";
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-700">
+                            <KeyRound className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-[1.75rem] font-black text-slate-950">Admin Login Access</h3>
+                            <p className="mt-1 text-sm text-slate-500">These are the current admin credentials in use from <code>.env.local</code>.</p>
+                          </div>
+                        </div>
+
+                        {adminAccessDraft ? (
+                          <div className="mt-6 grid gap-4">
+                            <Field
+                              label="Admin Login Email"
+                              value={adminAccessDraft.email}
+                              onChange={(value) =>
+                                setAdminAccessDraft((current) =>
+                                  current ? { ...current, email: value } : current,
+                                )
+                              }
+                            />
+                            <label className="grid gap-2 text-sm font-medium text-slate-700">
+                              Admin Login Password
+                              <div className="relative">
+                                <input
+                                  type={showAdminPassword ? "text" : "password"}
+                                  value={adminAccessDraft.password}
+                                  onChange={(event) =>
+                                    setAdminAccessDraft((current) =>
+                                      current ? { ...current, password: event.target.value } : current,
+                                    )
+                                  }
+                                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 outline-none transition focus:border-slate-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowAdminPassword((current) => !current)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                  aria-label={showAdminPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showAdminPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                            </label>
+                          </div>
+                        ) : null}
+
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          After updating login email or password, restart the dev server once so the new credentials are applied.
+                        </div>
+
+                        <div className="mt-5 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => void saveAdminAccess()}
+                            disabled={saving || !adminAccessDraft?.email.trim() || !adminAccessDraft?.password.trim()}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Send className="h-4 w-4" />
+                            Save Login Access
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

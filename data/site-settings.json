@@ -10,17 +10,17 @@
     "smtp": {
       "host": "smtp.gmail.com",
       "port": "587",
-      "username": "",
-      "password": "",
-      "fromEmail": "",
+      "username": "admin@novatechmachinery.com",
+      "password": "lalgpfekfhjmbhjy",
+      "fromEmail": "info@novatechmachinery.com",
       "fromName": "Novatech Machinery",
       "secure": false,
-      "testEmail": ""
+      "testEmail": "test@example.com"
     },
     "analytics": {
-      "googleAnalyticsId": "",
-      "metaPixelId": "",
-      "clarityProjectId": ""
+      "googleAnalyticsId": "G-P6982NCZTC",
+      "metaPixelId": "1254549116261073",
+      "clarityProjectId": "w8ffhp8peo"
     }
   },
   "home": {
