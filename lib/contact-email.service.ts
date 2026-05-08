@@ -274,3 +274,53 @@ export async function sendContactEnquiryEmail(values: ContactFormValues) {
     },
   );
 }
+
+export async function sendSmtpTestEmail(smtp: {
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  secure: boolean;
+  testEmail: string;
+}) {
+  const recipient = smtp.testEmail.trim();
+  const password = smtp.password.trim();
+  const username = smtp.username.trim();
+  const host = smtp.host.trim();
+  const port = Number.parseInt(smtp.port, 10);
+  const fromEmail = smtp.fromEmail.trim() || username;
+  const fromName = smtp.fromName.trim() || "Novatech Machinery";
+
+  if (!host || !Number.isFinite(port) || !username || !password || !recipient) {
+    throw new Error("SMTP settings are incomplete. Add host, port, username, password, and test email.");
+  }
+
+  await sendSmtpEmail(
+    {
+      host,
+      port,
+      username,
+      password,
+      fromEmail,
+      fromName,
+      secure: smtp.secure,
+    },
+    {
+      to: recipient,
+      replyTo: fromEmail,
+      subject: "Novatech SMTP test email",
+      text: [
+        "SMTP test successful.",
+        "",
+        "This message was sent from the Novatech admin panel to verify email delivery settings.",
+      ].join("\n"),
+      html: `
+        <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;">
+          <h2 style="margin:0 0 12px;color:#145b93;">SMTP test successful</h2>
+          <p style="margin:0;">This message was sent from the Novatech admin panel to verify email delivery settings.</p>
+        </div>`,
+    },
+  );
+}
