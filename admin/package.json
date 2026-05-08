@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/free-dev-port.cjs",
     "dev": "next dev -p 3002",
     "build": "node ../node_modules/next/dist/bin/next build",
     "start": "next start -p 3002"
