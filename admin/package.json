@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/free-dev-port.cjs",
-    "dev": "next dev -p 3002",
-    "build": "node ../node_modules/next/dist/bin/next build",
-    "start": "next start -p 3002"
+    "dev": "node ../node_modules/next/dist/bin/next dev --webpack -p 3002",
+    "build": "node ../node_modules/next/dist/bin/next build --webpack",
+    "start": "node ../node_modules/next/dist/bin/next start -p 3002"
   },
   "dependencies": {
     "lucide-react": "^1.8.0",
