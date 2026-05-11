@@ -41,12 +41,14 @@ import type {
 } from "@/lib/admin-catalog.types";
 import type { SeoPageRecord, SeoSettings } from "@/lib/seo-settings.types";
 import type { SiteSettings } from "@/lib/site-settings.types";
+import type { NewsletterSubscriber } from "@/lib/newsletter.types";
 
 type AdminSection =
   | "dashboard"
   | "machines"
   | "categories"
   | "leads"
+  | "newsletter"
   | "seo"
   | "settings";
 
@@ -141,6 +143,38 @@ function formatDate(value: string) {
 
 function formatStatusLabel(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function normalizeNewsletterSubscribers(value: unknown): NewsletterSubscriber[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return [];
+    }
+
+    const subscriber = item as Partial<Record<keyof NewsletterSubscriber, unknown>>;
+    const contact = typeof subscriber.contact === "string" ? subscriber.contact.trim() : "";
+
+    if (!contact) {
+      return [];
+    }
+
+    return [
+      {
+        id: typeof subscriber.id === "string" && subscriber.id.trim() ? subscriber.id : `subscriber-${index}`,
+        contact,
+        channel: subscriber.channel === "whatsapp" ? "whatsapp" : "email",
+        status: subscriber.status === "inactive" ? "inactive" : "active",
+        subscribedAt:
+          typeof subscriber.subscribedAt === "string" && !Number.isNaN(new Date(subscriber.subscribedAt).getTime())
+            ? subscriber.subscribedAt
+            : new Date().toISOString(),
+      },
+    ];
+  });
 }
 
 function Field({
@@ -258,6 +292,8 @@ export default function AdminPanel() {
   const [siteSettingsDraft, setSiteSettingsDraft] = useState<SiteSettings | null>(null);
   const [seoDraft, setSeoDraft] = useState<SeoSettings | null>(null);
   const [expandedSeoPageId, setExpandedSeoPageId] = useState<string | null>(null);
+  const [newsletters, setNewsletters] = useState<NewsletterSubscriber[]>([]);
+  const [newsletterSearch, setNewsletterSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -306,12 +342,13 @@ export default function AdminPanel() {
     setError(null);
 
     try {
-      const [catalogResponse, dashboardResponse, settingsResponse, seoResponse, accessResponse] = await Promise.all([
+      const [catalogResponse, dashboardResponse, settingsResponse, seoResponse, accessResponse, newsletterResponse] = await Promise.all([
         fetch("/api/admin/catalog", { cache: "no-store" }),
         fetch("/api/admin/dashboard", { cache: "no-store" }),
         fetch("/api/admin/settings", { cache: "no-store" }),
         fetch("/api/admin/seo", { cache: "no-store" }),
         fetch("/api/admin/access", { cache: "no-store" }),
+        fetch("/api/admin/newsletter", { cache: "no-store" }),
       ]);
 
       const catalogData = (await catalogResponse.json()) as AdminCatalogSnapshot;
@@ -319,9 +356,17 @@ export default function AdminPanel() {
       const settingsData = (await settingsResponse.json()) as SiteSettings;
       const seoData = (await seoResponse.json()) as SeoSettings;
       const accessData = (await accessResponse.json()) as AdminAccessDraft;
-
       if (!catalogResponse.ok || !dashboardResponse.ok || !settingsResponse.ok || !seoResponse.ok || !accessResponse.ok) {
         throw new Error("Admin data could not be loaded.");
+      }
+
+      let newsletterData: unknown = [];
+      if (newsletterResponse.ok) {
+        try {
+          newsletterData = await newsletterResponse.json();
+        } catch {
+          newsletterData = [];
+        }
       }
 
       setCatalog(catalogData);
@@ -330,6 +375,7 @@ export default function AdminPanel() {
       setSiteSettingsDraft(settingsData);
       setSeoDraft(seoData);
       setAdminAccessDraft(accessData);
+      setNewsletters(normalizeNewsletterSubscribers(newsletterData));
       setExpandedSeoPageId((current) => current ?? seoData.pages[0]?.id ?? null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Admin data load failed.");
@@ -1458,6 +1504,7 @@ export default function AdminPanel() {
     { id: "machines", label: "Machines", icon: Package2 },
     { id: "categories", label: "Categories", icon: FolderTree },
     { id: "leads", label: "Leads", icon: Users },
+    { id: "newsletter", label: "Newsletter", icon: Mail },
     { id: "seo", label: "SEO", icon: ShieldCheck },
     { id: "settings", label: "Settings", icon: Settings2 },
   ] as const;
@@ -1959,6 +2006,203 @@ export default function AdminPanel() {
                             When someone sends a message from the website, their name, phone number, email, machine interest, and message will appear here automatically.
                           </p>
                         </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {activeSection === "newsletter" ? (
+              <div className="space-y-6">
+                <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Subscribers</p>
+                    <h2 className="mt-2 text-2xl font-black text-slate-900">Newsletter Subscriptions</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Manage newsletter subscribers who want to receive email and WhatsApp broadcast updates.
+                    </p>
+
+                    <div className="mt-6 grid gap-4">
+                      <div className="rounded-[1.5rem] bg-[linear-gradient(145deg,#0369a1_0%,#0284c7_58%,#0ea5e9_100%)] p-5 text-white shadow-[0_18px_40px_rgba(2,105,161,0.22)]">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-100">Total Subscribers</p>
+                        <p className="mt-3 text-5xl font-black leading-none">{newsletters.length}</p>
+                        <p className="mt-3 text-sm leading-6 text-sky-100/90">
+                          Active newsletter subscribers across all channels.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-3 grid-cols-2">
+                        <div className="rounded-[1.3rem] border border-sky-200 bg-sky-50/80 px-4 py-4">
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-700">Email</p>
+                          <p className="mt-2 text-lg font-black text-sky-900">{newsletters.filter(n => n.channel === "email").length}</p>
+                        </div>
+                        <div className="rounded-[1.3rem] border border-emerald-200 bg-emerald-50/80 px-4 py-4">
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700">WhatsApp</p>
+                          <p className="mt-2 text-lg font-black text-emerald-900">{newsletters.filter(n => n.channel === "whatsapp").length}</p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Features</p>
+                        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
+                          <li>• View all active and inactive subscribers</li>
+                          <li>• Toggle subscriber status</li>
+                          <li>• Remove subscribers from list</li>
+                          <li>• Filter by email or phone</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Subscribers</p>
+                        <h2 className="mt-2 text-2xl font-black text-slate-900">All subscribers</h2>
+                      </div>
+                      <Mail className="h-5 w-5 text-slate-400" />
+                    </div>
+
+                    <div className="relative mb-5">
+                      <Search className="absolute left-4 top-4 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by email or phone..."
+                        value={newsletterSearch}
+                        onChange={(event) => setNewsletterSearch(event.target.value)}
+                        className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm outline-none transition focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
+                      />
+                    </div>
+
+                    {newsletters.length ? (
+                      <div className="space-y-3 max-h-[650px] overflow-y-auto">
+                        {newsletters
+                          .filter(
+                            (subscriber) =>
+                              subscriber.contact.toLowerCase().includes(newsletterSearch.toLowerCase()) ||
+                              subscriber.channel.includes(newsletterSearch.toLowerCase()),
+                          )
+                          .sort((a, b) => new Date(b.subscribedAt).getTime() - new Date(a.subscribedAt).getTime())
+                          .map((subscriber) => (
+                            <div
+                              key={subscriber.id}
+                              className="flex items-start justify-between gap-4 rounded-[1.3rem] border border-slate-200 bg-slate-50/70 p-4"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {subscriber.channel === "email" ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-black text-sky-700 uppercase">
+                                      <span className="h-2 w-2 rounded-full bg-sky-600"></span>
+                                      Email
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-black text-emerald-700 uppercase">
+                                      <span className="h-2 w-2 rounded-full bg-emerald-600"></span>
+                                      WhatsApp
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black uppercase ${
+                                      subscriber.status === "active"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-slate-200 text-slate-600"
+                                    }`}
+                                  >
+                                    <span className={`h-2 w-2 rounded-full ${subscriber.status === "active" ? "bg-green-600" : "bg-slate-400"}`}></span>
+                                    {subscriber.status === "active" ? "Active" : "Inactive"}
+                                  </span>
+                                </div>
+                                <p className="break-all text-sm font-semibold text-slate-800">{subscriber.contact}</p>
+                                <p className="mt-1 text-xs text-slate-500">Subscribed {formatDate(subscriber.subscribedAt)}</p>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newStatus = subscriber.status === "active" ? "inactive" : "active";
+                                    setSaving(true);
+                                    fetch("/api/admin/newsletter", {
+                                      method: "PATCH",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        subscriberId: subscriber.id,
+                                        status: newStatus,
+                                      }),
+                                    })
+                                      .then(async (response) => {
+                                        if (response.ok) {
+                                          setNewsletters((current) =>
+                                            current.map((s) =>
+                                              s.id === subscriber.id ? { ...s, status: newStatus } : s,
+                                            ),
+                                          );
+                                          setMessage(`Subscriber status updated to ${newStatus}`);
+                                        } else {
+                                          setError("Failed to update subscriber status");
+                                        }
+                                      })
+                                      .catch((err) => {
+                                        console.error(err);
+                                        setError("Failed to update subscriber status");
+                                      })
+                                      .finally(() => setSaving(false));
+                                  }}
+                                  disabled={saving}
+                                  className={`rounded-full border p-2 transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                    subscriber.status === "active"
+                                      ? "border-green-200 text-green-600 hover:bg-green-50"
+                                      : "border-slate-300 text-slate-600 hover:bg-slate-100"
+                                  }`}
+                                  aria-label={`Toggle subscriber status for ${subscriber.contact}`}
+                                >
+                                  {subscriber.status === "active" ? (
+                                    <Eye className="h-4 w-4" />
+                                  ) : (
+                                    <EyeOff className="h-4 w-4" />
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    requestDeleteConfirmation({
+                                      title: "Delete Subscriber",
+                                      description: `Remove ${subscriber.contact} from the newsletter list?`,
+                                      confirmLabel: "Delete",
+                                      tone: "danger",
+                                      action: async () => {
+                                        const response = await fetch("/api/admin/newsletter", {
+                                          method: "DELETE",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ subscriberId: subscriber.id }),
+                                        });
+
+                                        if (response.ok) {
+                                          setNewsletters((current) =>
+                                            current.filter((s) => s.id !== subscriber.id),
+                                          );
+                                          setMessage("Subscriber deleted successfully");
+                                        } else {
+                                          throw new Error("Failed to delete subscriber");
+                                        }
+                                      },
+                                    });
+                                  }}
+                                  disabled={saving}
+                                  className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  aria-label={`Delete subscriber ${subscriber.contact}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-[1.3rem] border-2 border-dashed border-slate-200 py-12 text-center">
+                        <Mail className="mx-auto h-10 w-10 text-slate-300" />
+                        <p className="mt-3 text-sm font-semibold text-slate-500">No subscribers yet</p>
+                        <p className="mt-1 text-xs text-slate-400">Newsletter subscribers will appear here once users subscribe</p>
                       </div>
                     )}
                   </div>
