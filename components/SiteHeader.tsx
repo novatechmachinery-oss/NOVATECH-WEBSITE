@@ -81,6 +81,7 @@ export default function SiteHeader() {
         emailAddress={settings?.contact.emailAddress}
         phonePrimary={settings?.contact.phonePrimary}
         phoneSecondary={settings?.contact.phoneSecondary}
+        whatsappNumber={settings?.contact.whatsappNumber}
       />
       <Navbar />
       <HomeCategoryNav types={settings?.navigation.categoryLinks} />
