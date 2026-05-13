@@ -315,6 +315,15 @@ export default function AdminPanel() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const settingsImportInputRef = useRef<HTMLInputElement | null>(null);
   const seoBaseInitializedRef = useRef(false);
+  const [migrationStatus, setMigrationStatus] = useState<{
+    total: number;
+    withBase64: number;
+    migrationComplete: boolean;
+  } | null>(null);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
   function requestDeleteConfirmation(config: DeleteModalState) {
     setDeleteModal(config);
@@ -1468,24 +1477,39 @@ export default function AdminPanel() {
     if (!files) return;
 
     const valid = Array.from(files).filter((file) => file.type.startsWith("image/"));
-    const readers = valid.map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-          reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
-          reader.readAsDataURL(file);
-        }),
-    );
+    if (valid.length === 0) return;
+
+    const machineId = machineForm.id || `tmp_${Math.random().toString(36).slice(2, 10)}`;
+    const existingCount = machineForm.images.length;
 
     try {
-      const results = (await Promise.all(readers)).filter(Boolean);
+      const uploadPromises = valid.map(async (file, localIndex) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("machineId", machineId);
+        formData.append("imageIndex", String(existingCount + localIndex));
+
+        const response = await fetch("/api/admin/upload-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const data = (await response.json()) as { error?: string };
+          throw new Error(data.error ?? `Upload failed for ${file.name}`);
+        }
+
+        const data = (await response.json()) as { url: string };
+        return data.url;
+      });
+
+      const urls = await Promise.all(uploadPromises);
       setMachineForm((current) => ({
         ...current,
-        images: [...current.images, ...results],
+        images: [...current.images, ...urls],
       }));
-    } catch {
-      setError("Images could not be uploaded.");
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Images could not be uploaded.");
     }
   }
 
@@ -1570,7 +1594,11 @@ export default function AdminPanel() {
                   Refresh
                 </button>
                 <a
-                  href="/"
+                  href={
+                    typeof window !== "undefined" && window.location.port === "3002"
+                      ? "http://localhost:3000"
+                      : "/"
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#10486f]"
@@ -2759,6 +2787,124 @@ export default function AdminPanel() {
                             }}
                           />
                         </div>
+                      </div>
+
+                      {/* Image Storage Migration */}
+                      <div className="col-span-full rounded-[1.5rem] border border-sky-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                            <RefreshCcw className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-[1.75rem] font-black text-slate-950">Image Storage Migration</h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                              Migrate existing base64 images to Supabase Storage CDN. Images are compressed to WebP, uploaded, and replaced with public URLs.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+                          <p>&bull; Decodes each base64 image, compresses to WebP quality 82 via Sharp.</p>
+                          <p>&bull; Uploads to Supabase Storage at stable CDN paths.</p>
+                          <p>&bull; Updates Supabase DB and local JSON with public URLs.</p>
+                          <p>&bull; Runs in batches of 5 &mdash; safe to re-run if interrupted.</p>
+                          <p>&bull; On failure, original base64 data is preserved.</p>
+                        </div>
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            disabled={migrating}
+                            onClick={async () => {
+                              setMigrating(true);
+                              setMigrationResult(null);
+                              try {
+                                const res = await fetch("/api/admin/migrate-images");
+                                const data = await res.json() as { totalMachines: number; machinesWithBase64Images: number; migrationComplete: boolean };
+                                setMigrationStatus({ total: data.totalMachines, withBase64: data.machinesWithBase64Images, migrationComplete: data.migrationComplete });
+                              } catch {
+                                setMigrationResult("Failed to check migration status.");
+                              } finally {
+                                setMigrating(false);
+                              }
+                            }}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                            Check Status
+                          </button>
+                          <button
+                            type="button"
+                            disabled={migrating || migrationStatus?.migrationComplete === true}
+                            onClick={async () => {
+                              if (!confirm("This will upload all base64 images to Supabase Storage and replace with CDN URLs. Continue?")) return;
+                              setMigrating(true);
+                              setMigrationResult(null);
+                              try {
+                                const res = await fetch("/api/admin/migrate-images", { method: "POST" });
+                                const data = await res.json() as { message: string; failedMachines?: Array<{ machineId: string; machineName: string }> };
+                                let resultMsg = data.message;
+                                if (data.failedMachines && data.failedMachines.length > 0) {
+                                  resultMsg += ` Failed: ${data.failedMachines.map((m) => m.machineName).join(", ")}`;
+                                }
+                                setMigrationResult(resultMsg);
+                                await loadAdminData();
+                              } catch {
+                                setMigrationResult("Migration failed. Check server logs.");
+                              } finally {
+                                setMigrating(false);
+                              }
+                            }}
+                            className="inline-flex items-center gap-2 rounded-full bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {migrating ? "Migrating..." : "Run Migration"}
+                          </button>
+                        </div>
+                        {migrationStatus && (
+                          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-700">
+                            <p>Total machines: <strong>{migrationStatus.total}</strong></p>
+                            <p>Machines with base64 images: <strong className={migrationStatus.withBase64 > 0 ? "text-rose-600" : "text-emerald-600"}>{migrationStatus.withBase64}</strong></p>
+                            <p>Status: <strong className={migrationStatus.migrationComplete ? "text-emerald-600" : "text-amber-600"}>{migrationStatus.migrationComplete ? "Migration complete" : "Migration required"}</strong></p>
+                          </div>
+                        )}
+                        {migrationResult && (
+                          <div className="mt-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                            {migrationResult}
+                          </div>
+                        )}
+
+                        {/* Sync URLs to Supabase DB */}
+                        {migrationStatus?.migrationComplete && (
+                          <div className="mt-4 border-t border-slate-100 pt-4">
+                            <p className="mb-3 text-sm font-semibold text-slate-700">Step 2 &mdash; Sync URLs to Supabase DB</p>
+                            <p className="mb-3 text-xs text-slate-500">Your local catalog is migrated. Now push the image URLs to Supabase so the server can read them fast (eliminates AbortError timeouts).</p>
+                            <button
+                              type="button"
+                              disabled={syncing}
+                              onClick={async () => {
+                                setSyncing(true);
+                                setSyncResult(null);
+                                try {
+                                  const res = await fetch("/api/admin/sync-supabase", { method: "POST" });
+                                  const data = await res.json() as { message: string; synced: number; failed: number };
+                                  setSyncResult(data.message);
+                                } catch {
+                                  setSyncResult("Sync failed. Check server logs.");
+                                } finally {
+                                  setSyncing(false);
+                                }
+                              }}
+                              className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              <RefreshCcw className="h-4 w-4" />
+                              {syncing ? "Syncing Supabase..." : "Sync URLs to Supabase"}
+                            </button>
+                            {syncResult && (
+                              <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                                {syncResult}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">

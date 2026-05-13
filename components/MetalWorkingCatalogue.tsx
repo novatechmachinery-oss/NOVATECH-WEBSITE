@@ -18,6 +18,67 @@ import {
 } from "lucide-react";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
 
+function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }) {
+  const imageList = m.images && m.images.length > 0 ? m.images : [m.imageSrc];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (imageList.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveImageIndex((current) => (current + 1) % imageList.length);
+    }, 2600);
+    return () => clearInterval(timer);
+  }, [imageList]);
+
+  const activePosition = m.imagePositions?.[activeImageIndex] ?? m.imagePosition ?? "center";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="overflow-hidden border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.1)]"
+    >
+      <div className="group relative w-full overflow-hidden">
+        <Image
+          src={imageList[activeImageIndex]}
+          alt={m.title}
+          width={500}
+          height={375}
+          className="h-[270px] w-full object-cover transition duration-700 hover:scale-[1.03] sm:h-[300px]"
+          style={{ objectPosition: activePosition }}
+        />
+        {imageList.length > 1 ? (
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-slate-950/40 px-2.5 py-1 opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100">
+            {imageList.map((_, index) => (
+              <span
+                key={index}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === activeImageIndex ? "w-3 bg-white" : "w-1.5 bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="border-t border-slate-200 p-4 text-center">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#145b93]">
+          {m.machineType.toUpperCase()}
+          {m.subcategory ? ` - ${m.subcategory.toUpperCase()}` : ` - ${m.category.toUpperCase()}`}
+        </p>
+        <h2 className="mt-2 line-clamp-2 min-h-[3.1rem] text-[1.03rem] font-semibold uppercase leading-6 text-slate-950">
+          {m.title}
+        </h2>
+        {m.location ? (
+          <p className="mt-1 text-sm uppercase tracking-[0.06em] text-slate-400">
+            {m.location}
+          </p>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
 type MachineMode = "all" | "conventional" | "cnc";
 
 type MetalWorkingCatalogueProps = {
@@ -649,9 +710,9 @@ export default function MetalWorkingCatalogue({
                     {selectedMachine.machineType.toUpperCase()}
                     {selectedMachine.subcategory ? ` / ${selectedMachine.subcategory}` : ` / ${selectedMachine.category}`}
                   </p>
-                  <h3 className="mt-1.5 break-words text-[1.25rem] font-semibold leading-tight text-slate-950 sm:text-[1.55rem] lg:text-[1.7rem]">
+                  <h2 className="mt-1.5 break-words text-[1.25rem] font-semibold leading-tight text-slate-950 sm:text-[1.55rem] lg:text-[1.7rem]">
                     {selectedMachine.title}
-                  </h3>
+                  </h2>
                 </div>
 
                 <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3 lg:gap-3">
@@ -846,38 +907,11 @@ export default function MetalWorkingCatalogue({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {paginatedMachines.length > 0 ? (
                 paginatedMachines.map((m) => (
-                  <button
+                  <GridMachineCard
                     key={m.id}
-                    type="button"
+                    m={m}
                     onClick={() => openMachine(m.id, m.category, m.subcategory)}
-                    className="overflow-hidden border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.1)]"
-                  >
-                    <div className="w-full overflow-hidden">
-                      <Image
-                        src={m.imageSrc}
-                        alt={m.title}
-                        width={500}
-                        height={375}
-                        className="h-[270px] w-full object-cover transition duration-500 hover:scale-[1.03] sm:h-[300px]"
-                        style={{ objectPosition: m.imagePosition ?? "center" }}
-                      />
-                    </div>
-
-                    <div className="border-t border-slate-200 p-4 text-center">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#145b93]">
-                        {m.machineType.toUpperCase()}
-                        {m.subcategory ? ` - ${m.subcategory.toUpperCase()}` : ` - ${m.category.toUpperCase()}`}
-                      </p>
-                      <h3 className="mt-2 line-clamp-2 min-h-[3.1rem] text-[1.03rem] font-semibold uppercase leading-6 text-slate-950">
-                        {m.title}
-                      </h3>
-                      {m.location ? (
-                        <p className="mt-1 text-sm uppercase tracking-[0.06em] text-slate-400">
-                          {m.location}
-                        </p>
-                      ) : null}
-                    </div>
-                  </button>
+                  />
                 ))
               ) : (
                 <div className="sm:col-span-2 xl:col-span-3">

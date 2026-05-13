@@ -1,6 +1,6 @@
 import "server-only";
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
@@ -14,9 +14,17 @@ import type {
 import { getLeadRecords } from "@/lib/leads.service";
 import type { CategoryRow, MachineRow } from "@/lib/machine-catalog.types";
 import { resolveProjectPath } from "@/lib/project-paths";
+import { isBase64Image, uploadBase64ImageToStorage } from "@/lib/image-storage";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
 const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
+const supabaseCatalogTimeoutMs = 12_000;
+const supabaseCatalogCacheMs = 60_000;
+const supabaseCatalogFailureCooldownMs = 60_000;
+let catalogWriteQueue = Promise.resolve();
+let supabaseCatalogRead: Promise<AdminCatalogSnapshot | null> | null = null;
+let supabaseCatalogCache: { catalog: AdminCatalogSnapshot; expiresAt: number } | null = null;
+let supabaseCatalogFailureUntil = 0;
 
 function slugify(value: string) {
   return value
@@ -155,6 +163,85 @@ async function buildSeedCatalog() {
   } satisfies AdminCatalogSnapshot;
 }
 
+async function readSupabaseCatalog() {
+  if (!hasSupabaseConfig()) {
+    return null;
+  }
+
+  const now = Date.now();
+
+  if (supabaseCatalogCache && supabaseCatalogCache.expiresAt > now) {
+    return supabaseCatalogCache.catalog;
+  }
+
+  if (supabaseCatalogFailureUntil > now) {
+    return null;
+  }
+
+  if (supabaseCatalogRead) {
+    return supabaseCatalogRead;
+  }
+
+  supabaseCatalogRead = readSupabaseCatalogUncached().finally(() => {
+    supabaseCatalogRead = null;
+  });
+
+  return supabaseCatalogRead;
+}
+
+async function readSupabaseCatalogUncached() {
+  try {
+    const categoriesPromise = supabaseCatalogRest<CategoryRow[]>("categories?select=*");
+    const machinesPromise = fetchSupabaseMachineRows();
+    const [categories, machines] = await Promise.all([
+      categoriesPromise,
+      machinesPromise,
+    ]);
+
+    const catalog = {
+      categories: seedCategoryRows(categories),
+      machines: seedMachineRows(machines),
+      lastSyncedAt: new Date().toISOString(),
+    } satisfies AdminCatalogSnapshot;
+
+    supabaseCatalogCache = {
+      catalog,
+      expiresAt: Date.now() + supabaseCatalogCacheMs,
+    };
+
+    return catalog;
+  } catch (error) {
+    console.error("Failed to read admin catalog from Supabase.", error);
+    supabaseCatalogFailureUntil = Date.now() + supabaseCatalogFailureCooldownMs;
+    return null;
+  }
+}
+
+async function supabaseCatalogRest<T>(query: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), supabaseCatalogTimeoutMs);
+
+  try {
+    return await supabaseRest<T>(query, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchSupabaseMachineRows() {
+  const pageSize = 250;
+  const rows: MachineRow[] = [];
+
+  for (let offset = 0; ; offset += pageSize) {
+    const page = await supabaseCatalogRest<MachineRow[]>(`machines?select=*&limit=${pageSize}&offset=${offset}`);
+    rows.push(...page);
+
+    if (page.length < pageSize) {
+      return rows;
+    }
+  }
+}
+
 async function readCatalogFile() {
   try {
     const content = await readFile(catalogFilePath, "utf8");
@@ -174,9 +261,28 @@ async function readCatalogFile() {
   }
 }
 
-async function writeCatalogFile(snapshot: AdminCatalogSnapshot) {
+async function writeCatalogFileAtomic(snapshot: AdminCatalogSnapshot) {
   await ensureCatalogDir();
-  await writeFile(catalogFilePath, JSON.stringify(snapshot, null, 2), "utf8");
+  const temporaryPath = `${catalogFilePath}.${process.pid}.${Date.now()}.tmp`;
+  const content = `${JSON.stringify(snapshot, null, 2)}\n`;
+
+  await writeFile(temporaryPath, content, "utf8");
+
+  try {
+    await rename(temporaryPath, catalogFilePath);
+  } catch (error) {
+    await unlink(temporaryPath).catch(() => undefined);
+    throw error;
+  }
+}
+
+async function writeCatalogFile(snapshot: AdminCatalogSnapshot) {
+  catalogWriteQueue = catalogWriteQueue.then(
+    () => writeCatalogFileAtomic(snapshot),
+    () => writeCatalogFileAtomic(snapshot),
+  );
+
+  return catalogWriteQueue;
 }
 
 function categoryDepth(categories: AdminCategory[], categoryId: string) {
@@ -263,12 +369,17 @@ function validateMachineInput(input: AdminMachineInput, categories: AdminCategor
 }
 
 export async function getAdminCatalog() {
+  const supabaseCatalog = await readSupabaseCatalog();
+  if (supabaseCatalog && supabaseCatalog.categories.length > 0) {
+    return supabaseCatalog;
+  }
+
   const existing = await readCatalogFile();
   if (existing) {
     return existing;
   }
 
-  const seeded = await buildSeedCatalog();
+  const seeded = supabaseCatalog ?? (await buildSeedCatalog());
   await writeCatalogFile(seeded);
   return seeded;
 }
@@ -355,11 +466,26 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
   const isUpdate = Boolean(input.id);
   const newId = input.id || createId("machine");
 
+  // Upload any base64 images to Supabase Storage before saving.
+  // Images that are already URLs pass through unchanged.
+  // If upload fails for an image, keep the original value (do not corrupt the record).
+  let resolvedImages = normalized.images;
+  if (hasSupabaseConfig() && resolvedImages.some(isBase64Image)) {
+    resolvedImages = await Promise.all(
+      resolvedImages.map(async (img, index) => {
+        if (!isBase64Image(img)) return img;
+        const url = await uploadBase64ImageToStorage(img, newId, index);
+        return url ?? img; // fallback to original on failure
+      }),
+    );
+  }
+
   const newMachine: AdminMachine = {
     id: newId,
     createdAt: isUpdate ? (machines.find(m => m.id === input.id)?.createdAt ?? now) : now,
     updatedAt: now,
     ...normalized,
+    images: resolvedImages,
   };
 
   if (isUpdate) {
