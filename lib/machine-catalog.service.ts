@@ -303,11 +303,7 @@ export async function getMachineCatalogData() {
   const [categories, machineInventory] = await Promise.all([getCategories(), getMachineInventory()]);
 
   return {
-    machineInventory: machineInventory.map((machine) => ({
-      ...machine,
-      images: [],
-      imagePositions: [],
-    })),
+    machineInventory,
     machineCategories: deriveMachineCategories(machineInventory, categories),
   };
 }
