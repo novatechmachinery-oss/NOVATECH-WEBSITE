@@ -1,21 +1,18 @@
 import type { MetadataRoute } from "next";
 
-import { getSeoSettings } from "@/lib/seo-settings.service";
-import { getSiteUrl } from "@/lib/seo";
+import { getSeoConfig } from "@/lib/seo/seo-config";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const seoSettings = await getSeoSettings();
-  const hasBlockedPublicPages = seoSettings.pages.some((page) => page.noIndex || page.noFollow);
+  const { baseUrl } = await getSeoConfig();
 
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/api/admin"],
+      disallow: ["/api/", "/admin/", "/_next/"],
     },
-    sitemap: `${getSiteUrl()}/sitemap.xml`,
-    host: getSiteUrl(),
-    ...(hasBlockedPublicPages ? {} : {}),
+    sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }
 

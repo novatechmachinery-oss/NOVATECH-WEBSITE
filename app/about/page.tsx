@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import Footer from "../../components/Footer";
 import SiteHeader from "../../components/SiteHeader";
-import { getSeoMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo/metadata";
+import { getBreadcrumbSchema } from "@/lib/seo/schema";
 
 const paragraphs = [
   "Novatech Machinery is a leading organization engaged in the trading and export of high-quality used and new metal working and industrial machinery. With a strong global network, we offer a wide range of machines including CNC machines, Horizontal Boring Machines (HBM), Vertical Turret Lathes (VTL), forging and stamping presses, grinding machines, plano millers, CNC portal millers, gear hobbing machines, and more.",
@@ -83,18 +84,28 @@ const machineRangeColumns = [
 ];
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getSeoMetadata("/about", {
-    title: "About Novatech Machinery",
-    description:
+  return generatePageMetadata("/about", {
+    fallbackTitle: "About Novatech Machinery",
+    fallbackDescription:
       "Learn about Novatech Machinery, our global sourcing network, industrial expertise, and used machinery solutions for multiple industries.",
-    keywords: ["about novatech machinery", "industrial machinery company", "used machinery supplier india"],
+    fallbackKeywords: [
+      "about novatech machinery",
+      "industrial machinery company",
+      "used machinery supplier india",
+    ],
   });
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const breadcrumbSchema = await getBreadcrumbSchema("/about");
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-950">
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
 
       <main>
         <section className="relative overflow-hidden bg-[linear-gradient(135deg,#123f67_0%,#1e5f95_45%,#0f6aa4_100%)] text-white">

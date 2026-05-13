@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import UsedMachineryPage from "@/components/UsedMachineryPage";
 import { getMachineCatalogData } from "@/lib/machines";
-import { buildSeoRoute, getSeoMetadata } from "@/lib/seo";
+import { buildSeoRoute, generatePageMetadata } from "@/lib/seo/metadata";
+import { getBreadcrumbSchema } from "@/lib/seo/schema";
+
+export const dynamic = "force-dynamic";
 
 type SearchParamsInput = Promise<{
   category?: string | string[];
@@ -24,11 +27,15 @@ export async function generateMetadata({
     subcategory: readParam(params.subcategory),
   });
 
-  return getSeoMetadata(route, {
-    title: "Used Machinery for Sale",
-    description:
+  return generatePageMetadata(route, {
+    fallbackTitle: "Used Machinery for Sale",
+    fallbackDescription:
       "Browse used machinery for sale including CNC machines, machining centres, lathes, boring mills, and industrial equipment.",
-    keywords: ["used machinery for sale", "used cnc machines", "industrial machines inventory"],
+    fallbackKeywords: [
+      "used machinery for sale",
+      "used cnc machines",
+      "industrial machines inventory",
+    ],
   });
 }
 
@@ -38,15 +45,29 @@ export default async function UsedMachineryRoutePage({
   searchParams: SearchParamsInput;
 }) {
   const params = await searchParams;
-  const { machineCategories, machineInventory } = await getMachineCatalogData();
+  const route = buildSeoRoute("/used-machinery", {
+    category: readParam(params.category),
+    subcategory: readParam(params.subcategory),
+  });
+  const [{ machineCategories, machineInventory }, breadcrumbSchema] = await Promise.all([
+    getMachineCatalogData(),
+    getBreadcrumbSchema(route),
+  ]);
 
   return (
-    <UsedMachineryPage
-      machineCategories={machineCategories}
-      machineInventory={machineInventory}
-      initialCategory={readParam(params.category)}
-      initialSubcategory={readParam(params.subcategory)}
-      initialMachineId={readParam(params.machine)}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <UsedMachineryPage
+        machineCategories={machineCategories}
+        machineInventory={machineInventory}
+        initialCategory={readParam(params.category)}
+        initialSubcategory={readParam(params.subcategory)}
+        initialMachineId={readParam(params.machine)}
+      />
+    </>
   );
 }

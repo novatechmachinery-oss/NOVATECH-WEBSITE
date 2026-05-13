@@ -8,26 +8,44 @@ import Footer from "../components/Footer";
 import SiteHeader from "../components/SiteHeader";
 import SpecialDealsSlider from "../components/SpecialDealsSlider";
 import { getSpecialDeals } from "@/lib/machines";
-import { getSeoMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo/metadata";
+import { getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
-  return getSeoMetadata("/", {
-    title: "Used Industrial Machines in India",
-    description:
+  return generatePageMetadata("/", {
+    fallbackTitle: "Used Industrial Machines in India",
+    fallbackDescription:
       "Browse used industrial machines, CNC machines, boring mills, lathes, and heavy machinery with trusted sourcing from Novatech Machinery.",
-    keywords: ["used industrial machines", "cnc machines india", "used machinery dealer", "industrial machinery supplier"],
+    fallbackKeywords: [
+      "used industrial machines",
+      "cnc machines india",
+      "used machinery dealer",
+      "industrial machinery supplier",
+    ],
   });
 }
 
 export default async function Home() {
-  const [specialDeals, settings] = await Promise.all([getSpecialDeals(), getSiteSettings()]);
+  const [specialDeals, settings, localBusinessSchema] = await Promise.all([
+    getSpecialDeals(),
+    getSiteSettings(),
+    getLocalBusinessSchema(),
+  ]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <SiteHeader />
 
       <main className="space-y-6 px-3 py-4 sm:space-y-8 sm:px-5 lg:px-6 xl:px-8">
+        <h1 className="sr-only">Used Industrial Machinery Marketplace in India</h1>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
         <HeroSlider slides={settings.home.heroSlides} />
         <section className="mx-auto max-w-[1560px]">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">

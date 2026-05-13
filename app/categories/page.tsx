@@ -4,14 +4,19 @@ import { Bolt, Cog, Drill, Factory, Gauge, Hammer, Layers3, ScanLine, Shield, Wr
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { getMachineCatalogData } from "@/lib/machines";
-import { getSeoMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo/metadata";
+import { getItemListSchema } from "@/lib/seo/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getSeoMetadata("/categories", {
-    title: "Machine Categories",
-    description:
+  return generatePageMetadata("/categories", {
+    fallbackTitle: "Machine Categories",
+    fallbackDescription:
       "Explore industrial machine categories including CNC, boring, milling, drilling, forging, grinding, and more from Novatech Machinery.",
-    keywords: ["machine categories", "industrial machinery categories", "used cnc categories"],
+    fallbackKeywords: [
+      "machine categories",
+      "industrial machinery categories",
+      "used cnc categories",
+    ],
   });
 }
 
@@ -68,10 +73,23 @@ export default async function CategoriesPage() {
     0,
   );
   const featuredCategories = activeCategories.slice(0, 3);
+  const itemListSchema = await getItemListSchema(
+    "/categories",
+    "Machine Categories",
+    activeCategories.map((category) => ({
+      name: category.name,
+      url: `/used-machinery?category=${encodeURIComponent(category.name)}`,
+    })),
+  );
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4fb_38%,#f8fafc_100%)] text-slate-950">
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
 
       <main className="px-4 py-5 sm:px-6 lg:px-8">
         <section className="mx-auto max-w-[1620px]">

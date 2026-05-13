@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import ComingSoonPage from "../../components/ComingSoonPage";
-import { getSeoMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getSeoMetadata("/textile-machinery", {
-    title: "Textile Machinery",
-    description:
+  return generatePageMetadata("/textile-machinery", {
+    fallbackTitle: "Textile Machinery",
+    fallbackDescription:
       "Discover textile machinery for weaving, knitting, dyeing, finishing, and textile production applications.",
-    keywords: ["textile machinery", "used textile machines", "textile production machinery"],
+    fallbackKeywords: [
+      "textile machinery",
+      "used textile machines",
+      "textile production machinery",
+    ],
   });
 }
 

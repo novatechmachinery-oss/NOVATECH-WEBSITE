@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import ComingSoonPage from "../../components/ComingSoonPage";
-import { getSeoMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getSeoMetadata("/pharmaceutical-machinery", {
-    title: "Pharmaceutical Machinery",
-    description:
+  return generatePageMetadata("/pharmaceutical-machinery", {
+    fallbackTitle: "Pharmaceutical Machinery",
+    fallbackDescription:
       "Browse pharmaceutical machinery for tablet, capsule, filling, processing, and packaging operations.",
-    keywords: ["pharmaceutical machinery", "used pharma machines", "pharma equipment"],
+    fallbackKeywords: [
+      "pharmaceutical machinery",
+      "used pharma machines",
+      "pharma equipment",
+    ],
   });
 }
 
