@@ -17,8 +17,8 @@ function updateEnvValue(content: string, key: string, value: string) {
 }
 
 export async function GET() {
-  const { email, password } = getAdminCredentials();
-  return NextResponse.json({ email, password });
+  const { email } = getAdminCredentials();
+  return NextResponse.json({ email });
 }
 
 export async function PUT(request: Request) {
@@ -50,7 +50,6 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({
       email,
-      password,
       message: "Admin login settings updated in .env.local. Restart the dev server to apply them.",
     });
   } catch (error) {
