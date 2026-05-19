@@ -6,79 +6,62 @@
     "fullName": "Admin Novatech Machinery",
     "phone": "+91 9646255855"
   },
-  "operations": {
-    "smtp": {
-      "host": "smtp.gmail.com",
-      "port": "587",
-      "username": "admin@novatechmachinery.com",
-      "password": "lalgpfekfhjmbhjy",
-      "fromEmail": "info@novatechmachinery.com",
-      "fromName": "Novatech Machinery",
-      "secure": false,
-      "testEmail": "test@example.com"
-    },
-    "analytics": {
-      "googleAnalyticsId": "G-P6982NCZTC",
-      "metaPixelId": "1254549116261073",
-      "clarityProjectId": "w8ffhp8peo"
-    }
-  },
   "home": {
     "heroSlides": [
       {
         "id": "hero-1",
-        "src": "/images/hero-banner-Bt56BS_O.webp",
-        "alt": "Industrial machinery line overview"
+        "alt": "Industrial machinery line overview",
+        "src": "/images/hero-banner-Bt56BS_O.webp"
       },
       {
         "id": "hero-2",
-        "src": "/images/hero-banner-Bt56BS_O.webp",
-        "alt": "Factory metalworking production line"
+        "alt": "Factory metalworking production line",
+        "src": "/images/hero-banner-Bt56BS_O.webp"
       },
       {
         "id": "hero-3",
-        "src": "/images/hero-banner-Bt56BS_O.webp",
-        "alt": "High-performance equipment warehouse"
+        "alt": "High-performance equipment warehouse",
+        "src": "/images/hero-banner-Bt56BS_O.webp"
       },
       {
         "id": "hero-4",
-        "src": "/images/hero-banner-Bt56BS_O.webp",
-        "alt": "Premium industrial machinery sourcing"
+        "alt": "Premium industrial machinery sourcing",
+        "src": "/images/hero-banner-Bt56BS_O.webp"
       }
     ],
     "featureCards": [
       {
         "id": "feature-1",
-        "title": "All Machines",
-        "description": "Browse every available machine in one place",
         "href": "/metal-working-machinery",
+        "title": "All Machines",
         "imageSrc": "/images/all-machines-bg-pic.png",
+        "description": "Browse every available machine in one place",
         "imagePosition": "center center"
       },
       {
         "id": "feature-2",
-        "title": "Conventional Machines",
-        "description": "Lathes, milling, grinding, boring and more",
         "href": "/metal-working-machinery#conventional-machines",
+        "title": "Conventional Machines",
         "imageSrc": "/images/Conventional-machines-bg-pic.png",
+        "description": "Lathes, milling, grinding, boring and more",
         "imagePosition": "center center"
       },
       {
         "id": "feature-3",
-        "title": "CNC Machines",
-        "description": "CNC lathes, machining centres and more",
         "href": "/metal-working-machinery#cnc-machines",
+        "title": "CNC Machines",
         "imageSrc": "/images/cnc-machines-bg-pic.png",
+        "description": "CNC lathes, machining centres and more",
         "imagePosition": "center center"
       },
       {
         "id": "feature-4",
-        "title": "Carbide Scrap",
-        "description": "Available on Request",
         "href": "/contact",
+        "title": "Carbide Scrap",
+        "ctaLabel": "Contact Us",
         "imageSrc": "/images/sale-machines-bg-pic.png",
-        "imagePosition": "center center",
-        "ctaLabel": "Contact Us"
+        "description": "Available on Request",
+        "imagePosition": "center center"
       }
     ],
     "sectionTitle": "Special Deals",
@@ -89,23 +72,23 @@
     "categoryLinks": [
       {
         "id": "nav-1",
-        "label": "Metal Working Machinery",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Metal Working Machinery"
       },
       {
         "id": "nav-2",
-        "label": "Pharmaceutical Machinery",
-        "href": "/pharmaceutical-machinery"
+        "href": "/pharmaceutical-machinery",
+        "label": "Pharmaceutical Machinery"
       },
       {
         "id": "nav-3",
-        "label": "Plastic Machinery",
-        "href": "/plastic-machinery"
+        "href": "/plastic-machinery",
+        "label": "Plastic Machinery"
       },
       {
         "id": "nav-4",
-        "label": "Textile Machinery",
-        "href": "/textile-machinery"
+        "href": "/textile-machinery",
+        "label": "Textile Machinery"
       }
     ]
   },
@@ -123,74 +106,91 @@
     "quickLinks": [
       {
         "id": "quick-1",
-        "label": "Home",
-        "href": "/"
+        "href": "/",
+        "label": "Home"
       },
       {
         "id": "quick-2",
-        "label": "Used Machinery",
-        "href": "/used-machinery"
+        "href": "/used-machinery",
+        "label": "Used Machinery"
       },
       {
         "id": "quick-3",
-        "label": "Categories",
-        "href": "/categories"
+        "href": "/categories",
+        "label": "Categories"
       },
       {
         "id": "quick-4",
-        "label": "About Us",
-        "href": "/about"
+        "href": "/about",
+        "label": "About Us"
       },
       {
         "id": "quick-5",
-        "label": "Contact Us",
-        "href": "/contact"
+        "href": "/contact",
+        "label": "Contact Us"
       }
     ],
     "machineryLinks": [
       {
         "id": "machine-1",
-        "label": "CNC Machines",
-        "href": "/metal-working-machinery#cnc-machines"
+        "href": "/metal-working-machinery#cnc-machines",
+        "label": "CNC Machines"
       },
       {
         "id": "machine-2",
-        "label": "Horizontal Boring",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Horizontal Boring"
       },
       {
         "id": "machine-3",
-        "label": "Vertical Turret Lathes",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Vertical Turret Lathes"
       },
       {
         "id": "machine-4",
-        "label": "Forging Presses",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Forging Presses"
       },
       {
         "id": "machine-5",
-        "label": "Grinding Machines",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Grinding Machines"
       },
       {
         "id": "machine-6",
-        "label": "Gear Hobbing",
-        "href": "/metal-working-machinery"
+        "href": "/metal-working-machinery",
+        "label": "Gear Hobbing"
       }
     ],
     "copyrightText": "© 2026 All rights reserved by Novatech Digisoft.",
     "policyLinks": [
       {
         "id": "policy-1",
-        "label": "Privacy Policy",
-        "href": "/"
+        "href": "/",
+        "label": "Privacy Policy"
       },
       {
         "id": "policy-2",
-        "label": "Terms of Service",
-        "href": "/"
+        "href": "/",
+        "label": "Terms of Service"
       }
     ]
+  },
+  "operations": {
+    "smtp": {
+      "host": "smtp.gmail.com",
+      "port": "587",
+      "username": "info@novatechmachinery.com",
+      "password": "***SMTP_PASSWORD_REMOVED***",
+      "fromEmail": "info@novatechmachinery.com",
+      "fromName": "Novatech Machinery",
+      "secure": false,
+      "testEmail": "test@example.com"
+    },
+    "analytics": {
+      "googleAnalyticsId": "G-P6982NCZTC",
+      "metaPixelId": "1254549116261073",
+      "clarityProjectId": "w8ffhp8peo"
+    }
   }
 }
