@@ -19,7 +19,10 @@ import {
 import type { MachineCategory, MachineItem } from "@/lib/machines";
 
 function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }) {
-  const imageList = m.images && m.images.length > 0 ? m.images : [m.imageSrc];
+  const imageList = useMemo(
+    () => (m.images && m.images.length > 0 ? m.images : [m.imageSrc]),
+    [m.images, m.imageSrc],
+  );
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
@@ -38,13 +41,12 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
       onClick={onClick}
       className="overflow-hidden border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.1)]"
     >
-      <div className="group relative w-full overflow-hidden">
+      <div className="group relative h-[270px] w-full overflow-hidden sm:h-[300px]">
         <Image
           src={imageList[activeImageIndex]}
           alt={m.title}
-          width={500}
-          height={375}
-          className="h-[270px] w-full object-cover transition duration-700 hover:scale-[1.03] sm:h-[300px]"
+          fill
+          className="object-cover transition duration-700 hover:scale-[1.03]"
           style={{ objectPosition: activePosition }}
         />
         {imageList.length > 1 ? (
@@ -758,8 +760,8 @@ export default function MetalWorkingCatalogue({
                           unoptimized
                           quality={100}
                           sizes="(min-width: 1280px) 55vw, 100vw"
-                          className="h-full w-full object-contain"
-                          style={{ objectPosition: "center" }}
+                          className="h-full w-full object-cover"
+                          style={{ objectPosition: activeGalleryImage?.position ?? "center" }}
                         />
                       </div>
                     </div>

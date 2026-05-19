@@ -383,7 +383,7 @@ export default function AdminPanel() {
       setSiteSettings(settingsData);
       setSiteSettingsDraft(settingsData);
       setSeoDraft(seoData);
-      setAdminAccessDraft(accessData);
+      setAdminAccessDraft({ email: accessData.email, password: "" });
       setNewsletters(normalizeNewsletterSubscribers(newsletterData));
       setExpandedSeoPageId((current) => current ?? seoData.pages[0]?.id ?? null);
     } catch (loadError) {

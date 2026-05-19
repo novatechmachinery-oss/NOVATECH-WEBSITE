@@ -44,7 +44,6 @@ export default function TopHeader({
   emailAddress = "info@novatechmachinery.com",
   phonePrimary = "+91 9646255755",
   phoneSecondary = "+91 9646255855",
-  whatsappNumber = phonePrimary,
 }: TopHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newsletterStep, setNewsletterStep] = useState<NewsletterStep>("options");
