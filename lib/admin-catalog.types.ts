@@ -1,3 +1,4 @@
+
 export type AdminCategory = {
   id: string;
   name: string;

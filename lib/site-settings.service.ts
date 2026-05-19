@@ -108,8 +108,8 @@ const defaultSettings: SiteSettings = {
     smtp: {
       host: "smtp.gmail.com",
       port: "587",
-      username: "admin@novatechmachinery.com",
-      password: "lalgpfekfhjmbhjy",
+      username: "info@novatechmachinery.com",
+      password: "",
       fromEmail: "info@novatechmachinery.com",
       fromName: "Novatech Machinery",
       secure: false,

@@ -15,7 +15,7 @@ import { getLeadRecords } from "@/lib/leads.service";
 import type { CategoryRow, MachineRow } from "@/lib/machine-catalog.types";
 import { resolveProjectPath } from "@/lib/project-paths";
 import { isBase64Image, uploadBase64ImageToStorage } from "@/lib/image-storage";
-import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRest, supabaseRestAdmin } from "@/lib/supabase";
 
 const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
 const supabaseCatalogTimeoutMs = 12_000;
@@ -413,7 +413,7 @@ export async function upsertAdminCategory(input: AdminCategoryInput) {
 
   if (hasSupabaseConfig()) {
     try {
-      await supabaseRest("categories", {
+      await supabaseRestAdmin("categories", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
         body: JSON.stringify([{
@@ -445,7 +445,7 @@ export async function deleteAdminCategory(id: string) {
 
   if (hasSupabaseConfig()) {
     try {
-      await supabaseRest(`categories?id=in.(${Array.from(relatedIds).join(',')})`, { method: "DELETE" });
+      await supabaseRestAdmin(`categories?id=in.(${Array.from(relatedIds).join(',')})`, { method: "DELETE" });
     } catch (error) {
       console.error("Supabase sync failed for category deletion:", error);
     }
@@ -496,7 +496,7 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
 
   if (hasSupabaseConfig()) {
     try {
-      await supabaseRest("machines", {
+      await supabaseRestAdmin("machines", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
         body: JSON.stringify([{
@@ -533,7 +533,7 @@ export async function deleteAdminMachine(id: string) {
 
   if (hasSupabaseConfig()) {
     try {
-      await supabaseRest(`machines?id=eq.${id}`, { method: "DELETE" });
+      await supabaseRestAdmin(`machines?id=eq.${id}`, { method: "DELETE" });
     } catch (error) {
       console.error("Supabase sync failed for machine deletion:", error);
     }

@@ -1,21 +1,19 @@
+
 import "server-only";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 
-const supabasePublishableKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  "";
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-// Service role key — used ONLY server-side for Storage uploads and bucket management.
-// Never sent to the client. Falls back to anon key if not configured.
+// Service role key — used ONLY server-side for Storage uploads and admin writes. Bypasses RLS.
+// Never sent to the client. Falls back to anon key only if not configured (dev fallback).
 const supabaseServiceRoleKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? supabasePublishableKey;
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? supabaseAnonKey;
 
 export function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabasePublishableKey);
+  return Boolean(supabaseUrl && supabaseAnonKey);
 }
 
 export function getSupabaseConfig() {
@@ -25,8 +23,8 @@ export function getSupabaseConfig() {
 
   return {
     url: supabaseUrl.replace(/\/+$/, ""),
-    publishableKey: supabasePublishableKey,
-    /** Use this key for server-side Storage uploads — has full write access. */
+    anonKey: supabaseAnonKey,
+    /** Use this key for server-side admin writes and Storage — bypasses RLS. */
     storageKey: supabaseServiceRoleKey,
   };
 }
@@ -35,13 +33,13 @@ export async function supabaseRest<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  const { url, publishableKey } = getSupabaseConfig();
+  const { url, anonKey } = getSupabaseConfig();
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
     cache: "no-store",
     headers: {
-      apikey: publishableKey,
-      Authorization: `Bearer ${publishableKey}`,
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`,
       "Content-Type": "application/json",
       ...init.headers,
     },
@@ -202,3 +200,4 @@ export async function ensureStorageBucket(bucket: string): Promise<void> {
     console.warn(`[ensureStorageBucket] Failed to create bucket:`, err);
   }
 }
+  

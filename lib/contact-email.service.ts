@@ -24,6 +24,21 @@ type SmtpMessage = {
   html: string;
 };
 
+const SMTP_HELO_HOSTNAME = "novatechmachinery.com";
+
+function pickRuntimeValue(value: string | undefined, fallback: string) {
+  const normalized = value?.trim();
+  return normalized ? normalized : fallback.trim();
+}
+
+function pickRuntimeBoolean(value: string | undefined, fallback: boolean) {
+  if (!value) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes"].includes(value.trim().toLowerCase());
+}
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -46,6 +61,11 @@ function formatAddress(name: string, email: string) {
 
 function dotStuff(value: string) {
   return value.replace(/\r?\n/g, "\r\n").replace(/^\./gm, "..");
+}
+
+function createMailToken(prefix: string) {
+  const random = Math.random().toString(36).slice(2);
+  return `${prefix}-${Date.now().toString(36)}-${random}`;
 }
 
 function buildEmailContent(values: ContactFormValues) {
@@ -170,11 +190,12 @@ async function connectSmtp(config: SmtpConfig) {
 async function sendSmtpEmail(config: SmtpConfig, message: SmtpMessage) {
   let socket = await connectSmtp(config);
   let readResponse = createReader(socket);
-  const hostname = "novatechmachinery.com";
+  const messageId = `<${createMailToken("novatech")}@${SMTP_HELO_HOSTNAME}>`;
+  const boundary = createMailToken("novatech-enquiry");
 
   try {
     await expectResponse(readResponse, "220");
-    await writeCommand(socket, readResponse, `EHLO ${hostname}`, "250");
+    await writeCommand(socket, readResponse, `EHLO ${SMTP_HELO_HOSTNAME}`, "250");
 
     if (!config.secure) {
       await writeCommand(socket, readResponse, "STARTTLS", "220");
@@ -184,7 +205,7 @@ async function sendSmtpEmail(config: SmtpConfig, message: SmtpMessage) {
         socket.once("secureConnect", resolve);
         socket.once("error", reject);
       });
-      await writeCommand(socket, readResponse, `EHLO ${hostname}`, "250");
+      await writeCommand(socket, readResponse, `EHLO ${SMTP_HELO_HOSTNAME}`, "250");
     }
 
     await writeCommand(socket, readResponse, "AUTH LOGIN", "334");
@@ -209,27 +230,29 @@ async function sendSmtpEmail(config: SmtpConfig, message: SmtpMessage) {
       `To: ${message.to}`,
       `Reply-To: ${message.replyTo}`,
       `Subject: ${encodeHeader(message.subject)}`,
+      `Message-ID: ${messageId}`,
       "MIME-Version: 1.0",
-      'Content-Type: multipart/alternative; boundary="novatech-enquiry"',
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
       `Date: ${new Date().toUTCString()}`,
+      "X-Mailer: Novatech Website",
     ].join("\r\n");
 
     const body = [
       headers,
       "",
-      "--novatech-enquiry",
+      `--${boundary}`,
       'Content-Type: text/plain; charset="UTF-8"',
       "Content-Transfer-Encoding: 8bit",
       "",
       message.text,
       "",
-      "--novatech-enquiry",
+      `--${boundary}`,
       'Content-Type: text/html; charset="UTF-8"',
       "Content-Transfer-Encoding: 8bit",
       "",
       message.html,
       "",
-      "--novatech-enquiry--",
+      `--${boundary}--`,
     ].join("\r\n");
 
     socket.write(`${dotStuff(body)}\r\n.\r\n`);
@@ -243,11 +266,14 @@ async function sendSmtpEmail(config: SmtpConfig, message: SmtpMessage) {
 export async function sendContactEnquiryEmail(values: ContactFormValues) {
   const settings = await getSiteSettings();
   const smtp = settings.operations.smtp;
-  const recipient = settings.contact.emailAddress.trim();
-  const password = smtp.password.trim();
-  const username = smtp.username.trim();
-  const host = smtp.host.trim();
-  const port = Number.parseInt(smtp.port, 10);
+  const recipient = pickRuntimeValue(process.env.SMTP_TO_EMAIL, settings.contact.emailAddress);
+  const password = pickRuntimeValue(process.env.SMTP_PASSWORD, smtp.password);
+  const username = pickRuntimeValue(process.env.SMTP_USERNAME, smtp.username);
+  const host = pickRuntimeValue(process.env.SMTP_HOST, smtp.host);
+  const port = Number.parseInt(pickRuntimeValue(process.env.SMTP_PORT, smtp.port), 10);
+  const fromEmail = pickRuntimeValue(process.env.SMTP_FROM_EMAIL, smtp.fromEmail || username);
+  const fromName = pickRuntimeValue(process.env.SMTP_FROM_NAME, smtp.fromName || "Novatech Machinery");
+  const secure = pickRuntimeBoolean(process.env.SMTP_SECURE, smtp.secure);
 
   if (!host || !Number.isFinite(port) || !username || !password || !recipient) {
     throw new Error("SMTP settings are incomplete. Configure SMTP host, port, username, and password.");
@@ -261,9 +287,9 @@ export async function sendContactEnquiryEmail(values: ContactFormValues) {
       port,
       username,
       password,
-      fromEmail: smtp.fromEmail.trim() || username,
-      fromName: smtp.fromName.trim() || "Novatech Machinery",
-      secure: smtp.secure,
+      fromEmail,
+      fromName,
+      secure,
     },
     {
       to: recipient,
@@ -285,13 +311,14 @@ export async function sendSmtpTestEmail(smtp: {
   secure: boolean;
   testEmail: string;
 }) {
-  const recipient = smtp.testEmail.trim();
-  const password = smtp.password.trim();
-  const username = smtp.username.trim();
-  const host = smtp.host.trim();
-  const port = Number.parseInt(smtp.port, 10);
-  const fromEmail = smtp.fromEmail.trim() || username;
-  const fromName = smtp.fromName.trim() || "Novatech Machinery";
+  const recipient = pickRuntimeValue(process.env.SMTP_TEST_EMAIL, smtp.testEmail);
+  const password = pickRuntimeValue(process.env.SMTP_PASSWORD, smtp.password);
+  const username = pickRuntimeValue(process.env.SMTP_USERNAME, smtp.username);
+  const host = pickRuntimeValue(process.env.SMTP_HOST, smtp.host);
+  const port = Number.parseInt(pickRuntimeValue(process.env.SMTP_PORT, smtp.port), 10);
+  const fromEmail = pickRuntimeValue(process.env.SMTP_FROM_EMAIL, smtp.fromEmail || username);
+  const fromName = pickRuntimeValue(process.env.SMTP_FROM_NAME, smtp.fromName || "Novatech Machinery");
+  const secure = pickRuntimeBoolean(process.env.SMTP_SECURE, smtp.secure);
 
   if (!host || !Number.isFinite(port) || !username || !password || !recipient) {
     throw new Error("SMTP settings are incomplete. Add host, port, username, password, and test email.");
@@ -305,7 +332,7 @@ export async function sendSmtpTestEmail(smtp: {
       password,
       fromEmail,
       fromName,
-      secure: smtp.secure,
+      secure,
     },
     {
       to: recipient,
