@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 import { getSeoSettings } from "@/lib/seo-settings.service";
 import { getSeoConfig } from "@/lib/seo/seo-config";
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [seoSettings, seoConfig] = await Promise.all([getSeoSettings(), getSeoConfig()]);
   const now = new Date();

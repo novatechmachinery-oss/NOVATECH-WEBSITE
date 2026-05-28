@@ -11,12 +11,14 @@ import {
   ChevronDown,
   ChevronUp,
   CircleDollarSign,
+  Maximize2,
   MessageCircle,
   Phone,
   Search,
   X,
 } from "lucide-react";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
+import { REQUEST_PRICE_WHATSAPP_HREF, WHATSAPP_HREF } from "@/lib/whatsapp";
 
 function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }) {
   const imageList = useMemo(
@@ -81,7 +83,7 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
   );
 }
 
-type MachineMode = "all" | "conventional" | "cnc";
+export type MachineMode = "all" | "conventional" | "cnc";
 
 type MetalWorkingCatalogueProps = {
   machineCategories: MachineCategory[];
@@ -89,6 +91,7 @@ type MetalWorkingCatalogueProps = {
   initialCategory?: string | null;
   initialSubcategory?: string | null;
   initialMachineId?: string | null;
+  initialMachineMode?: MachineMode | null;
 };
 
 export default function MetalWorkingCatalogue({
@@ -97,6 +100,7 @@ export default function MetalWorkingCatalogue({
   initialCategory = null,
   initialSubcategory = null,
   initialMachineId = null,
+  initialMachineMode = null,
 }: MetalWorkingCatalogueProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -173,7 +177,7 @@ export default function MetalWorkingCatalogue({
   const [categorySearch, setCategorySearch] = useState("");
   const [machineSearch, setMachineSearch] = useState("");
   const [sortBy] = useState<"newest" | "a-z">("newest");
-  const [machineMode, setMachineMode] = useState<MachineMode>("all");
+  const [machineMode, setMachineMode] = useState<MachineMode>(initialMachineMode ?? "all");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -182,6 +186,7 @@ export default function MetalWorkingCatalogue({
   const [canScrollThumbnailsLeft, setCanScrollThumbnailsLeft] = useState(false);
   const [canScrollThumbnailsRight, setCanScrollThumbnailsRight] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialSelectedCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(initialResolvedSubcategory);
@@ -321,6 +326,7 @@ export default function MetalWorkingCatalogue({
   function handleAllMachinesClick() {
     setSelectedMachineId(null);
     setCurrentPage(1);
+    setMachineMode("all");
     setSelectedCategory(null);
     setSelectedSubcategory(null);
     setOpenCategories(() =>
@@ -358,12 +364,24 @@ export default function MetalWorkingCatalogue({
     setCurrentPage(1);
     setMachineMode(value);
     setSelectedMachineId(null);
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
-    setOpenCategories(() =>
-      Object.fromEntries(machineCategories.map((category) => [category.name, false]))
-    );
-    router.push(pathname);
+
+    const params = new URLSearchParams();
+
+    if (selectedCategory) {
+      const resolvedCategory = machineCategories.find((item) => item.name === selectedCategory);
+      params.set("category", resolvedCategory?.slug ?? selectedCategory);
+    }
+
+    if (selectedSubcategory) {
+      params.set("subcategory", selectedSubcategory);
+    }
+
+    if (value !== "all") {
+      params.set("mode", value);
+    }
+
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
   }
 
   function handleMachineSearchChange(value: string) {
@@ -392,6 +410,10 @@ export default function MetalWorkingCatalogue({
       params.set("subcategory", subcategory);
     }
 
+    if (machineMode !== "all") {
+      params.set("mode", machineMode);
+    }
+
     params.set("machine", machineId);
 
     router.push(`${pathname}?${params.toString()}`);
@@ -408,6 +430,10 @@ export default function MetalWorkingCatalogue({
 
     if (selectedSubcategory) {
       params.set("subcategory", selectedSubcategory);
+    }
+
+    if (machineMode !== "all") {
+      params.set("mode", machineMode);
     }
 
     const query = params.toString();
@@ -464,9 +490,60 @@ export default function MetalWorkingCatalogue({
 
   const activeGalleryImage =
     machineDetailGallery[activeImageIndex] ?? machineDetailGallery[0] ?? null;
+  const hasMultipleGalleryImages = machineDetailGallery.length > 1;
+
+  useEffect(() => {
+    if (!isLightboxOpen) {
+      return;
+    }
+
+    const galleryLength = machineDetailGallery.length;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+
+      if (event.key === "ArrowLeft" && galleryLength > 1) {
+        setActiveImageIndex((current) => (current === 0 ? galleryLength - 1 : current - 1));
+      }
+
+      if (event.key === "ArrowRight" && galleryLength > 1) {
+        setActiveImageIndex((current) => (current === galleryLength - 1 ? 0 : current + 1));
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLightboxOpen, machineDetailGallery.length]);
 
   function selectGalleryImage(index: number) {
     setActiveImageIndex(index);
+  }
+
+  function showPreviousGalleryImage() {
+    if (machineDetailGallery.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((current) =>
+      current === 0 ? machineDetailGallery.length - 1 : current - 1,
+    );
+  }
+
+  function showNextGalleryImage() {
+    if (machineDetailGallery.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((current) =>
+      current === machineDetailGallery.length - 1 ? 0 : current + 1,
+    );
   }
 
   function scrollThumbnailStrip(direction: "left" | "right") {
@@ -719,7 +796,7 @@ export default function MetalWorkingCatalogue({
 
                 <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3 lg:gap-3">
                   <a
-                    href="https://wa.me/919646255855"
+                    href={REQUEST_PRICE_WHATSAPP_HREF}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-3 py-2 text-center text-sm font-semibold leading-tight text-white transition hover:bg-[#0f4c7c]"
@@ -728,7 +805,7 @@ export default function MetalWorkingCatalogue({
                     <span className="min-w-0 break-words">Request Price</span>
                   </a>
                   <a
-                    href="https://wa.me/919646255855"
+                    href={WHATSAPP_HREF}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
@@ -750,19 +827,61 @@ export default function MetalWorkingCatalogue({
                 <div className="min-w-0">
                   <div className="min-w-0">
                     <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                      <div className="flex h-[220px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
-                        <Image
-                          src={activeGalleryImage?.src ?? selectedMachine.imageSrc}
-                          alt={activeGalleryImage?.alt ?? selectedMachine.imageAlt}
-                          width={1400}
-                          height={920}
-                          priority
-                          unoptimized
-                          quality={100}
-                          sizes="(min-width: 1280px) 55vw, 100vw"
-                          className="h-full w-full object-cover"
-                          style={{ objectPosition: activeGalleryImage?.position ?? "center" }}
-                        />
+                      <div className="group relative flex h-[220px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
+                        <button
+                          type="button"
+                          onClick={() => setIsLightboxOpen(true)}
+                          className="block h-full w-full cursor-zoom-in"
+                          aria-label="Enlarge selected machine image"
+                        >
+                          <Image
+                            src={activeGalleryImage?.src ?? selectedMachine.imageSrc}
+                            alt={activeGalleryImage?.alt ?? selectedMachine.imageAlt}
+                            width={1400}
+                            height={920}
+                            priority
+                            unoptimized
+                            quality={100}
+                            sizes="(min-width: 1280px) 55vw, 100vw"
+                            className="h-full w-full object-cover"
+                            style={{ objectPosition: activeGalleryImage?.position ?? "center" }}
+                          />
+                        </button>
+
+                        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between bg-[linear-gradient(180deg,rgba(15,23,42,0.32),transparent)] px-3 py-3 text-white">
+                          <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
+                            {activeImageIndex + 1} / {machineDetailGallery.length}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setIsLightboxOpen(true)}
+                            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
+                            aria-label="Open enlarged image"
+                          >
+                            <Maximize2 className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {hasMultipleGalleryImages ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={showPreviousGalleryImage}
+                              className="absolute left-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:left-4 sm:h-11 sm:w-11"
+                              aria-label="Show previous machine image"
+                            >
+                              <ChevronLeft className="h-5 w-5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={showNextGalleryImage}
+                              className="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:right-4 sm:h-11 sm:w-11"
+                              aria-label="Show next machine image"
+                            >
+                              <ChevronRight className="h-5 w-5" />
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     </div>
 
@@ -953,6 +1072,100 @@ export default function MetalWorkingCatalogue({
         )}
 
       </div>
+
+      {isLightboxOpen && activeGalleryImage ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/92 px-3 py-4 backdrop-blur-sm sm:px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Machine image viewer"
+          onMouseDown={() => setIsLightboxOpen(false)}
+        >
+          <div
+            className="relative flex h-full w-full max-w-7xl flex-col"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between gap-3 text-white">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white/80">
+                  {selectedMachine?.title}
+                </p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/55">
+                  {activeImageIndex + 1} / {machineDetailGallery.length}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(0,0,0,0.25)] backdrop-blur transition hover:bg-white/20"
+                aria-label="Close enlarged image"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[2px] bg-black">
+              <Image
+                src={activeGalleryImage.src}
+                alt={activeGalleryImage.alt}
+                fill
+                unoptimized
+                quality={100}
+                sizes="100vw"
+                className="object-contain"
+              />
+
+              {hasMultipleGalleryImages ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={showPreviousGalleryImage}
+                    className="absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-slate-950/60 text-white shadow-[0_14px_34px_rgba(0,0,0,0.28)] backdrop-blur transition hover:bg-[#145b93] sm:left-5 sm:h-12 sm:w-12"
+                    aria-label="Show previous enlarged image"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextGalleryImage}
+                    className="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-slate-950/60 text-white shadow-[0_14px_34px_rgba(0,0,0,0.28)] backdrop-blur transition hover:bg-[#145b93] sm:right-5 sm:h-12 sm:w-12"
+                    aria-label="Show next enlarged image"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </>
+              ) : null}
+            </div>
+
+            {machineDetailGallery.length > 1 ? (
+              <div className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {machineDetailGallery.map((image, index) => (
+                  <button
+                    key={`${image.id}-lightbox`}
+                    type="button"
+                    onClick={() => selectGalleryImage(index)}
+                    className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-[2px] border bg-black transition sm:h-20 sm:w-28 ${
+                      index === activeImageIndex ? "border-white" : "border-white/20 hover:border-white/70"
+                    }`}
+                    aria-label={`Show enlarged image ${index + 1}`}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      unoptimized
+                      sizes="112px"
+                      className="object-cover"
+                      style={{ objectPosition: image.position }}
+                    />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {showScrollTop ? (
         <button

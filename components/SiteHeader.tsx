@@ -52,7 +52,7 @@ export default function SiteHeader() {
 
     async function loadSettings() {
       try {
-        const response = await fetch("/api/admin/settings", { cache: "no-store" });
+        const response = await fetch("/api/settings", { cache: "no-store" });
         if (!response.ok) {
           return;
         }

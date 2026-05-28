@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getSeoSettings } from "@/lib/seo-settings.service";
 import type { SeoPageRecord } from "@/lib/seo-settings.types";
 import { getSiteSettings } from "@/lib/site-settings.service";
+import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
 const FALLBACK_SITE_URL = "https://novatechmachinery.com";
 
@@ -193,7 +194,7 @@ export async function getGlobalStructuredData() {
         streetAddress: siteSettings.contact.officeAddress,
         addressCountry: "IN",
       },
-      sameAs: [`https://wa.me/${siteSettings.contact.whatsappNumber.replace(/\D/g, "")}`],
+      sameAs: [WHATSAPP_HREF],
     },
     {
       "@context": "https://schema.org",

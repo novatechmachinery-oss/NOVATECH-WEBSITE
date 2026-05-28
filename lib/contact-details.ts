@@ -1,9 +1,10 @@
 import { Mail, MapPin, MessageCircle, Phone, type LucideIcon } from "lucide-react";
+import { WHATSAPP_HREF, WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 export const contactDetails = {
   phonePrimary: "+91 96462 55755",
   phoneSecondary: "+91 96462 55855",
-  whatsappNumber: "+91 96462 55755",
+  whatsappNumber: WHATSAPP_NUMBER,
   emailAddress: "info@novatechmachinery.com",
   mapLocation: "Jubilee Walk, Sector 70, Mohali",
   officeAddress: "6th Floor, Office No. 621, Jubilee Walk, Sector 70, Mohali",
@@ -15,7 +16,7 @@ const mapsQuery = encodeURIComponent(contactDetails.mapLocation);
 export const contactLinks = {
   mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
   mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-  whatsappLink: "https://wa.me/919646255755",
+  whatsappLink: WHATSAPP_HREF,
   primaryCallLink: "tel:+919646255755",
   emailLink: `mailto:${contactDetails.emailAddress}`,
 } as const;

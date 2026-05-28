@@ -1,11 +1,110 @@
-node_modules
-.next
-admin/.next
+# ========================
+# Dependencies
+# ========================
+node_modules/
+admin/node_modules/
+
+# ========================
+# Next.js build output
+# ========================
+.next/
+admin/.next/
+out/
+dist/
+build/
+
+# ========================
+# Environment files (SECRETS!)
+# These contain Supabase keys, SMTP passwords,
+# admin credentials — NEVER commit these
+# ========================
 .env
 .env.local
 .env.*.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+admin/.env
 admin/.env.local
-dist
-build
+admin/.env.*.local
+admin/.env.development
+admin/.env.production
+
+# ========================
+# Local data files (contain user PII)
+# These are local caches — Supabase is the
+# source of truth on production
+# ========================
+data/admin-leads.json
+data/admin-newsletter.json
+data/admin-catalog.json
+data/site-settings.json
+data/seo-settings.json
+machines_dump.json
+
+# ========================
+# Logs
+# ========================
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 admin/*.log
+
+# ========================
+# OS generated files
+# ========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# ========================
+# TypeScript build info
+# ========================
+tsconfig.tsbuildinfo
+admin/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# ========================
+# Package lock files (admin)
+# Root package-lock.json should be committed
+# but admin's is regenerated from its package.json
+# ========================
+admin/package-lock.json
+
+# ========================
+# Misc
+# ========================
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+*.bak
+*.backup
+*.dump
+*.sql
+*.sqlite
+*.db
+coverage/
+.vercel/

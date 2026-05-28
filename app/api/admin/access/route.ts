@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { NextResponse } from "next/server";
 
 import { getAdminCredentials } from "@/lib/admin-auth";
-import { resolveProjectPath } from "@/lib/project-paths";
+import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 
 function updateEnvValue(content: string, key: string, value: string) {
   const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -22,6 +22,12 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  if (isReadOnlyFilesystem()) {
+    return NextResponse.json(
+      { error: "Modifying access settings dynamically is not allowed in this environment. Please update environment variables in your Vercel deployment settings." },
+      { status: 405 }
+    );
+  }
   try {
     const body = (await request.json()) as {
       email?: string;

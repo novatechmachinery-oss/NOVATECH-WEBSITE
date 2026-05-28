@@ -6,6 +6,8 @@ import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getBreadcrumbSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
 
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/contact", {
     fallbackTitle: "Contact Novatech Machinery",

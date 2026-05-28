@@ -7,6 +7,8 @@ import { getMachineCatalogData } from "@/lib/machines";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getItemListSchema } from "@/lib/seo/schema";
 
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/categories", {
     fallbackTitle: "Machine Categories",
@@ -48,7 +50,6 @@ function getCategoryHref(categoryValue: string) {
 export default async function CategoriesPage() {
   const { machineCategories } = await getMachineCatalogData();
   const activeCategories = machineCategories
-    .filter((category) => category.count > 0)
     .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
     .map((category) => ({
       name: category.name,
@@ -72,7 +73,7 @@ export default async function CategoriesPage() {
     (sum, category) => sum + category.subcategories.length,
     0,
   );
-  const featuredCategories = activeCategories.slice(0, 3);
+  const featuredCategories = activeCategories.filter((category) => category.count > 0).slice(0, 3);
   const itemListSchema = await getItemListSchema(
     "/categories",
     "Machine Categories",

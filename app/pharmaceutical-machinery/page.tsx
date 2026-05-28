@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import ComingSoonPage from "../../components/ComingSoonPage";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/pharmaceutical-machinery", {
     fallbackTitle: "Pharmaceutical Machinery",

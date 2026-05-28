@@ -29,14 +29,27 @@ export function getSupabaseConfig() {
   };
 }
 
+type SupabaseRequestInit = RequestInit & {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+};
+
 export async function supabaseRest<T>(
   path: string,
-  init: RequestInit = {},
+  init: SupabaseRequestInit = {},
 ): Promise<T> {
   const { url, anonKey } = getSupabaseConfig();
+  const cacheOptions =
+    init.cache || init.next
+      ? {}
+      : {
+          cache: "no-store" as RequestCache,
+        };
   const response = await fetch(`${url}/rest/v1/${path}`, {
+    ...cacheOptions,
     ...init,
-    cache: "no-store",
     headers: {
       apikey: anonKey,
       Authorization: `Bearer ${anonKey}`,
@@ -55,6 +68,20 @@ export async function supabaseRest<T>(
   }
 
   return (await response.json()) as T;
+}
+
+export async function supabaseRestCached<T>(
+  path: string,
+  revalidateSeconds = 300,
+  init: SupabaseRequestInit = {},
+): Promise<T> {
+  return supabaseRest<T>(path, {
+    ...init,
+    next: {
+      ...init.next,
+      revalidate: revalidateSeconds,
+    },
+  });
 }
 
 /**

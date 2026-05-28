@@ -16,6 +16,8 @@ import SiteHeader from "../../components/SiteHeader";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getBreadcrumbSchema } from "@/lib/seo/schema";
 
+export const revalidate = 300;
+
 const paragraphs = [
   "Novatech Machinery is a leading organization engaged in the trading and export of high-quality used and new metal working and industrial machinery. With a strong global network, we offer a wide range of machines including CNC machines, Horizontal Boring Machines (HBM), Vertical Turret Lathes (VTL), forging and stamping presses, grinding machines, plano millers, CNC portal millers, gear hobbing machines, and more.",
   "We cater to diverse industrial requirements by providing both conventional and advanced CNC solutions. In addition, we also deal in textile, pharmaceutical, plastic machinery, and complete plant setups. Our machines are sourced from reliable European and American markets, ensuring superior quality, durability, and performance. Whether you need a single machine or a complete industrial plant, Novatech Machinery delivers dependable solutions backed by technical expertise and strict quality standards.",

@@ -12,10 +12,10 @@ type HeroSliderProps = {
 };
 
 const defaultSlides = [
-  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Industrial machinery line overview" },
-  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Factory metalworking production line" },
-  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "High-performance equipment warehouse" },
-  { src: "/images/hero-banner-Bt56BS_O.webp", alt: "Premium industrial machinery sourcing" },
+  { src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_41_23%20AM.png", alt: "Industrial machinery line overview" },
+  { src: "/images/homa-appliances-_XDK4naBbgw-unsplash.jpg", alt: "Factory metalworking production line" },
+  { src: "/images/jonas-morgner-F7u5fL11Lt0-unsplash.jpg", alt: "High-performance equipment warehouse" },
+  { src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_37_15%20AM.png", alt: "Premium industrial machinery sourcing" },
 ];
 
 const AUTO_CHANGE_MS = 5500;
@@ -48,7 +48,7 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
   }, [currentIndex, slides]);
 
   return (
-    <section className="relative h-[320px] overflow-hidden rounded-lg shadow-2xl shadow-slate-950/20 sm:h-[420px]">
+    <section className="relative left-1/2 -mt-4 h-[320px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 sm:h-[420px]">
       <div className="absolute inset-0">
         <Image
           src={slides[currentIndex].src}

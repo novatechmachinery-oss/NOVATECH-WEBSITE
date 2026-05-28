@@ -1,23 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { COOKIE_NAME, verifyAdminToken } from "@/lib/admin-auth";
+import { getAuthenticatedAdmin } from "@/lib/admin-auth";
 
 const LOGIN_PAGE = "/admin/login";
+const DISABLE_MAIN_ADMIN_ROUTES = process.env.DISABLE_MAIN_ADMIN_ROUTES === "true";
+const ADMIN_APP_URL = (process.env.ADMIN_APP_URL ?? "").trim();
+const PUBLIC_ADMIN_API_ROUTES = new Set([
+  "/api/admin/login",
+  "/api/admin/login/verify",
+  "/api/admin/logout",
+]);
+
+function getStandaloneAdminUrl(request: NextRequest) {
+  if (!ADMIN_APP_URL) {
+    return null;
+  }
+
+  const targetUrl = new URL(ADMIN_APP_URL);
+  const adminPath = request.nextUrl.pathname.replace(/^\/admin/, "") || "/";
+
+  targetUrl.pathname = adminPath;
+  targetUrl.search = request.nextUrl.search;
+
+  return targetUrl;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isLoginPage = pathname === LOGIN_PAGE;
-  const isLoginApi = pathname === "/api/admin/login";
+  if (DISABLE_MAIN_ADMIN_ROUTES) {
+    if (pathname.startsWith("/api/admin")) {
+      return NextResponse.json({ error: "Admin API is not available on this deployment." }, { status: 404 });
+    }
 
-  if (isLoginPage || isLoginApi) {
+    const adminUrl = getStandaloneAdminUrl(request);
+    if (adminUrl) {
+      return NextResponse.redirect(adminUrl);
+    }
+
+    return new NextResponse("Admin is not available on this deployment.", { status: 404 });
+  }
+
+  if (pathname === LOGIN_PAGE || PUBLIC_ADMIN_API_ROUTES.has(pathname)) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  const isAuthenticated = await verifyAdminToken(token);
+  const response = NextResponse.next();
+  const admin = await getAuthenticatedAdmin(request, response);
 
-  if (!isAuthenticated) {
+  if (!admin) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(
         { error: "Unauthorized. Please log in to access this resource." },
@@ -30,7 +61,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

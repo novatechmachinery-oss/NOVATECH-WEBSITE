@@ -11,8 +11,9 @@ import { getSpecialDeals } from "@/lib/machines";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
+import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/", {
@@ -86,7 +87,7 @@ export default async function Home() {
       <MachineCard
         title={settings.home.machineCtaTitle}
         description={settings.home.machineCtaDescription}
-        whatsappHref={`https://wa.me/${settings.contact.whatsappNumber.replace(/\D/g, "")}`}
+        whatsappHref={WHATSAPP_HREF}
       />
       <Footer />
     </div>

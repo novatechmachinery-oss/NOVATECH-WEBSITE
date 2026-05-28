@@ -6,6 +6,8 @@ import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getGlobalSchemas } from "@/lib/seo/schema";
 import { getTrackingConfig } from "@/lib/seo/tracking";
 
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   const [seoConfig, metadata] = await Promise.all([
     getSeoConfig(),

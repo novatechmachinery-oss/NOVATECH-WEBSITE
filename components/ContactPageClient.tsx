@@ -23,6 +23,7 @@ import {
   validateContactForm,
 } from "@/lib/contactForm";
 import type { SiteSettings } from "@/lib/site-settings.types";
+import { WHATSAPP_HREF, WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 type SubmitState =
   | { kind: "idle"; message: string }
@@ -55,7 +56,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   const contactLinks = {
     mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
     mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    whatsappLink: `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`,
+    whatsappLink: WHATSAPP_HREF,
     primaryCallLink: `tel:${settings.phonePrimary.replace(/\s+/g, "")}`,
     emailLink: `https://mail.google.com/mail/?${emailComposeQuery}`,
   };
@@ -77,7 +78,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      title: settings.whatsappNumber,
+      title: WHATSAPP_NUMBER,
       detail: "Fast responses during business hours.",
       href: contactLinks.whatsappLink,
     },

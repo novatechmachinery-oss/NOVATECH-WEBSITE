@@ -1,6 +1,6 @@
 import MachineCard from "./Cards/MachineCard";
 import Footer from "./Footer";
-import MetalWorkingCatalogue from "./MetalWorkingCatalogue";
+import MetalWorkingCatalogue, { type MachineMode } from "./MetalWorkingCatalogue";
 import SiteHeader from "./SiteHeader";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
 
@@ -10,6 +10,7 @@ type UsedMachineryPageProps = {
   initialCategory?: string | null;
   initialSubcategory?: string | null;
   initialMachineId?: string | null;
+  initialMachineMode?: MachineMode | null;
 };
 
 export default function UsedMachineryPage({
@@ -18,6 +19,7 @@ export default function UsedMachineryPage({
   initialCategory = null,
   initialSubcategory = null,
   initialMachineId = null,
+  initialMachineMode = null,
 }: UsedMachineryPageProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -25,12 +27,13 @@ export default function UsedMachineryPage({
 
       <main>
         <MetalWorkingCatalogue
-          key={`${initialCategory ?? ""}:${initialSubcategory ?? ""}:${initialMachineId ?? ""}`}
+          key={`${initialCategory ?? ""}:${initialSubcategory ?? ""}:${initialMachineId ?? ""}:${initialMachineMode ?? ""}`}
           machineCategories={machineCategories}
           machineInventory={machineInventory}
           initialCategory={initialCategory}
           initialSubcategory={initialSubcategory}
           initialMachineId={initialMachineId}
+          initialMachineMode={initialMachineMode}
         />
       </main>
 

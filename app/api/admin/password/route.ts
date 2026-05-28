@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 import { NextResponse } from "next/server";
 
-import { resolveProjectPath } from "@/lib/project-paths";
+import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 
 function updateEnvValue(content: string, key: string, value: string) {
   const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -16,6 +16,12 @@ function updateEnvValue(content: string, key: string, value: string) {
 }
 
 export async function POST(request: Request) {
+  if (isReadOnlyFilesystem()) {
+    return NextResponse.json(
+      { error: "Modifying password dynamically is not allowed in this environment. Please update environment variables in your Vercel deployment settings." },
+      { status: 405 }
+    );
+  }
   try {
     const body = (await request.json()) as {
       password?: string;

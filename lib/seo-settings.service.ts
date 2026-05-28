@@ -3,9 +3,9 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { resolveProjectPath } from "@/lib/project-paths";
+import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 import type { SeoSettings } from "@/lib/seo-settings.types";
-import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRest, supabaseRestCached } from "@/lib/supabase";
 
 const seoFilePath = resolveProjectPath("data", "seo-settings.json");
 
@@ -119,7 +119,7 @@ async function ensureSeoDir() {
 export async function getSeoSettings() {
   if (hasSupabaseConfig()) {
     try {
-      const data = await supabaseRest<{settings: SeoSettings}[]>("seo_settings?id=eq.main&select=settings");
+      const data = await supabaseRestCached<{settings: SeoSettings}[]>("seo_settings?id=eq.main&select=settings");
       if (data && data.length > 0 && data[0].settings) {
         return normalizeSeoSettings(data[0].settings);
       }
@@ -143,11 +143,15 @@ export async function getSeoSettings() {
 
 export async function saveSeoSettings(settings: SeoSettings) {
   const normalizedSettings = normalizeSeoSettings(settings);
-  try {
-    await ensureSeoDir();
-    await writeFile(seoFilePath, JSON.stringify(normalizedSettings, null, 2), "utf8");
-  } catch (error) {
-    console.error("Failed to write seo settings locally:", error);
+  if (!isReadOnlyFilesystem()) {
+    try {
+      await ensureSeoDir();
+      await writeFile(seoFilePath, JSON.stringify(normalizedSettings, null, 2), "utf8");
+    } catch (error) {
+      console.error("Failed to write seo settings locally:", error);
+    }
+  } else {
+    console.warn("Skipping local seo settings write on read-only filesystem (Vercel).");
   }
 
   if (hasSupabaseConfig()) {

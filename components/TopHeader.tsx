@@ -229,7 +229,7 @@ export default function TopHeader({
                   <span>
                     <span className="block text-base font-black text-slate-950">Email Newsletter</span>
                     <span className="mt-1 block text-sm leading-6 text-slate-600">
-                      Get curated machine updates straight to your inbox.
+                      Get accurated machine updates straight to your inbox.
                     </span>
                   </span>
                 </button>

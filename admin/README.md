@@ -1,27 +1,68 @@
 # Novatech Admin Frontend
 
-Standalone admin frontend for the Novatech website.
+Standalone admin app for the Novatech website.
 
-It reuses the existing admin UI component from `../components/admin/AdminPanel.tsx` and proxies `/api/admin/*` requests to the main website backend.
+It reuses shared admin components and server helpers from the parent project, but deploys as its own Next.js app. In this app, the admin dashboard is `/` and the login page is `/login`.
 
-## Run
+## Local Run
 
-First run the main website backend:
-
-```bash
-npm run dev
-```
-
-Then run the admin frontend from this folder:
+From this folder:
 
 ```bash
 npm run dev
 ```
 
-The admin frontend opens on `http://localhost:3002` and uses `http://localhost:3000` as the default backend.
+The admin app opens on `http://localhost:3002`.
 
-To use a different backend URL:
+## Separate Deployment
 
-```bash
-NEXT_PUBLIC_BACKEND_URL=http://localhost:4000 npm run dev
+Deploy this folder as a separate project.
+
+```text
+Root directory: NOVATECH-WEBSITE/admin
+Build command: npm run build
+Start command: npm run start
 ```
+
+Use a separate domain such as:
+
+```text
+https://admin.novatechmachinery.com
+```
+
+Admin URLs:
+
+```text
+/login
+/
+/api/admin/*
+```
+
+## Required Admin Env
+
+Set these variables on the admin deployment:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+ADMIN_EMAIL=info@novatechmachinery.com
+ADMIN_PASSWORD=...
+```
+
+Use `ADMIN_EMAILS` instead of `ADMIN_EMAIL` for multiple allowed admin emails:
+
+```env
+ADMIN_EMAILS=info@novatechmachinery.com,second-admin@example.com
+```
+
+## Main Website Env
+
+On the public website deployment, disable the built-in admin surface:
+
+```env
+DISABLE_MAIN_ADMIN_ROUTES=true
+ADMIN_APP_URL=https://admin.novatechmachinery.com
+```
+
+With those set, `/admin/*` on the main website redirects to the standalone admin app, and `/api/admin/*` returns `404` on the public deployment.

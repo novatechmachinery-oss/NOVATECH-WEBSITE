@@ -9,11 +9,12 @@ import {
   Lock,
   LogIn,
   Mail,
+  RefreshCw,
   Settings2,
   ShieldCheck,
 } from "lucide-react";
 
-const ADMIN_EMAIL_HINT = "admin@novatechmachinery.com";
+const ADMIN_EMAIL_HINT = "info@novatechmachinery.com";
 
 function LoginForm() {
   const router = useRouter();
@@ -26,20 +27,78 @@ function LoginForm() {
 
   const [email, setEmail] = useState(ADMIN_EMAIL_HINT);
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+    setMessage(null);
 
-    if (!email.trim() || !password.trim()) {
+    if (step === "credentials" && (!email.trim() || !password.trim())) {
       setError("Please enter the admin email and password.");
       return;
     }
 
+    if (step === "otp" && !otp.trim()) {
+      setError("Please enter the verification code sent to your email.");
+      return;
+    }
+
     setLoading(true);
+
+    try {
+      const endpoint = step === "credentials" ? "/api/admin/login" : "/api/admin/login/verify";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body:
+          step === "credentials"
+            ? JSON.stringify({
+                email: email.trim(),
+                password: password.trim(),
+              })
+            : JSON.stringify({
+                email: email.trim(),
+                otp: otp.trim(),
+              }),
+      });
+
+      const data = (await response.json()) as { message?: string; error?: string; nextStep?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed. Please try again.");
+      }
+
+      if (step === "credentials") {
+        setStep("otp");
+        setMessage(data.message || "Verification code sent. Check your email to continue.");
+        return;
+      }
+
+      router.replace(from);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Login failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    setError(null);
+    setMessage(null);
+
+    if (!email.trim() || !password.trim()) {
+      setError("Please go back and enter the admin password again before resending the code.");
+      return;
+    }
+
+    setResendLoading(true);
 
     try {
       const response = await fetch("/api/admin/login", {
@@ -54,14 +113,15 @@ function LoginForm() {
       const data = (await response.json()) as { message?: string; error?: string };
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed. Please try again.");
+        throw new Error(data.error || "Unable to resend verification code.");
       }
 
-      router.replace(from);
-    } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Login failed.");
+      setOtp("");
+      setMessage(data.message || "New verification code sent. Check your email again.");
+    } catch (resendError) {
+      setError(resendError instanceof Error ? resendError.message : "Unable to resend verification code.");
     } finally {
-      setLoading(false);
+      setResendLoading(false);
     }
   }
 
@@ -73,36 +133,7 @@ function LoginForm() {
         <div className="absolute right-[8%] top-[55%] h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.1fr_480px]">
-        <section className="hidden text-white lg:block">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-100/90 backdrop-blur">
-            <ShieldCheck className="h-4 w-4" />
-            Restricted Admin Access
-          </div>
-          <h1 className="mt-6 max-w-2xl text-5xl font-black leading-tight">
-            Manage the Novatech website from one secure, admin-only workspace.
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
-            Inventory, categories, leads, SEO, and homepage settings stay behind a dedicated
-            credential gate designed for internal operations only.
-          </p>
-          <div className="mt-10 grid max-w-xl gap-4 sm:grid-cols-2">
-            <div className="rounded-[1.6rem] border border-white/10 bg-white/7 p-5 backdrop-blur">
-              <p className="text-sm font-semibold text-white">Single Administrator</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Only the configured Novatech admin email can enter the control panel.
-              </p>
-            </div>
-            <div className="rounded-[1.6rem] border border-white/10 bg-white/7 p-5 backdrop-blur">
-              <p className="text-sm font-semibold text-white">Protected Session</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Authenticated sessions are stored in a signed HTTP-only cookie for safer access
-                control.
-              </p>
-            </div>
-          </div>
-        </section>
-
+      <div className="relative mx-auto flex w-full max-w-[480px] items-center justify-center">
         <div className="relative w-full">
           <div className="rounded-[2rem] border border-white/12 bg-white/95 p-7 shadow-[0_24px_80px_rgba(2,8,23,0.45)] backdrop-blur xl:p-8">
             <div className="mb-8 text-center">
@@ -123,6 +154,13 @@ function LoginForm() {
                 </div>
               ) : null}
 
+              {message ? (
+                <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <p className="text-sm font-medium text-emerald-700">{message}</p>
+                </div>
+              ) : null}
+
               <label className="grid gap-2.5 text-sm font-semibold text-slate-700">
                 <span className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-slate-400" />
@@ -133,36 +171,55 @@ function LoginForm() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder={ADMIN_EMAIL_HINT}
+                  readOnly={step === "otp"}
                   autoFocus
                   autoComplete="username"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-[#145b93]/10"
                 />
               </label>
 
-              <label className="grid gap-2.5 text-sm font-semibold text-slate-700">
-                <span className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-slate-400" />
-                  Admin Password
-                </span>
-                <div className="relative">
+              {step === "credentials" ? (
+                <label className="grid gap-2.5 text-sm font-semibold text-slate-700">
+                  <span className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-slate-400" />
+                    Admin Password
+                  </span>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Enter password"
+                      autoComplete="current-password"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-12 text-base outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-[#145b93]/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((previous) => !previous)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </label>
+              ) : (
+                <label className="grid gap-2.5 text-sm font-semibold text-slate-700">
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-slate-400" />
+                    Email Verification Code
+                  </span>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Enter password"
-                    autoComplete="current-password"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-12 text-base outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-[#145b93]/10"
+                    type="text"
+                    inputMode="numeric"
+                    value={otp}
+                    onChange={(event) => setOtp(event.target.value)}
+                    placeholder="Enter verification code"
+                    autoComplete="one-time-code"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-[#145b93]/10"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((previous) => !previous)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </label>
+                </label>
+              )}
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                 Authorized account:{" "}
@@ -171,7 +228,12 @@ function LoginForm() {
 
               <button
                 type="submit"
-                disabled={loading || !email.trim() || !password.trim()}
+                disabled={
+                  loading ||
+                  resendLoading ||
+                  !email.trim() ||
+                  (step === "credentials" ? !password.trim() : !otp.trim())
+                }
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-[linear-gradient(135deg,#0f3b63_0%,#145b93_55%,#1d8c78_100%)] px-5 py-3.5 text-sm font-bold text-white shadow-[0_10px_30px_rgba(20,91,147,0.25)] transition hover:shadow-[0_14px_40px_rgba(20,91,147,0.35)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
@@ -191,15 +253,43 @@ function LoginForm() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                       />
                     </svg>
-                    Signing in...
+                    {step === "credentials" ? "Sending code..." : "Verifying..."}
                   </>
                 ) : (
                   <>
                     <LogIn className="h-4 w-4" />
-                    Access Admin Panel
+                    {step === "credentials" ? "Send Verification Code" : "Access Admin Panel"}
                   </>
                 )}
               </button>
+
+              {step === "otp" ? (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleResendOtp()}
+                    disabled={loading || resendLoading}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#145b93] transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${resendLoading ? "animate-spin" : ""}`} />
+                    {resendLoading ? "Resending code..." : "Resend verification code"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("credentials");
+                      setPassword("");
+                      setOtp("");
+                      setMessage(null);
+                      setError(null);
+                    }}
+                    className="w-full text-center text-sm font-semibold text-slate-500 transition hover:text-slate-700"
+                  >
+                    Use a different email or password
+                  </button>
+                </div>
+              ) : null}
             </form>
 
             <p className="mt-6 text-center text-xs text-slate-400">

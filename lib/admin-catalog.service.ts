@@ -13,9 +13,9 @@ import type {
 } from "@/lib/admin-catalog.types";
 import { getLeadRecords } from "@/lib/leads.service";
 import type { CategoryRow, MachineRow } from "@/lib/machine-catalog.types";
-import { resolveProjectPath } from "@/lib/project-paths";
+import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 import { isBase64Image, uploadBase64ImageToStorage } from "@/lib/image-storage";
-import { hasSupabaseConfig, supabaseRest, supabaseRestAdmin } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRest, supabaseRestAdmin, supabaseRestCached } from "@/lib/supabase";
 
 const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
 const supabaseCatalogTimeoutMs = 12_000;
@@ -25,6 +25,7 @@ let catalogWriteQueue = Promise.resolve();
 let supabaseCatalogRead: Promise<AdminCatalogSnapshot | null> | null = null;
 let supabaseCatalogCache: { catalog: AdminCatalogSnapshot; expiresAt: number } | null = null;
 let supabaseCatalogFailureUntil = 0;
+type CatalogReadMode = "fresh" | "cached";
 
 function slugify(value: string) {
   return value
@@ -163,7 +164,7 @@ async function buildSeedCatalog() {
   } satisfies AdminCatalogSnapshot;
 }
 
-async function readSupabaseCatalog() {
+async function readSupabaseCatalog(readMode: CatalogReadMode = "fresh") {
   if (!hasSupabaseConfig()) {
     return null;
   }
@@ -182,17 +183,25 @@ async function readSupabaseCatalog() {
     return supabaseCatalogRead;
   }
 
-  supabaseCatalogRead = readSupabaseCatalogUncached().finally(() => {
+  supabaseCatalogRead = readSupabaseCatalogUncached(readMode).finally(() => {
     supabaseCatalogRead = null;
   });
 
   return supabaseCatalogRead;
 }
 
-async function readSupabaseCatalogUncached() {
+function refreshSupabaseCatalogCache(snapshot: AdminCatalogSnapshot) {
+  supabaseCatalogCache = {
+    catalog: snapshot,
+    expiresAt: Date.now() + supabaseCatalogCacheMs,
+  };
+  supabaseCatalogFailureUntil = 0;
+}
+
+async function readSupabaseCatalogUncached(readMode: CatalogReadMode) {
   try {
-    const categoriesPromise = supabaseCatalogRest<CategoryRow[]>("categories?select=*");
-    const machinesPromise = fetchSupabaseMachineRows();
+    const categoriesPromise = supabaseCatalogRest<CategoryRow[]>("categories?select=*", readMode);
+    const machinesPromise = fetchSupabaseMachineRows(readMode);
     const [categories, machines] = await Promise.all([
       categoriesPromise,
       machinesPromise,
@@ -217,23 +226,28 @@ async function readSupabaseCatalogUncached() {
   }
 }
 
-async function supabaseCatalogRest<T>(query: string) {
+async function supabaseCatalogRest<T>(query: string, readMode: CatalogReadMode = "fresh") {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), supabaseCatalogTimeoutMs);
 
   try {
-    return await supabaseRest<T>(query, { signal: controller.signal });
+    return readMode === "cached"
+      ? await supabaseRestCached<T>(query, 300, { signal: controller.signal })
+      : await supabaseRest<T>(query, { signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
 }
 
-async function fetchSupabaseMachineRows() {
+async function fetchSupabaseMachineRows(readMode: CatalogReadMode = "fresh") {
   const pageSize = 250;
   const rows: MachineRow[] = [];
 
   for (let offset = 0; ; offset += pageSize) {
-    const page = await supabaseCatalogRest<MachineRow[]>(`machines?select=*&limit=${pageSize}&offset=${offset}`);
+    const page = await supabaseCatalogRest<MachineRow[]>(
+      `machines?select=*&limit=${pageSize}&offset=${offset}`,
+      readMode,
+    );
     rows.push(...page);
 
     if (page.length < pageSize) {
@@ -262,6 +276,10 @@ async function readCatalogFile() {
 }
 
 async function writeCatalogFileAtomic(snapshot: AdminCatalogSnapshot) {
+  if (isReadOnlyFilesystem()) {
+    console.warn("Skipping local catalog file write on read-only filesystem (Vercel).");
+    return;
+  }
   await ensureCatalogDir();
   const temporaryPath = `${catalogFilePath}.${process.pid}.${Date.now()}.tmp`;
   const content = `${JSON.stringify(snapshot, null, 2)}\n`;
@@ -368,8 +386,8 @@ function validateMachineInput(input: AdminMachineInput, categories: AdminCategor
   };
 }
 
-export async function getAdminCatalog() {
-  const supabaseCatalog = await readSupabaseCatalog();
+export async function getAdminCatalog(options: { cache?: "fresh" | "public" } = {}) {
+  const supabaseCatalog = await readSupabaseCatalog(options.cache === "public" ? "cached" : "fresh");
   if (supabaseCatalog && supabaseCatalog.categories.length > 0) {
     return supabaseCatalog;
   }
@@ -386,6 +404,7 @@ export async function getAdminCatalog() {
 
 export async function saveAdminCatalog(snapshot: AdminCatalogSnapshot) {
   await writeCatalogFile(snapshot);
+  refreshSupabaseCatalogCache(snapshot);
   return snapshot;
 }
 

@@ -8,7 +8,7 @@ import type {
   MachineItem,
   MachineRow,
 } from "@/lib/machine-catalog.types";
-import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRestCached } from "@/lib/supabase";
 
 function asText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -219,7 +219,7 @@ function normalizeAdminMachine(
 }
 
 export async function getCategories() {
-  const adminCatalog = await getAdminCatalog();
+  const adminCatalog = await getAdminCatalog({ cache: "public" });
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     return createCategoryRowsFromAdmin(adminCatalog.categories);
   }
@@ -229,7 +229,7 @@ export async function getCategories() {
   }
 
   try {
-    return await supabaseRest<CategoryRow[]>("categories?select=*&order=name.asc");
+    return await supabaseRestCached<CategoryRow[]>("categories?select=*&order=name.asc");
   } catch (error) {
     console.error("Failed to fetch categories from Supabase.", error);
     return [] as CategoryRow[];
@@ -237,7 +237,7 @@ export async function getCategories() {
 }
 
 export async function getMachineInventory() {
-  const adminCatalog = await getAdminCatalog();
+  const adminCatalog = await getAdminCatalog({ cache: "public" });
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     const categoryMap = buildCategoryIndex(adminCatalog.categories);
     return adminCatalog.machines
@@ -252,7 +252,7 @@ export async function getMachineInventory() {
 
   const [categories, machineRows] = await Promise.all([
     getCategories(),
-    supabaseRest<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
+    supabaseRestCached<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
       (error) => {
         console.error("Failed to fetch machines from Supabase.", error);
         return [] as MachineRow[];
@@ -274,19 +274,13 @@ export function deriveMachineCategories(machines: MachineItem[], categories: Cat
     if (machine.categoryId) {
       counts.set(machine.categoryId, (counts.get(machine.categoryId) ?? 0) + 1);
     }
-
-    if (machine.subcategoryId) {
-      counts.set(machine.subcategoryId, (counts.get(machine.subcategoryId) ?? 0) + 1);
-    }
   }
 
   return categories
     .filter((category) => !category.parent_id)
     .map((category) => {
       const children = categories.filter((item) => item.parent_id === category.id);
-      const totalCount =
-        (counts.get(category.id) ?? 0) +
-        children.reduce((sum, child) => sum + (counts.get(child.id) ?? 0), 0);
+      const totalCount = counts.get(category.id) ?? 0;
 
       return {
         id: category.id,

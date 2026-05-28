@@ -3,26 +3,26 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { resolveProjectPath } from "@/lib/project-paths";
+import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 import type { SiteSettings } from "@/lib/site-settings.types";
-import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRest, supabaseRestCached } from "@/lib/supabase";
 
 const settingsFilePath = resolveProjectPath("data", "site-settings.json");
 
 const defaultSettings: SiteSettings = {
   companyName: "Novatech",
   companyTagline: "Machinery Corporation",
-  adminEmail: "admin@novatechmachinery.com",
+  adminEmail: "info@novatechmachinery.com",
   adminProfile: {
     fullName: "Admin Novatech Machinery",
     phone: "+91 9646255855",
   },
   home: {
     heroSlides: [
-      { id: "hero-1", src: "/images/hero-banner-Bt56BS_O.webp", alt: "Industrial machinery line overview" },
-      { id: "hero-2", src: "/images/hero-banner-Bt56BS_O.webp", alt: "Factory metalworking production line" },
-      { id: "hero-3", src: "/images/hero-banner-Bt56BS_O.webp", alt: "High-performance equipment warehouse" },
-      { id: "hero-4", src: "/images/hero-banner-Bt56BS_O.webp", alt: "Premium industrial machinery sourcing" },
+      { id: "hero-1", src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_41_23%20AM.png", alt: "Industrial machinery line overview" },
+      { id: "hero-2", src: "/images/homa-appliances-_XDK4naBbgw-unsplash.jpg", alt: "Factory metalworking production line" },
+      { id: "hero-3", src: "/images/jonas-morgner-F7u5fL11Lt0-unsplash.jpg", alt: "High-performance equipment warehouse" },
+      { id: "hero-4", src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_37_15%20AM.png", alt: "Premium industrial machinery sourcing" },
     ],
     featureCards: [
       {
@@ -187,6 +187,16 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
   };
 }
 
+function withLocalHeroSlides(settings: SiteSettings): SiteSettings {
+  return {
+    ...settings,
+    home: {
+      ...settings.home,
+      heroSlides: defaultSettings.home.heroSlides,
+    },
+  };
+}
+
 async function ensureSettingsDir() {
   await mkdir(path.dirname(settingsFilePath), { recursive: true });
 }
@@ -194,9 +204,9 @@ async function ensureSettingsDir() {
 export async function getSiteSettings() {
   if (hasSupabaseConfig()) {
     try {
-      const data = await supabaseRest<{settings: Partial<SiteSettings>}[]>("site_settings?id=eq.main&select=settings");
+      const data = await supabaseRestCached<{settings: Partial<SiteSettings>}[]>("site_settings?id=eq.main&select=settings");
       if (data && data.length > 0 && data[0].settings) {
-        return normalizeSiteSettings(data[0].settings);
+        return withLocalHeroSlides(normalizeSiteSettings(data[0].settings));
       }
     } catch (error) {
       console.error("Failed to fetch site settings from Supabase, falling back to local.", error);
@@ -206,7 +216,7 @@ export async function getSiteSettings() {
   try {
     const content = await readFile(settingsFilePath, "utf8");
     const parsed = JSON.parse(content) as Partial<SiteSettings>;
-    return normalizeSiteSettings(parsed);
+    return withLocalHeroSlides(normalizeSiteSettings(parsed));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw error;
@@ -219,11 +229,15 @@ export async function getSiteSettings() {
 
 export async function saveSiteSettings(settings: SiteSettings) {
   const normalizedSettings = normalizeSiteSettings(settings);
-  try {
-    await ensureSettingsDir();
-    await writeFile(settingsFilePath, JSON.stringify(normalizedSettings, null, 2), "utf8");
-  } catch (error) {
-    console.error("Failed to write site settings locally:", error);
+  if (!isReadOnlyFilesystem()) {
+    try {
+      await ensureSettingsDir();
+      await writeFile(settingsFilePath, JSON.stringify(normalizedSettings, null, 2), "utf8");
+    } catch (error) {
+      console.error("Failed to write site settings locally:", error);
+    }
+  } else {
+    console.warn("Skipping local site settings write on read-only filesystem (Vercel).");
   }
 
   if (hasSupabaseConfig()) {

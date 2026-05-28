@@ -14,3 +14,8 @@ function resolveProjectRoot() {
 export function resolveProjectPath(...segments: string[]) {
   return path.join(resolveProjectRoot(), ...segments);
 }
+
+export function isReadOnlyFilesystem() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+}
+

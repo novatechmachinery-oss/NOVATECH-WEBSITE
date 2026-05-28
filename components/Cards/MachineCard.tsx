@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
 type MachineCardProps = {
   title: string;
@@ -52,7 +53,7 @@ export default function MachineCard({
   description,
   primaryHref = "/metal-working-machinery",
   primaryLabel = "View All Machines",
-  whatsappHref = "https://wa.me/919646255755",
+  whatsappHref = WHATSAPP_HREF,
   whatsappLabel = "WhatsApp",
 }: MachineCardProps) {
   return (

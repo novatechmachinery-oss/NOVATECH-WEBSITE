@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import AdminLogin from "@/components/admin/AdminLogin";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Admin Login - Novatech",
   description: "Sign in to access the Novatech admin panel.",

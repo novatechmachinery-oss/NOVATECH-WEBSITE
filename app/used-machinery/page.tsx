@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
 import UsedMachineryPage from "@/components/UsedMachineryPage";
+import type { MachineMode } from "@/components/MetalWorkingCatalogue";
 import { getMachineCatalogData } from "@/lib/machines";
 import { buildSeoRoute, generatePageMetadata } from "@/lib/seo/metadata";
 import { getBreadcrumbSchema } from "@/lib/seo/schema";
-
-export const dynamic = "force-dynamic";
 
 type SearchParamsInput = Promise<{
   category?: string | string[];
   subcategory?: string | string[];
   machine?: string | string[];
+  mode?: string | string[];
 }>;
 
 function readParam(value: string | string[] | undefined) {
   return typeof value === "string" ? value : null;
+}
+
+function readMachineMode(value: string | string[] | undefined): MachineMode | null {
+  if (value === "cnc" || value === "conventional" || value === "all") {
+    return value;
+  }
+
+  return null;
 }
 
 export async function generateMetadata({
@@ -67,6 +75,7 @@ export default async function UsedMachineryRoutePage({
         initialCategory={readParam(params.category)}
         initialSubcategory={readParam(params.subcategory)}
         initialMachineId={readParam(params.machine)}
+        initialMachineMode={readMachineMode(params.mode)}
       />
     </>
   );
