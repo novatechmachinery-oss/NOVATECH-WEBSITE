@@ -104,6 +104,16 @@ export async function getAuthenticatedAdmin(
     return null;
   }
 
+  const cookies = request.cookies.getAll();
+  const hasAuthCookie = cookies.some(
+    (c) => c.name.startsWith("sb-") || c.name === LEGACY_COOKIE_NAME
+  );
+  const hasAuthHeader = request.headers.get("Authorization")?.startsWith("Bearer ");
+
+  if (!hasAuthCookie && !hasAuthHeader) {
+    return null;
+  }
+
   try {
     const supabase = createAdminSupabaseClient(request, response);
     const {
