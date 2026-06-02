@@ -48,6 +48,7 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
           src={imageList[activeImageIndex]}
           alt={m.title}
           fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition duration-700 hover:scale-[1.03]"
           style={{ objectPosition: activePosition }}
         />
@@ -104,6 +105,11 @@ export default function MetalWorkingCatalogue({
 }: MetalWorkingCatalogueProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  function isSpecialDealsCategory(value: string | null) {
+    const normalized = value?.trim().toLowerCase();
+    return normalized === "special deals" || normalized === "special-deals";
+  }
 
   function matchesCategoryValue(category: MachineCategory, value: string | null) {
     if (!value) {
@@ -221,7 +227,9 @@ export default function MetalWorkingCatalogue({
       Object.fromEntries(
         machineCategories.map((category) => [
           category.name,
-          machineInventory.filter((machine) => machine.category === category.name).length,
+          isSpecialDealsCategory(category.name)
+            ? machineInventory.filter((machine) => machine.isSpecialDeal).length
+            : machineInventory.filter((machine) => machine.category === category.name).length,
         ])
       ),
     [machineCategories, machineInventory]
@@ -233,7 +241,8 @@ export default function MetalWorkingCatalogue({
     let result = machineInventory.filter((m) => {
       return (
         (machineMode === "all" || m.machineType === machineMode) &&
-        (!selectedCategory || m.category === selectedCategory) &&
+        (!selectedCategory ||
+          (isSpecialDealsCategory(selectedCategory) ? m.isSpecialDeal : m.category === selectedCategory)) &&
         (!selectedSubcategory || m.subcategory === selectedSubcategory) &&
         (!q ||
           [m.title, m.description, m.category, m.subcategory]
@@ -939,9 +948,9 @@ export default function MetalWorkingCatalogue({
                   </div>
                 </div>
 
-                <div className="min-w-0 flex flex-col gap-4 xl:h-full">
+                <div className="min-w-0 flex flex-col gap-4 lg:h-[530px] xl:h-[530px]">
                   <div
-                    className="min-w-0 border border-slate-200 bg-white p-3 sm:p-5 xl:flex xl:flex-col xl:overflow-hidden"
+                    className="min-w-0 border border-slate-200 bg-white p-3 sm:p-5 lg:flex lg:h-full lg:flex-col lg:overflow-hidden"
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span className="text-[0.9rem] font-semibold uppercase tracking-[0.08em] text-slate-950 sm:text-[0.98rem]">
@@ -950,7 +959,7 @@ export default function MetalWorkingCatalogue({
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="min-w-0 overflow-hidden xl:flex-1 xl:overflow-y-auto">
+                    <div className="min-w-0 overflow-hidden lg:flex-1 lg:overflow-y-auto">
                       {machineSpecifications.map((spec, index) => (
                         <div
                           key={`${spec.label}-${index}`}
@@ -967,24 +976,23 @@ export default function MetalWorkingCatalogue({
                 </div>
               </div>
 
-            </div>
+              <div className="mt-4 min-w-0 border border-slate-200 bg-white p-3 sm:p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
+                    Description
+                  </span>
+                  <span className="h-[2px] flex-1 bg-[#145b93]" />
+                </div>
 
-            <div className="mt-4 min-w-0 border border-slate-200 bg-white p-3 sm:p-5">
-              <div className="mb-3 flex items-center gap-3">
-                <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
-                  Description
-                </span>
-                <span className="h-[2px] flex-1 bg-[#145b93]" />
-              </div>
-
-              <div className="min-w-0 space-y-2.5 break-words text-[0.95rem] leading-7 text-slate-600 sm:text-[0.98rem]">
-                {machineDetailDescription.length > 0 ? (
-                  machineDetailDescription.map((line) => (
-                    <p key={line}>{line}</p>
-                  ))
-                ) : (
-                  <p>Please contact Novatech for complete machine details.</p>
-                )}
+                <div className="min-w-0 space-y-2.5 break-words text-[0.95rem] leading-7 text-slate-600 sm:text-[0.98rem]">
+                  {machineDetailDescription.length > 0 ? (
+                    machineDetailDescription.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))
+                  ) : (
+                    <p>Please contact Novatech for complete machine details.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

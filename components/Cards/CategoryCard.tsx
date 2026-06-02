@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 type CategoryCardProps = {
@@ -17,30 +18,47 @@ export default function CategoryCard({
   imagePosition = "center",
   ctaLabel = "View Details",
 }: CategoryCardProps) {
-  void imageSrc;
-  void imagePosition;
-  void ctaLabel;
+  void description;
+
+  const normalizedTitle = title.trim().toLowerCase();
+  let resolvedHref = href;
+
+  if (normalizedTitle === "all machines") {
+    resolvedHref = "/used-machinery";
+  } else if (normalizedTitle === "conventional machines") {
+    resolvedHref = "/used-machinery?mode=conventional";
+  } else if (normalizedTitle === "cnc machines") {
+    resolvedHref = "/used-machinery?mode=cnc";
+  }
 
   return (
     <Link
-      href={href}
-      className="group relative block h-full cursor-pointer overflow-hidden rounded-[1.75rem] border border-[#d4af37]/45 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-2 hover:border-[#d4af37]/80 hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)]"
+      href={resolvedHref}
+      className="group relative block h-full cursor-pointer overflow-hidden rounded-[1rem] border border-[#cfdceb] bg-[#16548b] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition duration-300 hover:border-[#7aa5cb] hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)]"
     >
-      <div className="absolute inset-0 bg-white" />
-      <div className="absolute inset-x-0 top-0 h-px bg-[#f6e7a8]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-[#e4edf5]" />
 
-      <div className="relative flex min-h-[168px] flex-col justify-start gap-3 px-5 py-5 sm:min-h-[184px] sm:px-6 sm:py-5 lg:min-h-[196px] lg:px-7 lg:py-5">
-        <span className="inline-flex w-fit rounded-full border border-[#d4af37]/35 bg-[#fff8dc] px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.24em] text-[#b8860b]">
-          Explore
-        </span>
+      <div className="relative flex min-h-[248px] flex-col sm:min-h-[284px]">
+        <div className="relative h-[188px] overflow-hidden bg-white sm:h-[208px]">
+          <Image
+            src={imageSrc}
+            alt={title}
+            fill
+            sizes="(max-width: 640px) 100vw, 25vw"
+            className="object-cover transition duration-500 group-hover:scale-[1.04]"
+            style={{ objectPosition: imagePosition }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.01),rgba(15,23,42,0.06))]" />
+        </div>
 
-        <div className="min-w-0 flex-1">
-          <h3 className="text-[1.22rem] font-black uppercase leading-tight text-[#b8860b] sm:text-[1.38rem] lg:text-[1.62rem]">
+        <div className="flex min-h-[60px] items-end justify-between gap-2 bg-[#16548b] px-4 py-3 sm:min-h-[68px] sm:px-5 sm:py-3.5 lg:px-6">
+          <h3 className="max-w-[58%] font-serif text-[1rem] font-semibold uppercase leading-[0.96] text-white sm:text-[1.1rem] lg:text-[1.2rem]">
             {title}
           </h3>
-          <p className="mt-2.5 max-w-[26rem] text-[0.9rem] font-semibold uppercase leading-5 text-[#c49a1d] sm:text-[0.98rem] lg:text-[1.04rem] lg:leading-6">
-            {description}
-          </p>
+
+          <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white px-3 text-[0.66rem] font-black uppercase tracking-[0.14em] text-[#16548b] shadow-[0_10px_22px_rgba(21,84,139,0.16)] transition duration-300 group-hover:bg-[#eef5fb] sm:h-10 sm:px-4 sm:text-[0.7rem]">
+            {ctaLabel}
+          </span>
         </div>
       </div>
     </Link>

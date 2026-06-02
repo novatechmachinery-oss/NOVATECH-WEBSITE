@@ -178,7 +178,7 @@ export default async function CategoriesPage() {
                   <Link
                     key={category.name}
                     href={category.href}
-                    className="group block cursor-pointer overflow-hidden rounded-[1.1rem] border border-sky-100 bg-white shadow-[0_16px_34px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-[0_26px_48px_rgba(20,91,147,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
+                    className="group block cursor-pointer overflow-hidden rounded-[1.1rem] border border-[#16548b] bg-white shadow-[0_16px_34px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#16548b] hover:shadow-[0_26px_48px_rgba(20,91,147,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
                   >
                     <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-4.5 pb-3.5 pt-3.5 text-white">
                       <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/15 blur-2xl transition duration-300 group-hover:scale-110" />
@@ -199,12 +199,12 @@ export default async function CategoriesPage() {
                     </div>
 
                     <div className="bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-4.5 pb-4 pt-3">
-                      <div className="rounded-[0.9rem] border border-sky-100/80 bg-white p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
+                      <div className="rounded-[0.9rem] bg-white p-3">
                         <div className="flex flex-wrap gap-2.5">
                           {category.subcategories.slice(0, 4).map((subcategory) => (
                             <span
                               key={subcategory}
-                              className="rounded-full bg-sky-50 px-3 py-1.5 text-[0.76rem] font-medium text-slate-700 ring-1 ring-sky-100"
+                              className="rounded-full bg-white px-3 py-1.5 text-[0.82rem] font-semibold text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.16)]"
                             >
                               {subcategory}
                             </span>
@@ -215,7 +215,7 @@ export default async function CategoriesPage() {
                             </span>
                           ) : null}
                           {category.subcategories.length === 0 ? (
-                            <span className="rounded-full bg-sky-50 px-3 py-1.5 text-[0.76rem] text-slate-500 ring-1 ring-sky-100">
+                            <span className="rounded-full bg-white px-3 py-1.5 text-[0.82rem] font-semibold text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.16)]">
                               Explore available machines
                             </span>
                           ) : null}

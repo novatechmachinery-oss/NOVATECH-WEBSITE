@@ -6,7 +6,7 @@ import { getSiteSettings } from "@/lib/site-settings.service";
 
 export default async function Footer() {
   const settings = await getSiteSettings();
-  const { contact, footer, companyName, companyTagline } = settings;
+  const { contact, footer, branding } = settings;
 
   const contactItems = [
     {
@@ -47,27 +47,26 @@ export default async function Footer() {
         }}
       />
 
-      <div className="relative mx-auto max-w-[1660px] px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-10 border-b border-white/12 pb-8 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1.15fr]">
+      <div className="relative mx-auto max-w-[1660px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid gap-6 border-b border-white/12 pb-5 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1.15fr]">
           <div>
-            <div className="flex items-center gap-4">
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/20 bg-white/95 shadow-lg">
-                <Image src="/images/main logo.webp" alt="Novatech logo" fill className="object-cover" />
+            <div className="flex items-center gap-2">
+              <div className="relative h-[78px] w-[102px] shrink-0 overflow-hidden">
+                <Image src={branding.logoSrc} alt={branding.logoAlt} fill sizes="102px" className="object-contain" />
               </div>
-
-              <div>
-                <h2 className="text-[1.55rem] font-black uppercase tracking-[0.04em] text-white">
-                  {companyName}
-                </h2>
-                <p className="text-[0.74rem] font-semibold uppercase tracking-[0.18em] text-sky-100/90">
-                  {companyTagline}
-                </p>
+              <div className="min-w-0 flex flex-col leading-none text-white">
+                <span className="whitespace-nowrap text-[1.1rem] font-black uppercase tracking-[0.02em] xl:text-[1.32rem]">
+                  Novatech Machinery Corporation
+                </span>
+                <span className="mt-1 text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-white xl:text-[0.86rem]">
+                  OPC Pvt. Ltd.
+                </span>
               </div>
             </div>
 
-            <p className="mt-5 max-w-sm text-[0.96rem] leading-8 text-sky-50/95">{footer.aboutText}</p>
+            <p className="mt-3.5 max-w-sm text-[0.96rem] leading-7 text-sky-50/95">{footer.aboutText}</p>
 
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-sky-50/90">
+            <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1 text-[0.72rem] font-black uppercase tracking-[0.14em] text-sky-50/90">
               <span>Global Sourcing</span>
               <span>50+ Machine Types</span>
             </div>
@@ -78,7 +77,7 @@ export default async function Footer() {
               <h3 className="border-b border-white/14 pb-3 text-[0.82rem] font-black uppercase tracking-[0.24em] text-sky-100">
                 Quick Links
               </h3>
-              <div className="mt-5 space-y-3 text-[0.98rem] text-sky-50/95">
+              <div className="mt-3.5 space-y-2 text-[0.98rem] text-sky-50/95">
                 {footer.quickLinks.map((item) => (
                   <Link
                     key={item.id}
@@ -95,7 +94,7 @@ export default async function Footer() {
               <h3 className="border-b border-white/14 pb-3 text-[0.82rem] font-black uppercase tracking-[0.24em] text-sky-100">
                 Machinery
               </h3>
-              <div className="mt-5 space-y-3 text-[0.98rem] text-sky-50/95">
+              <div className="mt-3.5 space-y-2 text-[0.98rem] text-sky-50/95">
                 {footer.machineryLinks.map((item) => (
                   <Link
                     key={item.id}
@@ -113,15 +112,15 @@ export default async function Footer() {
             <h3 className="border-b border-white/14 pb-3 text-[0.82rem] font-black uppercase tracking-[0.24em] text-sky-100">
               Contact
             </h3>
-            <div className="mt-5 space-y-4 text-[0.98rem] text-sky-50/95">
+            <div className="mt-3.5 space-y-2.5 text-[0.98rem] text-sky-50/95">
               {contactItems.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <div key={index} className="grid grid-cols-[42px_1fr] items-start gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/14 bg-white/6 text-sky-200">
+                  <div key={index} className="grid grid-cols-[38px_1fr] items-start gap-3">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/14 bg-white/6 text-sky-200">
                       <Icon className="h-4 w-4" />
                     </span>
-                    <div className="pt-1 leading-7">{item.content}</div>
+                    <div className="pt-0.5 leading-7">{item.content}</div>
                   </div>
                 );
               })}
@@ -129,7 +128,7 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center justify-between gap-3 pt-5 text-sm text-sky-50/80 md:flex-row">
+        <div className="relative flex flex-col items-center justify-between gap-2 pt-3 text-sm text-sky-50/80 md:flex-row">
           <p>{footer.copyrightText}</p>
           <div className="flex items-center gap-5">
             {footer.policyLinks.map((item) => (

@@ -9,11 +9,14 @@ type Deal = {
   badge: string;
   title: string;
   description: string;
+  category?: string;
+  machineType?: string;
   imageSrc: string;
   imageAlt: string;
   imagePosition?: string;
   images?: string[];
   imagePositions?: string[];
+  specifications?: Array<{ label: string; value: string }>;
 };
 
 type SpecialDealsSliderProps = {
@@ -44,6 +47,7 @@ export default function SpecialDealsSlider({ deals }: SpecialDealsSliderProps) {
     deals[(startIndex + 1) % deals.length],
     deals[(startIndex + 2) % deals.length],
     deals[(startIndex + 3) % deals.length],
+    deals[(startIndex + 4) % deals.length],
   ];
 
   return (
@@ -57,22 +61,25 @@ export default function SpecialDealsSlider({ deals }: SpecialDealsSliderProps) {
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {visibleDeals.map((deal, index) => (
           <div
             key={`${deal.title}-${index}`}
-            className={`h-full ${index === 1 ? "hidden sm:block" : ""} ${index > 1 ? "hidden xl:block" : ""}`}
+            className={`h-full ${index === 1 ? "hidden sm:block" : ""} ${index === 2 ? "hidden lg:block" : ""} ${index > 2 ? "hidden 2xl:block" : ""}`}
           >
             <DealCard
               badge={deal.badge}
               machineId={deal.machineId}
               title={deal.title}
               description={deal.description}
+              category={deal.category}
+              machineType={deal.machineType}
               imageSrc={deal.imageSrc}
               imageAlt={deal.imageAlt}
               imagePosition={deal.imagePosition}
               images={deal.images}
               imagePositions={deal.imagePositions}
+              specifications={deal.specifications}
             />
           </div>
         ))}

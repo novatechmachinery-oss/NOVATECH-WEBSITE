@@ -48,14 +48,14 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
   }, [currentIndex, slides]);
 
   return (
-    <section className="relative left-1/2 -mt-4 h-[320px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 sm:h-[420px]">
+    <section className="relative left-1/2 -mt-4 h-[280px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 sm:h-[340px] md:h-[400px] lg:h-[460px] xl:h-[500px] 2xl:h-[540px]">
       <div className="absolute inset-0">
         <Image
           src={slides[currentIndex].src}
           alt={slides[currentIndex].alt}
           fill
           sizes="100vw"
-          className="object-cover transition-opacity duration-1000"
+          className="object-cover object-[center_38%] sm:object-[center_36%] lg:object-[center_34%] xl:object-[center_32%] transition-opacity duration-1000"
         />
         <div className="absolute inset-0 bg-slate-950/10" />
       </div>
@@ -63,7 +63,7 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
       <button
         type="button"
         onClick={() => setCurrentIndex(getPrevIndex(currentIndex, slides.length))}
-        className="absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:left-5 sm:h-12 sm:w-12"
+        className="absolute left-3 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:left-5 sm:h-12 sm:w-12"
         aria-label="Previous slide"
       >
         {"<"}
@@ -72,25 +72,11 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
       <button
         type="button"
         onClick={() => setCurrentIndex(getNextIndex(currentIndex, slides.length))}
-        className="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:right-5 sm:h-12 sm:w-12"
+        className="absolute right-3 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:right-5 sm:h-12 sm:w-12"
         aria-label="Next slide"
       >
         {">"}
       </button>
-
-      <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => setCurrentIndex(index)}
-            className={`h-2.5 w-10 rounded-full transition ${
-              index === currentIndex ? "bg-[var(--accent)]" : "bg-white/60 hover:bg-white/80"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
     </section>
   );
 }

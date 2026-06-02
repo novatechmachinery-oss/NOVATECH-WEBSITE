@@ -27,6 +27,39 @@ function asStringArray(value: unknown) {
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
+function normalizeImageUrl(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (trimmed.startsWith("data:image/")) {
+    return trimmed;
+  }
+
+  const normalizedSlashes = trimmed.replace(/\\/g, "/");
+
+  if (/^https?:\/\//i.test(normalizedSlashes)) {
+    try {
+      return encodeURI(normalizedSlashes);
+    } catch {
+      return normalizedSlashes;
+    }
+  }
+
+  const withoutPublicPrefix = normalizedSlashes.replace(/^\.?\/?public\//i, "");
+  const rootedPath = withoutPublicPrefix.startsWith("/")
+    ? withoutPublicPrefix
+    : `/${withoutPublicPrefix.replace(/^\/+/, "")}`;
+
+  try {
+    return encodeURI(rootedPath);
+  } catch {
+    return rootedPath;
+  }
+}
+
 function normalizeMachineType(value: unknown): MachineItem["machineType"] {
   return asText(value).toLowerCase() === "cnc" ? "cnc" : "conventional";
 }
@@ -119,7 +152,7 @@ function normalizeMachine(row: MachineRow, categoryMap: Map<string, CategoryRow>
     return null;
   }
 
-  const images = asStringArray(row.images);
+  const images = asStringArray(row.images).map(normalizeImageUrl).filter(Boolean);
   const primaryImage = images[0] ?? "/images/hero-banner-Bt56BS_O.webp";
   const machineType = normalizeMachineType(row.machine_type);
   const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
@@ -170,8 +203,9 @@ function normalizeAdminMachine(
     return null;
   }
 
-  const primaryImage = machine.images[0] ?? "/images/hero-banner-Bt56BS_O.webp";
-  const imagePositions = machine.images.length > 0 ? buildImagePositions(machine.images.length) : ["center center"];
+  const images = machine.images.map(normalizeImageUrl).filter(Boolean);
+  const primaryImage = images[0] ?? "/images/hero-banner-Bt56BS_O.webp";
+  const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
   const badgeTarget = subcategory?.name ?? mainCategory.name;
 
   return {
@@ -194,7 +228,7 @@ function normalizeAdminMachine(
     condition: machine.condition,
     stockNumber: machine.inventoryNumber ?? machine.serialNumber,
     support: "Inspection, loading and export assistance available",
-    images: machine.images.length > 0 ? machine.images : [primaryImage],
+    images: images.length > 0 ? images : [primaryImage],
     imagePositions,
     isSpecialDeal: machine.specialDeal,
     dealBadge: `${machine.machineType.toUpperCase()} - ${badgeTarget}`,
@@ -269,6 +303,7 @@ export async function getMachineInventory() {
 
 export function deriveMachineCategories(machines: MachineItem[], categories: CategoryRow[]) {
   const counts = new Map<string, number>();
+  const specialDealsCount = machines.filter((machine) => machine.isSpecialDeal).length;
 
   for (const machine of machines) {
     if (machine.categoryId) {
@@ -280,7 +315,10 @@ export function deriveMachineCategories(machines: MachineItem[], categories: Cat
     .filter((category) => !category.parent_id)
     .map((category) => {
       const children = categories.filter((item) => item.parent_id === category.id);
-      const totalCount = counts.get(category.id) ?? 0;
+      const totalCount =
+        category.name.toLowerCase() === "special deals"
+          ? specialDealsCount
+          : counts.get(category.id) ?? 0;
 
       return {
         id: category.id,
@@ -302,21 +340,26 @@ export async function getMachineCatalogData() {
   };
 }
 
-export async function getSpecialDeals(limit = 4) {
+export async function getSpecialDeals(limit?: number) {
   const machines = await getMachineInventory();
   const source = machines.some((machine) => machine.isSpecialDeal)
     ? machines.filter((machine) => machine.isSpecialDeal)
     : machines;
 
-  return source.slice(0, limit).map((machine) => ({
+  const selectedMachines = typeof limit === "number" ? source.slice(0, limit) : source;
+
+  return selectedMachines.map((machine) => ({
     machineId: machine.id,
     badge: machine.dealBadge ?? machine.category,
     title: machine.title,
     description: machine.dealDescription ?? machine.description,
+    category: machine.subcategory ?? machine.category,
+    machineType: machine.machineType.toUpperCase(),
     imageSrc: machine.imageSrc,
     imageAlt: machine.imageAlt,
     imagePosition: machine.imagePosition,
     images: machine.images?.length ? machine.images : [machine.imageSrc],
     imagePositions: machine.imagePositions,
+    specifications: machine.specifications ?? [],
   }));
 }

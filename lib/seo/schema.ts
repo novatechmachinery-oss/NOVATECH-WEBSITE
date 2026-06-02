@@ -44,7 +44,7 @@ export async function getLocalBusinessSchema() {
     "@type": "LocalBusiness",
     name: config.siteName,
     url: config.baseUrl,
-    image: `${config.baseUrl}/images/main logo.webp`,
+    image: `${config.baseUrl}/images/MAIN%20LOGO.png`,
     telephone: siteSettings.contact.phonePrimary,
     email: siteSettings.contact.emailAddress,
     address: {

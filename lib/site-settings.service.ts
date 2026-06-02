@@ -12,6 +12,10 @@ const settingsFilePath = resolveProjectPath("data", "site-settings.json");
 const defaultSettings: SiteSettings = {
   companyName: "Novatech",
   companyTagline: "Machinery Corporation",
+  branding: {
+    logoSrc: "/images/MAIN%20LOGO.png",
+    logoAlt: "Novatech logo",
+  },
   adminEmail: "info@novatechmachinery.com",
   adminProfile: {
     fullName: "Admin Novatech Machinery",
@@ -19,10 +23,12 @@ const defaultSettings: SiteSettings = {
   },
   home: {
     heroSlides: [
-      { id: "hero-1", src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_41_23%20AM.png", alt: "Industrial machinery line overview" },
-      { id: "hero-2", src: "/images/homa-appliances-_XDK4naBbgw-unsplash.jpg", alt: "Factory metalworking production line" },
-      { id: "hero-3", src: "/images/jonas-morgner-F7u5fL11Lt0-unsplash.jpg", alt: "High-performance equipment warehouse" },
-      { id: "hero-4", src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_37_15%20AM.png", alt: "Premium industrial machinery sourcing" },
+      { id: "hero-1", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2003_17_13%20PM.png", alt: "Industrial machinery line overview" },
+      { id: "hero-2", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2003_53_58%20PM.png", alt: "Factory metalworking production line" },
+      { id: "hero-3", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_15_10%20PM.png", alt: "High-performance equipment warehouse" },
+      { id: "hero-4", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_15_47%20PM.png", alt: "Premium industrial machinery sourcing" },
+      { id: "hero-5", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_16_04%20PM.png", alt: "Used machine sourcing showcase" },
+      { id: "hero-6", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_18_06%20PM.png", alt: "Novatech machinery inventory display" },
     ],
     featureCards: [
       {
@@ -30,31 +36,34 @@ const defaultSettings: SiteSettings = {
         title: "All Machines",
         description: "Browse every available machine in one place",
         href: "/metal-working-machinery",
-        imageSrc: "/images/all-machines-bg-pic.png",
+        imageSrc: "/images/alltypemachine.jpg",
         imagePosition: "center center",
+        ctaLabel: "View All",
       },
       {
         id: "feature-2",
         title: "Conventional Machines",
         description: "Lathes, milling, grinding, boring and more",
         href: "/metal-working-machinery#conventional-machines",
-        imageSrc: "/images/Conventional-machines-bg-pic.png",
+        imageSrc: "/images/convitional.jpg",
         imagePosition: "center center",
+        ctaLabel: "View All",
       },
       {
         id: "feature-3",
         title: "CNC Machines",
         description: "CNC lathes, machining centres and more",
         href: "/metal-working-machinery#cnc-machines",
-        imageSrc: "/images/cnc-machines-bg-pic.png",
+        imageSrc: "/images/cnc.jpg",
         imagePosition: "center center",
+        ctaLabel: "View All",
       },
       {
         id: "feature-4",
         title: "Sell Your Machinery",
         description: "We Buy Single Machines & Complete Plants",
         href: "/contact",
-        imageSrc: "/images/sale-machines-bg-pic.png",
+        imageSrc: "/images/saleyour%20machinesr.jpg",
         imagePosition: "center center",
         ctaLabel: "Contact Us",
       },
@@ -134,6 +143,10 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     ...settings,
     companyName: pickString(settings.companyName, defaultSettings.companyName),
     companyTagline: pickString(settings.companyTagline, defaultSettings.companyTagline),
+    branding: {
+      logoSrc: pickString(settings.branding?.logoSrc, defaultSettings.branding.logoSrc),
+      logoAlt: pickString(settings.branding?.logoAlt, defaultSettings.branding.logoAlt),
+    },
     adminEmail: pickString(settings.adminEmail, defaultSettings.adminEmail),
     adminProfile: {
       fullName: pickString(settings.adminProfile?.fullName, defaultSettings.adminProfile.fullName),
@@ -187,16 +200,6 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
   };
 }
 
-function withLocalHeroSlides(settings: SiteSettings): SiteSettings {
-  return {
-    ...settings,
-    home: {
-      ...settings.home,
-      heroSlides: defaultSettings.home.heroSlides,
-    },
-  };
-}
-
 async function ensureSettingsDir() {
   await mkdir(path.dirname(settingsFilePath), { recursive: true });
 }
@@ -206,7 +209,7 @@ export async function getSiteSettings() {
     try {
       const data = await supabaseRestCached<{settings: Partial<SiteSettings>}[]>("site_settings?id=eq.main&select=settings");
       if (data && data.length > 0 && data[0].settings) {
-        return withLocalHeroSlides(normalizeSiteSettings(data[0].settings));
+        return normalizeSiteSettings(data[0].settings);
       }
     } catch (error) {
       console.error("Failed to fetch site settings from Supabase, falling back to local.", error);
@@ -216,7 +219,7 @@ export async function getSiteSettings() {
   try {
     const content = await readFile(settingsFilePath, "utf8");
     const parsed = JSON.parse(content) as Partial<SiteSettings>;
-    return withLocalHeroSlides(normalizeSiteSettings(parsed));
+    return normalizeSiteSettings(parsed);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       throw error;

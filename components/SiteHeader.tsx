@@ -83,7 +83,10 @@ export default function SiteHeader() {
         phoneSecondary={settings?.contact.phoneSecondary}
         whatsappNumber={settings?.contact.whatsappNumber}
       />
-      <Navbar />
+      <Navbar
+        logoSrc={settings?.branding.logoSrc}
+        logoAlt={settings?.branding.logoAlt}
+      />
       <HomeCategoryNav types={settings?.navigation.categoryLinks} />
     </header>
   );

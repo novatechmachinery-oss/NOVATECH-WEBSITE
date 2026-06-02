@@ -133,7 +133,7 @@ function LoginForm() {
         <div className="absolute right-[8%] top-[55%] h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-[480px] items-center justify-center">
+      <div className="relative mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-[480px] items-center justify-center">
         <div className="relative w-full">
           <div className="rounded-[2rem] border border-white/12 bg-white/95 p-7 shadow-[0_24px_80px_rgba(2,8,23,0.45)] backdrop-blur xl:p-8">
             <div className="mb-8 text-center">
@@ -291,10 +291,6 @@ function LoginForm() {
                 </div>
               ) : null}
             </form>
-
-            <p className="mt-6 text-center text-xs text-slate-400">
-              Protected area only &middot; Unauthorized access is prohibited
-            </p>
           </div>
         </div>
       </div>

@@ -29,6 +29,10 @@ export type QuickLink = {
 export type SiteSettings = {
   companyName: string;
   companyTagline: string;
+  branding: {
+    logoSrc: string;
+    logoAlt: string;
+  };
   adminEmail: string;
   adminProfile: {
     fullName: string;

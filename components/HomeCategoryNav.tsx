@@ -22,7 +22,7 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
   const pathname = usePathname();
 
   return (
-    <div className="border-t border-[#c18a10] bg-[linear-gradient(90deg,#a86f05_0%,#c58a10_18%,#e7b93a_50%,#c58a10_82%,#9b6403_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+    <div className="border-t border-[#d8e4ef] border-b border-[#c6d6e4] bg-white text-[#16548b] shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
       <div className="mx-auto max-w-[1460px] px-2 sm:px-4 lg:px-6 xl:px-8">
         <div className="grid grid-cols-2 items-stretch md:flex">
         {types.map((item) => {
@@ -31,13 +31,18 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
             <Link
               key={item.label}
               href={item.href}
-              className={`relative flex min-h-10 items-center justify-center border-r border-white/12 px-3 py-2 text-center text-[0.66rem] font-extrabold uppercase tracking-[0.08em] text-white transition first:border-l md:min-h-11 md:flex-1 md:px-4 md:text-[0.72rem] lg:px-5 lg:text-[0.82rem] ${
+              className={`group relative flex min-h-9 items-center justify-center border-r border-[#d8e4ef] px-3 py-2 text-center text-[0.66rem] font-extrabold uppercase tracking-[0.08em] text-[#16548b] transition duration-300 first:border-l first:border-l-[#d8e4ef] md:min-h-10 md:flex-1 md:px-4 md:text-[0.72rem] lg:px-5 lg:text-[0.8rem] ${
                 isActive
-                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0.08))] shadow-[inset_0_-2px_0_rgba(255,255,255,0.45)]"
-                  : "hover:bg-white/10"
+                  ? "bg-white text-[#16548b] shadow-[inset_0_-2px_0_#16548b]"
+                  : "hover:bg-[#f4f8fb] hover:text-[#16548b]"
               }`}
             >
               <span className="text-balance leading-4 md:leading-[1.1]">{item.label}</span>
+              <span
+                className={`absolute bottom-1.5 left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-[#16548b] transition-all duration-300 ${
+                  isActive ? "w-10 opacity-100" : "w-0 opacity-0 group-hover:w-10 group-hover:opacity-100"
+                }`}
+              />
             </Link>
           );
         })}

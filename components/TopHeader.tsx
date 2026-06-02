@@ -399,6 +399,7 @@ export default function TopHeader({
             <button
               type="button"
               onClick={openModal}
+              suppressHydrationWarning
               className="ml-1 inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-[#e4414c]/20 bg-[#e4414c] px-3 text-[0.72rem] font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(228,65,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#cf2632] hover:shadow-[0_12px_24px_rgba(228,65,76,0.24)] focus:outline-none focus:ring-2 focus:ring-[#e4414c]/25 focus:ring-offset-2 sm:px-4 sm:text-[0.76rem]"
             >
               <NewsletterIcon />

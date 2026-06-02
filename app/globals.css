@@ -3,7 +3,7 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
-  --font-sans: var(--font-geist-sans);
+  --font-sans: Georgia, "Times New Roman", Times, serif;
   --font-mono: var(--font-geist-mono);
   --accent: #e4414c;
   --accent-strong: #e83b46;
@@ -27,7 +27,7 @@ body {
   min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 * {
@@ -180,4 +180,173 @@ select {
 
 .special-deals-chip {
   animation: deals-chip-float 4s ease-in-out infinite;
+}
+
+@keyframes deals-confetti-fall {
+  0% {
+    transform: translate3d(0, -5px, 0) rotate(0deg) scale(0.88);
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(7px, 22px, 0) rotate(160deg) scale(1.02);
+    opacity: 0;
+  }
+}
+
+.special-deals-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(244, 114, 182, 0.12), transparent 20%),
+    radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.14), transparent 18%),
+    radial-gradient(circle at 48% 8%, rgba(250, 204, 21, 0.16), transparent 16%);
+  pointer-events: none;
+}
+
+.special-deals-confetti {
+  position: absolute;
+  display: block;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  opacity: 0.92;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+  animation: deals-confetti-fall 3.2s ease-in-out infinite;
+}
+
+.special-deals-confetti-1 {
+  top: 10px;
+  left: 8%;
+  background: #ef4444;
+  animation-delay: -0.2s;
+}
+
+.special-deals-confetti-2 {
+  top: 6px;
+  left: 16%;
+  background: #eab308;
+  animation-delay: -1.6s;
+  transform: rotate(18deg);
+}
+
+.special-deals-confetti-3 {
+  top: 14px;
+  left: 25%;
+  background: #22c55e;
+  animation-delay: -0.9s;
+}
+
+.special-deals-confetti-4 {
+  top: 8px;
+  left: 35%;
+  background: #3b82f6;
+  animation-delay: -2.1s;
+  transform: rotate(24deg);
+}
+
+.special-deals-confetti-5 {
+  top: 15px;
+  left: 44%;
+  background: #ec4899;
+  animation-delay: -0.5s;
+}
+
+.special-deals-confetti-6 {
+  top: 7px;
+  left: 54%;
+  background: #f97316;
+  animation-delay: -1.2s;
+  transform: rotate(-16deg);
+}
+
+.special-deals-confetti-7 {
+  top: 13px;
+  left: 64%;
+  background: #14b8a6;
+  animation-delay: -2.7s;
+}
+
+.special-deals-confetti-8 {
+  top: 9px;
+  left: 73%;
+  background: #a855f7;
+  animation-delay: -1.9s;
+  transform: rotate(12deg);
+}
+
+.special-deals-confetti-9 {
+  top: 16px;
+  left: 81%;
+  background: #f43f5e;
+  animation-delay: -0.8s;
+}
+
+.special-deals-confetti-10 {
+  top: 5px;
+  left: 88%;
+  background: #0ea5e9;
+  animation-delay: -2.4s;
+  transform: rotate(-22deg);
+}
+
+.special-deals-confetti-11 {
+  top: 11px;
+  left: 58%;
+  background: #84cc16;
+  animation-delay: -1.4s;
+}
+
+.special-deals-confetti-12 {
+  top: 15px;
+  left: 28%;
+  background: #fb7185;
+  animation-delay: -2.9s;
+  transform: rotate(28deg);
+}
+
+@keyframes text-reveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.type-line {
+  vertical-align: top;
+  overflow: hidden;
+  animation-name: text-reveal;
+  animation-fill-mode: both;
+  animation-timing-function: steps(40, end);
+}
+
+.type-line-1 {
+  animation-duration: 2.1s;
+}
+
+.type-line-2 {
+  animation-duration: 1.8s;
+  animation-delay: 2.1s;
+}
+
+.type-line-3 {
+  animation-duration: 1.5s;
+  animation-delay: 3.9s;
+}
+
+@media (max-width: 1023px) {
+  .type-line {
+    white-space: normal !important;
+    width: auto !important;
+    overflow: visible;
+    animation: none;
+    clip-path: none !important;
+  }
 }
