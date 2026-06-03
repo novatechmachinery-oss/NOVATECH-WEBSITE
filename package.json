@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:home-hero": "node scripts/sync-home-hero-to-supabase.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

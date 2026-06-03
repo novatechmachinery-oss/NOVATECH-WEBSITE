@@ -3,6 +3,7 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { HOME_HERO_SLIDES } from "@/lib/home-hero-slides";
 import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 import type { SiteSettings } from "@/lib/site-settings.types";
 import { hasSupabaseConfig, supabaseRest, supabaseRestCached } from "@/lib/supabase";
@@ -22,14 +23,7 @@ const defaultSettings: SiteSettings = {
     phone: "+91 9646255855",
   },
   home: {
-    heroSlides: [
-      { id: "hero-1", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2003_17_13%20PM.png", alt: "Industrial machinery line overview" },
-      { id: "hero-2", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2003_53_58%20PM.png", alt: "Factory metalworking production line" },
-      { id: "hero-3", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_15_10%20PM.png", alt: "High-performance equipment warehouse" },
-      { id: "hero-4", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_15_47%20PM.png", alt: "Premium industrial machinery sourcing" },
-      { id: "hero-5", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_16_04%20PM.png", alt: "Used machine sourcing showcase" },
-      { id: "hero-6", src: "/images/ChatGPT%20Image%20May%2029%2C%202026%2C%2004_18_06%20PM.png", alt: "Novatech machinery inventory display" },
-    ],
+    heroSlides: HOME_HERO_SLIDES,
     featureCards: [
       {
         id: "feature-1",
@@ -152,7 +146,11 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
       fullName: pickString(settings.adminProfile?.fullName, defaultSettings.adminProfile.fullName),
       phone: pickString(settings.adminProfile?.phone, defaultSettings.adminProfile.phone),
     },
-    home: { ...defaultSettings.home, ...settings.home },
+    home: {
+      ...defaultSettings.home,
+      ...settings.home,
+      heroSlides: HOME_HERO_SLIDES,
+    },
     navigation: { ...defaultSettings.navigation, ...settings.navigation },
     contact: { ...defaultSettings.contact, ...settings.contact },
     footer: { ...defaultSettings.footer, ...settings.footer },

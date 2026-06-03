@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import SiteHeader from "../components/SiteHeader";
 import SpecialDealsSlider from "../components/SpecialDealsSlider";
 import { getSpecialDeals } from "@/lib/machines";
+import { HOME_HERO_SLIDES } from "@/lib/home-hero-slides";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
@@ -48,7 +49,7 @@ export default async function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
         />
         <div className="space-y-0">
-          <HeroSlider slides={settings.home.heroSlides} />
+          <HeroSlider slides={HOME_HERO_SLIDES} />
         </div>
 
         <section className="mx-[-0.75rem] -mt-6 sm:mx-[-1.25rem] sm:-mt-8 lg:mx-[-1.5rem] xl:mx-[-2rem]">

@@ -18,7 +18,7 @@ const defaultSlides = [
   { src: "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_37_15%20AM.png", alt: "Premium industrial machinery sourcing" },
 ];
 
-const AUTO_CHANGE_MS = 5500;
+const AUTO_CHANGE_MS = 2000;
 
 function getPrevIndex(index: number, length: number) {
   if (length <= 1) {
@@ -55,7 +55,7 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
           alt={slides[currentIndex].alt}
           fill
           sizes="100vw"
-          className="object-cover object-[center_38%] sm:object-[center_36%] lg:object-[center_34%] xl:object-[center_32%] transition-opacity duration-1000"
+          className="object-cover object-center transition-opacity duration-700 ease-in-out"
         />
         <div className="absolute inset-0 bg-slate-950/10" />
       </div>
