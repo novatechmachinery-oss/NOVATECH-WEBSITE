@@ -38,8 +38,8 @@ export default function CategoryCard({
     >
       <div className="absolute inset-x-0 top-0 h-px bg-[#e4edf5]" />
 
-      <div className="relative flex min-h-[248px] flex-col sm:min-h-[284px]">
-        <div className="relative h-[188px] overflow-hidden bg-white sm:h-[208px]">
+      <div className="relative flex min-h-[220px] flex-col sm:min-h-[248px] lg:min-h-[284px]">
+        <div className="relative h-[156px] overflow-hidden bg-white sm:h-[178px] lg:h-[208px]">
           <Image
             src={imageSrc}
             alt={title}
@@ -51,12 +51,12 @@ export default function CategoryCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.01),rgba(15,23,42,0.06))]" />
         </div>
 
-        <div className="flex min-h-[60px] items-end justify-between gap-2 bg-[#16548b] px-4 py-3 sm:min-h-[68px] sm:px-5 sm:py-3.5 lg:px-6">
-          <h3 className="max-w-[58%] font-serif text-[1rem] font-semibold uppercase leading-[0.96] text-white sm:text-[1.1rem] lg:text-[1.2rem]">
+        <div className="flex min-h-[54px] items-end justify-between gap-2 bg-[#16548b] px-3 py-2.5 sm:min-h-[60px] sm:px-4 sm:py-3 lg:min-h-[68px] lg:px-6 lg:py-3.5">
+          <h3 className="max-w-[60%] font-serif text-[0.9rem] font-semibold uppercase leading-[1.02] text-white sm:text-[1rem] lg:text-[1.2rem]">
             {title}
           </h3>
 
-          <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white px-3 text-[0.66rem] font-black uppercase tracking-[0.14em] text-[#16548b] shadow-[0_10px_22px_rgba(21,84,139,0.16)] transition duration-300 group-hover:bg-[#eef5fb] sm:h-10 sm:px-4 sm:text-[0.7rem]">
+          <span className="inline-flex h-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white px-2.5 text-[0.6rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_10px_22px_rgba(21,84,139,0.16)] transition duration-300 group-hover:bg-[#eef5fb] sm:h-9 sm:px-3 sm:text-[0.66rem] lg:h-10 lg:px-4 lg:text-[0.7rem]">
             {ctaLabel}
           </span>
         </div>

@@ -76,6 +76,7 @@ export default async function UsedMachineryRoutePage({
         initialSubcategory={readParam(params.subcategory)}
         initialMachineId={readParam(params.machine)}
         initialMachineMode={readMachineMode(params.mode)}
+        pageHeading="All Machines"
       />
     </>
   );

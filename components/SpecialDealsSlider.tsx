@@ -61,7 +61,7 @@ export default function SpecialDealsSlider({ deals }: SpecialDealsSliderProps) {
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+      <div className="grid items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4 2xl:grid-cols-5">
         {visibleDeals.map((deal, index) => (
           <div
             key={`${deal.title}-${index}`}

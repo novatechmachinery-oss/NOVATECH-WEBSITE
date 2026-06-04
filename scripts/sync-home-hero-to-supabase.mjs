@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 const projectRoot = process.cwd();
 const imageNames = ["10", "11", "12", "13", "14", "15", "16"];
@@ -43,6 +44,13 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabase
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Supabase environment variables are missing.");
 }
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+});
 
 async function fetchJson(url, init = {}) {
   const response = await fetch(url, init);
@@ -117,8 +125,8 @@ async function uploadImage(imageName) {
 async function updateSiteSettings(heroSlides) {
   const rows = await fetchJson(`${supabaseUrl}/rest/v1/site_settings?id=eq.main&select=settings`, {
     headers: {
-      apikey: supabaseServiceRoleKey,
-      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
     },
   });
 
@@ -134,8 +142,8 @@ async function updateSiteSettings(heroSlides) {
   await fetchJson(`${supabaseUrl}/rest/v1/site_settings`, {
     method: "POST",
     headers: {
-      apikey: supabaseServiceRoleKey,
-      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates, return=minimal",
     },
@@ -146,6 +154,94 @@ async function updateSiteSettings(heroSlides) {
       },
     ]),
   });
+
+  return currentSettings;
+}
+
+function getStorageObjectFromPublicUrl(url) {
+  const marker = `${supabaseUrl}/storage/v1/object/public/`;
+  if (!url.startsWith(marker)) {
+    return null;
+  }
+
+  const remainder = url.slice(marker.length);
+  const [bucketName, ...pathParts] = remainder.split("/");
+
+  if (!bucketName || pathParts.length === 0) {
+    return null;
+  }
+
+  return {
+    bucket: bucketName,
+    path: pathParts.join("/"),
+  };
+}
+
+async function removeStorageObjects(bucketName, objectPaths) {
+  if (objectPaths.length === 0) {
+    return;
+  }
+
+  const { error } = await supabaseAdmin.storage.from(bucketName).remove(objectPaths);
+  if (error) {
+    throw new Error(`Failed to delete old storage objects from ${bucketName}: ${error.message}`);
+  }
+}
+
+async function cleanupOldHeroImages(currentSettings, heroSlides) {
+  const desiredPaths = new Set(
+    heroSlides
+      .map((slide) => getStorageObjectFromPublicUrl(slide.src))
+      .filter(Boolean)
+      .map((entry) => `${entry.bucket}/${entry.path}`),
+  );
+
+  const oldSlides = currentSettings?.home?.heroSlides ?? [];
+  const oldPathsByBucket = new Map();
+
+  for (const slide of oldSlides) {
+    if (!slide?.src || typeof slide.src !== "string") {
+      continue;
+    }
+
+    const storageObject = getStorageObjectFromPublicUrl(slide.src);
+    if (!storageObject) {
+      continue;
+    }
+
+    const fullPathKey = `${storageObject.bucket}/${storageObject.path}`;
+    if (desiredPaths.has(fullPathKey)) {
+      continue;
+    }
+
+    const bucketPaths = oldPathsByBucket.get(storageObject.bucket) ?? [];
+    bucketPaths.push(storageObject.path);
+    oldPathsByBucket.set(storageObject.bucket, bucketPaths);
+  }
+
+  const { data: listedFiles, error: listError } = await supabaseAdmin.storage
+    .from(bucket)
+    .list(storageFolder, { limit: 100 });
+
+  if (listError) {
+    throw new Error(`Failed to list existing home hero images: ${listError.message}`);
+  }
+
+  const latestFolderPaths = new Set(imageNames.map((imageName) => `${storageFolder}/${imageName}.png`));
+  const extraFolderPaths = (listedFiles ?? [])
+    .filter((file) => file.name && !latestFolderPaths.has(`${storageFolder}/${file.name}`))
+    .map((file) => `${storageFolder}/${file.name}`);
+
+  if (extraFolderPaths.length > 0) {
+    const bucketPaths = oldPathsByBucket.get(bucket) ?? [];
+    bucketPaths.push(...extraFolderPaths);
+    oldPathsByBucket.set(bucket, bucketPaths);
+  }
+
+  for (const [bucketName, objectPaths] of oldPathsByBucket.entries()) {
+    const uniquePaths = [...new Set(objectPaths)];
+    await removeStorageObjects(bucketName, uniquePaths);
+  }
 }
 
 async function main() {
@@ -156,7 +252,8 @@ async function main() {
     heroSlides.push(await uploadImage(imageName));
   }
 
-  await updateSiteSettings(heroSlides);
+  const currentSettings = await updateSiteSettings(heroSlides);
+  await cleanupOldHeroImages(currentSettings, heroSlides);
 
   console.log(`Synced ${heroSlides.length} home hero images to Supabase.`);
 }

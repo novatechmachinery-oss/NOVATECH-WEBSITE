@@ -18,6 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
     ...metadata,
     metadataBase: new URL(seoConfig.baseUrl),
     applicationName: seoConfig.siteName,
+    icons: {
+      icon: "/main-logo.png",
+      shortcut: "/main-logo.png",
+      apple: "/main-logo.png",
+    },
     verification: {
       google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined,
     },

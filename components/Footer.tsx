@@ -51,20 +51,20 @@ export default async function Footer() {
         <div className="grid gap-6 border-b border-white/12 pb-5 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1.15fr]">
           <div>
             <div className="flex items-center gap-2">
-              <div className="relative h-[78px] w-[102px] shrink-0 overflow-hidden">
+              <div className="relative h-[64px] w-[82px] shrink-0 overflow-hidden sm:h-[78px] sm:w-[102px]">
                 <Image src={branding.logoSrc} alt={branding.logoAlt} fill sizes="102px" className="object-contain" />
               </div>
               <div className="min-w-0 flex flex-col leading-none text-white">
-                <span className="whitespace-nowrap text-[1.1rem] font-black uppercase tracking-[0.02em] xl:text-[1.32rem]">
+                <span className="text-[0.9rem] font-black uppercase tracking-[0.02em] sm:text-[1.1rem] xl:text-[1.32rem]">
                   Novatech Machinery Corporation
                 </span>
-                <span className="mt-1 text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-white xl:text-[0.86rem]">
+                <span className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white sm:text-[0.74rem] xl:text-[0.86rem]">
                   OPC Pvt. Ltd.
                 </span>
               </div>
             </div>
 
-            <p className="mt-3.5 max-w-sm text-[0.96rem] leading-7 text-sky-50/95">{footer.aboutText}</p>
+            <p className="mt-3.5 max-w-sm text-[0.92rem] leading-6 text-sky-50/95 sm:text-[0.96rem] sm:leading-7">{footer.aboutText}</p>
 
             <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1 text-[0.72rem] font-black uppercase tracking-[0.14em] text-sky-50/90">
               <span>Global Sourcing</span>
@@ -128,9 +128,9 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center justify-between gap-2 pt-3 text-sm text-sky-50/80 md:flex-row">
-          <p>{footer.copyrightText}</p>
-          <div className="flex items-center gap-5">
+        <div className="relative flex flex-col items-center justify-between gap-2 pt-3 text-center text-sm text-sky-50/80 md:flex-row md:text-left">
+          <p className="max-w-full break-words">{footer.copyrightText}</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end md:gap-5">
             {footer.policyLinks.map((item) => (
               <Link
                 key={item.id}

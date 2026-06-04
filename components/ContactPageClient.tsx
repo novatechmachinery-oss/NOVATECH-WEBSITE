@@ -252,7 +252,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
         <div className="mx-auto max-w-[1720px] px-3 sm:px-4 lg:px-5">
           <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,70%)_minmax(320px,30%)] xl:gap-10">
             <div className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
-              <div className="relative h-[540px] w-full sm:h-[620px] lg:h-[760px]">
+              <div className="relative h-[320px] w-full sm:h-[420px] lg:h-[760px]">
                 <iframe
                   title="Novatech Machinery office map"
                   src={contactLinks.mapsEmbedUrl}
@@ -263,12 +263,12 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                 />
               </div>
 
-              <div className="grid gap-3 border-t border-slate-200 bg-white p-4 sm:grid-cols-3 sm:p-5">
+              <div className="grid gap-2 border-t border-slate-200 bg-white p-3 sm:grid-cols-3 sm:gap-3 sm:p-5">
                 <a
                   href={contactLinks.mapsOpenUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
                 >
                   <MapPin className="h-4 w-4" />
                   View on Map
@@ -278,14 +278,14 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   href={contactLinks.whatsappLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100"
                 >
                   <MessageCircle className="h-4 w-4" />
                   WhatsApp Now
                 </a>
                 <a
                   href={contactLinks.primaryCallLink}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-100"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-100"
                 >
                   <Phone className="h-4 w-4" />
                   Call Now

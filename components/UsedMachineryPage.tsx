@@ -11,6 +11,7 @@ type UsedMachineryPageProps = {
   initialSubcategory?: string | null;
   initialMachineId?: string | null;
   initialMachineMode?: MachineMode | null;
+  pageHeading?: string;
 };
 
 export default function UsedMachineryPage({
@@ -20,6 +21,7 @@ export default function UsedMachineryPage({
   initialSubcategory = null,
   initialMachineId = null,
   initialMachineMode = null,
+  pageHeading = "Metal Working Machinery",
 }: UsedMachineryPageProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -34,6 +36,7 @@ export default function UsedMachineryPage({
           initialSubcategory={initialSubcategory}
           initialMachineId={initialMachineId}
           initialMachineMode={initialMachineMode}
+          pageHeading={pageHeading}
         />
       </main>
 

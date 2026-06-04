@@ -52,8 +52,8 @@ export default async function Home() {
           <HeroSlider slides={HOME_HERO_SLIDES} />
         </div>
 
-        <section className="mx-[-0.75rem] -mt-6 sm:mx-[-1.25rem] sm:-mt-8 lg:mx-[-1.5rem] xl:mx-[-2rem]">
-          <div className="border-b border-[#d6e2ee] bg-white shadow-[0_14px_28px_rgba(15,23,42,0.08)]">
+        <section className="mx-[-0.75rem] -mt-6 bg-white sm:mx-[-1.25rem] sm:-mt-8 lg:mx-[-1.5rem] xl:mx-[-2rem]">
+          <div className="bg-white">
             <div className="mx-auto max-w-[1560px] px-4 py-3 text-center sm:px-6 sm:py-3.5 lg:px-8">
               <div className="mx-auto max-w-6xl">
                 <p className="text-[1.12rem] font-medium tracking-[0.01em] text-[#16548b] sm:text-[1.3rem] lg:text-[1.52rem]">

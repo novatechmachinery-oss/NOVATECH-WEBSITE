@@ -93,10 +93,10 @@ export default function MachineCard({
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-3 sm:flex-row lg:w-auto lg:flex-col lg:items-end">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center lg:w-auto lg:flex-col lg:items-end">
             <Link
               href={primaryHref}
-              className="inline-flex min-w-[210px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#ec4899_0%,#db2777_48%,#c026d3_100%)] px-6 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_16px_34px_rgba(219,39,119,0.28)] transition hover:-translate-y-1 hover:shadow-[0_22px_40px_rgba(192,38,211,0.3)]"
+              className="inline-flex min-h-[46px] min-w-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ec4899_0%,#db2777_48%,#c026d3_100%)] px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_16px_34px_rgba(219,39,119,0.28)] transition hover:-translate-y-1 hover:shadow-[0_22px_40px_rgba(192,38,211,0.3)] sm:min-w-[210px]"
             >
               {primaryLabel}
             </Link>
@@ -104,7 +104,7 @@ export default function MachineCard({
               href={whatsappHref}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-w-[210px] items-center justify-center gap-2 rounded-full border border-fuchsia-200 bg-white/85 px-6 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-fuchsia-800 shadow-[0_16px_34px_rgba(236,72,153,0.14)] transition hover:-translate-y-1 hover:bg-white"
+              className="inline-flex min-h-[46px] min-w-0 items-center justify-center gap-2 rounded-full border border-fuchsia-200 bg-white/85 px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.08em] text-fuchsia-800 shadow-[0_16px_34px_rgba(236,72,153,0.14)] transition hover:-translate-y-1 hover:bg-white sm:min-w-[210px]"
             >
               <WhatsAppIcon />
               {whatsappLabel}

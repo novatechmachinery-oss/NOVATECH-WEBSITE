@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -43,7 +42,7 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
       onClick={onClick}
       className="overflow-hidden border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.1)]"
     >
-      <div className="group relative h-[270px] w-full overflow-hidden sm:h-[300px]">
+      <div className="group relative h-[220px] w-full overflow-hidden sm:h-[260px] lg:h-[300px]">
         <Image
           src={imageList[activeImageIndex]}
           alt={m.title}
@@ -66,12 +65,12 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
         ) : null}
       </div>
 
-      <div className="border-t border-slate-200 p-4 text-center">
+      <div className="border-t border-slate-200 p-3 text-center sm:p-4">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#145b93]">
           {m.machineType.toUpperCase()}
           {m.subcategory ? ` - ${m.subcategory.toUpperCase()}` : ` - ${m.category.toUpperCase()}`}
         </p>
-        <h2 className="mt-2 line-clamp-2 min-h-[3.1rem] text-[1.03rem] font-semibold uppercase leading-6 text-slate-950">
+        <h2 className="mt-2 line-clamp-2 min-h-[2.7rem] text-[0.95rem] font-semibold uppercase leading-5 text-slate-950 sm:min-h-[3.1rem] sm:text-[1.03rem] sm:leading-6">
           {m.title}
         </h2>
         {m.location ? (
@@ -93,6 +92,7 @@ type MetalWorkingCatalogueProps = {
   initialSubcategory?: string | null;
   initialMachineId?: string | null;
   initialMachineMode?: MachineMode | null;
+  pageHeading?: string;
 };
 
 export default function MetalWorkingCatalogue({
@@ -102,6 +102,7 @@ export default function MetalWorkingCatalogue({
   initialSubcategory = null,
   initialMachineId = null,
   initialMachineMode = null,
+  pageHeading = "Metal Working Machinery",
 }: MetalWorkingCatalogueProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -568,29 +569,13 @@ export default function MetalWorkingCatalogue({
   }
 
   return (
-    <section className="w-full px-3 pb-12 pt-6 sm:px-4 lg:px-6 xl:px-8 2xl:px-10">
+    <section className="w-full overflow-x-hidden px-3 pb-12 pt-6 sm:px-4 lg:px-6 xl:px-8 2xl:px-10">
       <div className="border-b border-slate-200 pb-3">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <Link href="/">Home</Link>
-          <span>&gt;</span>
-          <span className="font-semibold text-slate-900">Machines</span>
-          {selectedMachine ? (
-            <>
-              <span>&gt;</span>
-              <span className="font-semibold text-slate-900">{selectedMachine.title}</span>
-            </>
-          ) : null}
-        </div>
-
-        <h1 className="mt-3 text-[2rem] font-black tracking-tight text-slate-950 sm:text-[2.5rem] lg:text-[3rem]">
-          Metal Working Machinery
+        <h1 className="mt-3 text-[1.7rem] font-black tracking-tight text-slate-950 sm:text-[2.2rem] lg:text-[3rem]">
+          {pageHeading}
         </h1>
 
-        <p className="mt-2 max-w-2xl text-slate-600">
-          Browse our complete inventory of premium industrial machines
-        </p>
-
-        <div className="mt-4">
+        <div className="hidden">
           <div className="min-w-0">
             {activeFilters.length > 0 ? (
               <div className="mt-4 flex flex-col gap-3">

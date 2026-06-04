@@ -100,9 +100,9 @@ export default function DealCard({
           openDeal();
         }
       }}
-      className="flex h-full min-h-[320px] cursor-pointer flex-col overflow-hidden rounded-[0.7rem] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.1)] transition duration-300 hover:border-sky-300 hover:shadow-[0_20px_42px_rgba(15,23,42,0.16)]"
+      className="flex h-full min-h-[292px] cursor-pointer flex-col overflow-hidden rounded-[0.7rem] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.1)] transition duration-300 hover:border-sky-300 hover:shadow-[0_20px_42px_rgba(15,23,42,0.16)] sm:min-h-[320px]"
     >
-      <div className="relative h-[200px] w-full bg-slate-100 sm:h-[220px] 2xl:h-[190px]">
+      <div className="relative h-[170px] w-full bg-slate-100 sm:h-[220px] 2xl:h-[190px]">
         <Image
           src={activeImageSrc}
           alt={imageAlt}
@@ -135,7 +135,7 @@ export default function DealCard({
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col px-4 py-3 sm:px-5 2xl:px-4">
+      <div className="flex flex-1 flex-col px-3 py-3 sm:px-5 2xl:px-4">
         <div className="flex w-full flex-wrap items-start gap-2">
           <div className="inline-flex min-w-0 max-w-full items-center rounded-full bg-slate-100 px-3 py-1.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
             <p className="truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-slate-700">
@@ -146,18 +146,18 @@ export default function DealCard({
 
         <h3
           title={title}
-          className="mt-3 line-clamp-2 min-h-[3rem] text-[0.95rem] font-semibold leading-6 text-slate-950 sm:text-[1.02rem]"
+          className="mt-3 line-clamp-2 min-h-[2.7rem] text-[0.9rem] font-semibold leading-5 text-slate-950 sm:min-h-[3rem] sm:text-[1.02rem] sm:leading-6"
         >
           {title}
         </h3>
 
-        <div className="mt-3 flex min-h-[3.35rem] w-full flex-col">
+        <div className="mt-2.5 flex min-h-[3rem] w-full flex-col sm:mt-3 sm:min-h-[3.35rem]">
           <div className="w-full text-[0.78rem] font-semibold tracking-[0.04em] text-slate-500">
-            <span className="line-clamp-2 block min-h-[2.35rem]">
+            <span className="line-clamp-2 block min-h-[2rem] sm:min-h-[2.35rem]">
               {detailsPreview.length > 0 ? detailsPreview.join(" | ") : "Manufacturer | Model"}
             </span>
           </div>
-          <span className="mt-3 inline-flex w-full items-center justify-center rounded-[0.55rem] bg-[#16548b] px-5 py-2.5 text-[0.78rem] font-extrabold uppercase tracking-[0.08em] text-white">
+          <span className="mt-2.5 inline-flex w-full items-center justify-center rounded-[0.55rem] bg-[#16548b] px-4 py-2.5 text-[0.74rem] font-extrabold uppercase tracking-[0.06em] text-white sm:mt-3 sm:px-5 sm:text-[0.78rem] sm:tracking-[0.08em]">
             View More Details
           </span>
         </div>

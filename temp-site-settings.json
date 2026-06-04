@@ -1,0 +1,202 @@
+﻿{
+    "id":  "main",
+    "settings":  {
+                     "home":  {
+                                  "heroSlides":  [
+                                                     {
+                                                         "id":  "hero-1",
+                                                         "alt":  "Industrial machinery line overview",
+                                                         "src":  "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_41_23%20AM.png"
+                                                     },
+                                                     {
+                                                         "id":  "hero-2",
+                                                         "alt":  "Factory metalworking production line",
+                                                         "src":  "/images/homa-appliances-_XDK4naBbgw-unsplash.jpg"
+                                                     },
+                                                     {
+                                                         "id":  "hero-3",
+                                                         "alt":  "High-performance equipment warehouse",
+                                                         "src":  "/images/jonas-morgner-F7u5fL11Lt0-unsplash.jpg"
+                                                     },
+                                                     {
+                                                         "id":  "hero-4",
+                                                         "alt":  "Premium industrial machinery sourcing",
+                                                         "src":  "/images/ChatGPT%20Image%20May%2027%2C%202026%2C%2011_37_15%20AM.png"
+                                                     }
+                                                 ],
+                                  "featureCards":  [
+                                                       {
+                                                           "id":  "feature-1",
+                                                           "description":  "Browse every available machine in one place",
+                                                           "imageSrc":  "/images/alltypemachine.jpg",
+                                                           "href":  "/metal-working-machinery",
+                                                           "imagePosition":  "center center",
+                                                           "ctaLabel":  "View All",
+                                                           "title":  "All Machines"
+                                                       },
+                                                       {
+                                                           "id":  "feature-2",
+                                                           "description":  "Lathes, milling, grinding, boring and more",
+                                                           "imageSrc":  "/images/convitional.jpg",
+                                                           "href":  "/metal-working-machinery#conventional-machines",
+                                                           "imagePosition":  "center center",
+                                                           "ctaLabel":  "View All",
+                                                           "title":  "Conventional Machines"
+                                                       },
+                                                       {
+                                                           "id":  "feature-3",
+                                                           "description":  "CNC lathes, machining centres and more",
+                                                           "imageSrc":  "/images/cnc.jpg",
+                                                           "href":  "/metal-working-machinery#cnc-machines",
+                                                           "imagePosition":  "center center",
+                                                           "ctaLabel":  "View All",
+                                                           "title":  "CNC Machines"
+                                                       },
+                                                       {
+                                                           "id":  "feature-4",
+                                                           "description":  "We Buy Single Machines \u0026 Complete Plants",
+                                                           "imageSrc":  "/images/saleyour%20machinesr.jpg",
+                                                           "href":  "/contact",
+                                                           "imagePosition":  "center center",
+                                                           "ctaLabel":  "Contact Us",
+                                                           "title":  "Sell Your Machinery"
+                                                       }
+                                                   ],
+                                  "sectionTitle":  "Special Deals",
+                                  "machineCtaTitle":  "Looking for a Specific Machine?",
+                                  "machineCtaDescription":  "Tell us what you need and we\u0027ll find the right machine at the best price."
+                              },
+                     "footer":  {
+                                    "aboutText":  "Novatech Machinery Corporation (OPC) Private Limited. Your trusted supplier of quality industrial machinery, trading in used and refurbished CNC machines, lathes, milling machines, and more.",
+                                    "quickLinks":  [
+                                                       {
+                                                           "id":  "quick-1",
+                                                           "href":  "/",
+                                                           "label":  "Home"
+                                                       },
+                                                       {
+                                                           "id":  "quick-2",
+                                                           "href":  "/used-machinery",
+                                                           "label":  "Used Machinery"
+                                                       },
+                                                       {
+                                                           "id":  "quick-3",
+                                                           "href":  "/categories",
+                                                           "label":  "Categories"
+                                                       },
+                                                       {
+                                                           "id":  "quick-4",
+                                                           "href":  "/about",
+                                                           "label":  "About Us"
+                                                       },
+                                                       {
+                                                           "id":  "quick-5",
+                                                           "href":  "/contact",
+                                                           "label":  "Contact Us"
+                                                       }
+                                                   ],
+                                    "policyLinks":  [
+                                                        {
+                                                            "id":  "policy-1",
+                                                            "href":  "/",
+                                                            "label":  "Privacy Policy"
+                                                        },
+                                                        {
+                                                            "id":  "policy-2",
+                                                            "href":  "/",
+                                                            "label":  "Terms of Service"
+                                                        }
+                                                    ],
+                                    "copyrightText":  "© 2026 All rights reserved by Novatech Digisoft.",
+                                    "machineryLinks":  [
+                                                           {
+                                                               "id":  "machine-1",
+                                                               "href":  "/metal-working-machinery#cnc-machines",
+                                                               "label":  "CNC Machines"
+                                                           },
+                                                           {
+                                                               "id":  "machine-2",
+                                                               "href":  "/metal-working-machinery",
+                                                               "label":  "Horizontal Boring"
+                                                           },
+                                                           {
+                                                               "id":  "machine-3",
+                                                               "href":  "/metal-working-machinery",
+                                                               "label":  "Vertical Turret Lathes"
+                                                           },
+                                                           {
+                                                               "id":  "machine-4",
+                                                               "href":  "/metal-working-machinery",
+                                                               "label":  "Forging Presses"
+                                                           },
+                                                           {
+                                                               "id":  "machine-5",
+                                                               "href":  "/metal-working-machinery",
+                                                               "label":  "Grinding Machines"
+                                                           },
+                                                           {
+                                                               "id":  "machine-6",
+                                                               "href":  "/metal-working-machinery",
+                                                               "label":  "Gear Hobbing"
+                                                           }
+                                                       ]
+                                },
+                     "contact":  {
+                                     "mapLocation":  "Jubilee Walk, Sector 70, Mohali",
+                                     "emailAddress":  "info@novatechmachinery.com",
+                                     "phonePrimary":  "+91 96462 55755",
+                                     "businessHours":  "Mon-Sat, 9 AM - 6 PM IST",
+                                     "officeAddress":  "6th Floor, Office No. 621, Jubilee Walk, Sector 70, Mohali",
+                                     "phoneSecondary":  "+91 96462 55855",
+                                     "whatsappNumber":  "+91 96462 55755"
+                                 },
+                     "adminEmail":  "info@novatechmachinery.com",
+                     "navigation":  {
+                                        "categoryLinks":  [
+                                                              {
+                                                                  "id":  "nav-1",
+                                                                  "href":  "/metal-working-machinery",
+                                                                  "label":  "Metal Working Machinery"
+                                                              },
+                                                              {
+                                                                  "id":  "nav-2",
+                                                                  "href":  "/pharmaceutical-machinery",
+                                                                  "label":  "Pharmaceutical Machinery"
+                                                              },
+                                                              {
+                                                                  "id":  "nav-3",
+                                                                  "href":  "/plastic-machinery",
+                                                                  "label":  "Plastic Machinery"
+                                                              },
+                                                              {
+                                                                  "id":  "nav-4",
+                                                                  "href":  "/textile-machinery",
+                                                                  "label":  "Textile Machinery"
+                                                              }
+                                                          ]
+                                    },
+                     "operations":  {
+                                        "smtp":  {
+                                                     "host":  "smtp.gmail.com",
+                                                     "port":  "587",
+                                                     "secure":  false,
+                                                     "fromName":  "Novatech Machinery",
+                                                     "password":  "jyannaawtapupubk",
+                                                     "username":  "info@novatechmachinery.com",
+                                                     "fromEmail":  "info@novatechmachinery.com",
+                                                     "testEmail":  "test@example.com"
+                                                 },
+                                        "analytics":  {
+                                                          "metaPixelId":  "1254549116261073",
+                                                          "clarityProjectId":  "w8ffhp8peo",
+                                                          "googleAnalyticsId":  "G-P6982NCZTC"
+                                                      }
+                                    },
+                     "companyName":  "Novatech",
+                     "adminProfile":  {
+                                          "phone":  "+91 9646255855",
+                                          "fullName":  "Admin Novatech Machinery"
+                                      },
+                     "companyTagline":  "Machinery Corporation"
+                 }
+}

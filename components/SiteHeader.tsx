@@ -86,6 +86,7 @@ export default function SiteHeader() {
       <Navbar
         logoSrc={settings?.branding.logoSrc}
         logoAlt={settings?.branding.logoAlt}
+        emailAddress={settings?.contact.emailAddress}
       />
       <HomeCategoryNav types={settings?.navigation.categoryLinks} />
     </header>
