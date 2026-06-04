@@ -68,7 +68,9 @@ export default async function CategoriesPage() {
       href: getCategoryHref(category.slug ?? category.name),
     }));
 
-  const totalMachines = activeCategories.reduce((sum, category) => sum + category.count, 0);
+  const totalMachines = activeCategories
+    .filter((category) => category.name.toLowerCase() !== "special deals")
+    .reduce((sum, category) => sum + category.count, 0);
   const totalSubcategories = activeCategories.reduce(
     (sum, category) => sum + category.subcategories.length,
     0,
