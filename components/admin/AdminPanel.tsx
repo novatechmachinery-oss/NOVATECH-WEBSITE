@@ -145,6 +145,30 @@ function formatStatusLabel(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+function parseMachineSpecifications(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(trimmedValue) as unknown;
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Specifications JSON must be an object like { \"Brand\": \"GLEASON\" }.");
+    }
+
+    return parsed as Record<string, unknown>;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Specifications JSON is invalid: ${error.message}`);
+    }
+
+    throw error;
+  }
+}
+
 function normalizeNewsletterSubscribers(value: unknown): NewsletterSubscriber[] {
   if (!Array.isArray(value)) {
     return [];
@@ -235,6 +259,34 @@ function buildSeoKeywords(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).join(", ");
 }
 
+function buildAdminSeoRoute(pathname: string, params?: Record<string, string | null | undefined>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value) {
+      query.set(key, value);
+    }
+  }
+
+  const queryString = query.toString();
+  return queryString ? `${pathname}?${queryString}` : pathname;
+}
+
+function compactSeoSentence(value: string, maxLength = 155) {
+  const cleanValue = value.replace(/\s+/g, " ").trim();
+  if (cleanValue.length <= maxLength) {
+    return cleanValue;
+  }
+
+  const truncatedValue = cleanValue
+    .slice(0, maxLength - 1)
+    .replace(/\s+\S*$/, "")
+    .replace(/[,\s;:]+$/, "")
+    .replace(/\s+(and|or|with|for|including|under|of|the|a|an)$/i, "")
+    .replace(/[,\s;:]+$/, "");
+
+  return `${truncatedValue}.`;
+}
+
 function mergeSeoPage(existingPage: SeoPageRecord | undefined, nextPage: SeoPageRecord) {
   return {
     ...nextPage,
@@ -298,6 +350,7 @@ export default function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [machineSpecificationsError, setMachineSpecificationsError] = useState<string | null>(null);
   const [machineSearch, setMachineSearch] = useState("");
   const [categorySearch, setCategorySearch] = useState("");
   const [machineModalOpen, setMachineModalOpen] = useState(false);
@@ -655,6 +708,7 @@ export default function AdminPanel() {
   const generatedSeoPages = useMemo(() => {
     const companyName = siteSettings?.companyName?.trim() || "Novatech Machinery";
     const existingPagesById = new Map((seoDraft?.pages ?? []).map((page) => [page.id, page]));
+    const categoryById = new Map((catalog?.categories ?? []).map((category) => [category.id, category]));
 
     const corePages: SeoPageRecord[] = [
       {
@@ -794,14 +848,16 @@ export default function AdminPanel() {
     const categoryPages = topCategories.map((category) => {
       const childItems = childCategories.get(category.id) ?? [];
       const machineCount = categoryMachineStats.find((item) => item.id === category.id)?.machineCount ?? 0;
-      const route = `/used-machinery?category=${category.slug}`;
+      const route = buildAdminSeoRoute("/used-machinery", { category: category.slug });
 
       return {
         id: `seo-category-${category.slug}`,
         label: category.name,
         route,
         title: `${category.name} for Sale | ${companyName}`,
-        description: `Browse ${category.name.toLowerCase()} at ${companyName}. Explore ${machineCount || "available"} used machines, related equipment, and expert sourcing support.`,
+        description: compactSeoSentence(
+          `Browse ${category.name.toLowerCase()} for sale at ${companyName}. Compare ${machineCount || "available"} used machines, technical details, photos, and sourcing support for industrial buyers.`,
+        ),
         keywords: buildSeoKeywords([
           category.name,
           `${category.name} for sale`,
@@ -822,7 +878,10 @@ export default function AdminPanel() {
       const childItems = childCategories.get(category.id) ?? [];
 
       return childItems.map((subcategory) => {
-        const route = `/used-machinery?category=${category.slug}&subcategory=${subcategory.slug}`;
+        const route = buildAdminSeoRoute("/used-machinery", {
+          category: category.slug,
+          subcategory: subcategory.slug,
+        });
         const machineCount = (catalog?.machines ?? []).filter((machine) => machine.categoryId === subcategory.id).length;
 
         return {
@@ -830,7 +889,9 @@ export default function AdminPanel() {
           label: subcategory.name,
           route,
           title: `${subcategory.name} for Sale | ${companyName}`,
-          description: `Find ${subcategory.name.toLowerCase()} listings at ${companyName}. View used machine options, technical support, and fast enquiry assistance.`,
+          description: compactSeoSentence(
+            `Find ${subcategory.name.toLowerCase()} for sale at ${companyName}. Review ${machineCount || "available"} used machine listings, key specifications, images, and enquiry support.`,
+          ),
           keywords: buildSeoKeywords([
             subcategory.name,
             `${subcategory.name} for sale`,
@@ -848,10 +909,63 @@ export default function AdminPanel() {
       });
     });
 
-    return [...corePages, ...categoryPages, ...subcategoryPages].map((page) =>
+    const machinePages = (catalog?.machines ?? [])
+      .filter((machine) => machine.stockStatus !== "sold")
+      .map((machine) => {
+        const directCategory = categoryById.get(machine.categoryId);
+        const parentCategory = directCategory?.parentId ? categoryById.get(directCategory.parentId) : undefined;
+        const mainCategory = parentCategory ?? directCategory;
+        const subcategory = parentCategory ? directCategory : undefined;
+        const route = buildAdminSeoRoute("/used-machinery", { machine: machine.id });
+        const brandModel = [machine.brand, machine.model].filter(Boolean).join(" ");
+        const listingName = brandModel || machine.name;
+        const categoryLabel = subcategory?.name || mainCategory?.name || "industrial machinery";
+        const typeLabel = machine.machineType === "cnc" ? "CNC" : "conventional";
+        const specHighlights = Object.entries(machine.specifications ?? {})
+          .filter(([, value]) => String(value).trim())
+          .slice(0, 3)
+          .map(([key, value]) => `${key.replace(/[_-]+/g, " ")} ${value}`)
+          .join(", ");
+        const descriptionDetail = specHighlights
+          ? ` Highlights include ${specHighlights}.`
+          : machine.description
+            ? ` ${machine.description}`
+            : "";
+
+        return {
+          id: `seo-machine-${machine.id}`,
+          label: machine.name,
+          route,
+          title: `${machine.name} for Sale`,
+          description: compactSeoSentence(
+            `${machine.name} for sale at ${companyName}. Used ${typeLabel} ${categoryLabel.toLowerCase()} listing with ${machine.condition} condition, photos, enquiry support, and inspection assistance.${descriptionDetail}`,
+          ),
+          keywords: buildSeoKeywords([
+            machine.name,
+            `${machine.name} for sale`,
+            brandModel,
+            machine.brand ?? "",
+            machine.model ?? "",
+            `used ${categoryLabel.toLowerCase()}`,
+            `${typeLabel.toLowerCase()} machine`,
+            companyName,
+          ]),
+          canonicalUrl: route,
+          ogTitle: `${listingName} | ${companyName}`,
+          ogDescription: compactSeoSentence(
+            `View ${machine.name}, a used ${typeLabel} ${categoryLabel.toLowerCase()} listing from ${companyName}.`,
+            140,
+          ),
+          ogImageUrl: machine.images[0] ?? "",
+          noIndex: false,
+          noFollow: false,
+        } satisfies SeoPageRecord;
+      });
+
+    return [...corePages, ...categoryPages, ...subcategoryPages, ...machinePages].map((page) =>
       mergeSeoPage(existingPagesById.get(page.id), page),
     );
-  }, [catalog?.machines, categoryMachineStats, childCategories, seoDraft?.pages, siteSettings?.companyName, topCategories]);
+  }, [catalog?.categories, catalog?.machines, categoryMachineStats, childCategories, seoDraft?.pages, siteSettings?.companyName, topCategories]);
 
   useEffect(() => {
     if (!seoDraft || seoBaseInitializedRef.current) {
@@ -870,6 +984,8 @@ export default function AdminPanel() {
   }, [generatedSeoPages, seoDraft]);
 
   function openMachineModal(machine?: AdminMachine) {
+    setError(null);
+    setMachineSpecificationsError(null);
     if (!catalog || !machine) {
       setMachineForm(defaultMachineForm);
       setMachineModalOpen(true);
@@ -927,7 +1043,9 @@ export default function AdminPanel() {
   async function saveMachine() {
     setSaving(true);
     setError(null);
+    setMachineSpecificationsError(null);
     try {
+      const specifications = parseMachineSpecifications(machineForm.specifications);
       const response = await fetch(
         machineForm.id ? `/api/admin/machines/${machineForm.id}` : "/api/admin/machines",
         {
@@ -948,7 +1066,7 @@ export default function AdminPanel() {
             categoryId: machineForm.subcategoryId || machineForm.categoryId,
             specialDeal: machineForm.specialDeal,
             images: machineForm.images,
-            specifications: machineForm.specifications.trim() ? JSON.parse(machineForm.specifications) : {},
+            specifications,
           }),
         },
       );
@@ -962,7 +1080,11 @@ export default function AdminPanel() {
       setMessage(machineForm.id ? "Machine updated successfully." : "Machine added successfully.");
       await loadAdminData();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Machine save failed.");
+      const errorMessage = saveError instanceof Error ? saveError.message : "Machine save failed.";
+      if (errorMessage.toLowerCase().includes("specifications json")) {
+        setMachineSpecificationsError(errorMessage);
+      }
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -1469,7 +1591,7 @@ export default function AdminPanel() {
         : current,
     );
     setExpandedSeoPageId(generatedSeoPages[0]?.id ?? null);
-    setMessage("Professional SEO base generated for site pages and machinery categories.");
+    setMessage("Professional SEO base generated for site pages, machinery categories, and machine listings.");
     setError(null);
   }
 
@@ -1479,6 +1601,12 @@ export default function AdminPanel() {
     const valid = Array.from(files).filter((file) => file.type.startsWith("image/"));
     if (valid.length === 0) return;
 
+    const machineName = machineForm.name.trim();
+    if (!machineName) {
+      setError("Enter the machine name before uploading images so the Storage folder can use that name.");
+      return;
+    }
+
     const machineId = machineForm.id || `tmp_${Math.random().toString(36).slice(2, 10)}`;
     const existingCount = machineForm.images.length;
 
@@ -1487,6 +1615,7 @@ export default function AdminPanel() {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("machineId", machineId);
+        formData.append("machineName", machineName);
         formData.append("imageIndex", String(existingCount + localIndex));
 
         const response = await fetch("/api/admin/upload-image", {
@@ -3262,7 +3391,21 @@ export default function AdminPanel() {
 
             <div className="mt-4 grid gap-4">
               <Area label="Description" value={machineForm.description} onChange={(value) => setMachineForm((current) => ({ ...current, description: value }))} rows={4} />
-              <Area label="Specifications JSON" value={machineForm.specifications} onChange={(value) => setMachineForm((current) => ({ ...current, specifications: value }))} rows={5} placeholder='{"Max Diameter":"800mm"}' />
+              <div className="grid gap-2">
+                <Area
+                  label="Specifications JSON"
+                  value={machineForm.specifications}
+                  onChange={(value) => {
+                    setMachineSpecificationsError(null);
+                    setMachineForm((current) => ({ ...current, specifications: value }));
+                  }}
+                  rows={5}
+                  placeholder='{"Max Diameter":"800mm"}'
+                />
+                {machineSpecificationsError ? (
+                  <p className="text-sm font-semibold text-rose-600">{machineSpecificationsError}</p>
+                ) : null}
+              </div>
 
               <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -3336,7 +3479,14 @@ export default function AdminPanel() {
 
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" onClick={() => setMachineModalOpen(false)} className="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
-              <button type="button" onClick={() => void saveMachine()} className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white">{saving ? "Saving..." : "Save Machine"}</button>
+              <button
+                type="button"
+                onClick={() => void saveMachine()}
+                disabled={saving}
+                className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {saving ? "Saving..." : "Save Machine"}
+              </button>
             </div>
           </div>
         </div>

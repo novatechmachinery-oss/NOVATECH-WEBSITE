@@ -9,7 +9,7 @@ type Deal = {
   badge: string;
   title: string;
   description: string;
-  category?: string;
+
   machineType?: string;
   imageSrc: string;
   imageAlt: string;
@@ -72,7 +72,7 @@ export default function SpecialDealsSlider({ deals }: SpecialDealsSliderProps) {
               machineId={deal.machineId}
               title={deal.title}
               description={deal.description}
-              category={deal.category}
+
               machineType={deal.machineType}
               imageSrc={deal.imageSrc}
               imageAlt={deal.imageAlt}

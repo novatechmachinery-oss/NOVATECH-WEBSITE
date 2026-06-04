@@ -21,6 +21,7 @@ const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
 const supabaseCatalogTimeoutMs = 12_000;
 const supabaseCatalogCacheMs = 60_000;
 const supabaseCatalogFailureCooldownMs = 60_000;
+const recentMachineLimit = 8;
 let catalogWriteQueue = Promise.resolve();
 let supabaseCatalogRead: Promise<AdminCatalogSnapshot | null> | null = null;
 let supabaseCatalogCache: { catalog: AdminCatalogSnapshot; expiresAt: number } | null = null;
@@ -62,13 +63,29 @@ function normalizeSpecs(input: unknown) {
 
   return Object.fromEntries(
     Object.entries(input as Record<string, unknown>)
-      .map(([key, value]) => [normalizeText(key), normalizeText(value)])
+      .map(([key, value]) => {
+        const normalizedKey = normalizeText(key);
+        const normalizedValue =
+          typeof value === "string"
+            ? value.trim()
+            : typeof value === "number" || typeof value === "boolean"
+              ? String(value)
+              : "";
+
+        return [normalizedKey, normalizedValue];
+      })
       .filter(([key, value]) => key && value),
   );
 }
 
 function createId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function compareCreatedAtDesc(left: { createdAt: string }, right: { createdAt: string }) {
+  const leftTime = Date.parse(left.createdAt) || 0;
+  const rightTime = Date.parse(right.createdAt) || 0;
+  return rightTime - leftTime;
 }
 
 async function ensureCatalogDir() {
@@ -245,7 +262,7 @@ async function fetchSupabaseMachineRows(readMode: CatalogReadMode = "fresh") {
 
   for (let offset = 0; ; offset += pageSize) {
     const page = await supabaseCatalogRest<MachineRow[]>(
-      `machines?select=*&limit=${pageSize}&offset=${offset}`,
+      `machines?select=*&order=created_at.desc&limit=${pageSize}&offset=${offset}`,
       readMode,
     );
     rows.push(...page);
@@ -493,7 +510,7 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
     resolvedImages = await Promise.all(
       resolvedImages.map(async (img, index) => {
         if (!isBase64Image(img)) return img;
-        const url = await uploadBase64ImageToStorage(img, newId, index);
+        const url = await uploadBase64ImageToStorage(img, newId, index, normalized.name);
         return url ?? img; // fallback to original on failure
       }),
     );
@@ -541,6 +558,11 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
       });
     } catch (error) {
       console.error("Supabase sync failed for machine:", error);
+      throw new Error(
+        error instanceof Error
+          ? `Machine could not be saved to Supabase: ${error.message}`
+          : "Machine could not be saved to Supabase.",
+      );
     }
   }
 
@@ -603,7 +625,7 @@ export async function getAdminDashboardData() {
   const today = new Date().toISOString().slice(0, 10);
   const todayMachines = [...catalog.machines]
     .filter((item) => item.createdAt.slice(0, 10) === today)
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+    .sort(compareCreatedAtDesc);
 
   return {
     metrics: [
@@ -616,8 +638,8 @@ export async function getAdminDashboardData() {
     ],
     categories,
     recentMachines: [...catalog.machines]
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-      .slice(0, 5),
+      .sort(compareCreatedAtDesc)
+      .slice(0, recentMachineLimit),
     machinesAddedToday: todayMachines.length,
     todayMachines: todayMachines.slice(0, 6),
     recentLeads: leads.slice(0, 6).map((lead) => ({

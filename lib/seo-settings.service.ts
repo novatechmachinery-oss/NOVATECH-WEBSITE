@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
 import type { SeoSettings } from "@/lib/seo-settings.types";
-import { hasSupabaseConfig, supabaseRest, supabaseRestCached } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRestAdmin, supabaseRestCached } from "@/lib/supabase";
 
 const seoFilePath = resolveProjectPath("data", "seo-settings.json");
 
@@ -156,7 +156,7 @@ export async function saveSeoSettings(settings: SeoSettings) {
 
   if (hasSupabaseConfig()) {
     try {
-      await supabaseRest("seo_settings", {
+      await supabaseRestAdmin("seo_settings", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates, return=minimal" },
         body: JSON.stringify([{ id: "main", settings: normalizedSettings }]),

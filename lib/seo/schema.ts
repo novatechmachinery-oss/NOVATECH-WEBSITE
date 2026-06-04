@@ -91,18 +91,29 @@ export async function getItemListSchema(
 
 export async function getProductSchema(machine: MachineItem) {
   const { baseUrl } = await getSeoConfig();
+  const url = `${baseUrl}/used-machinery?machine=${encodeURIComponent(machine.id)}`;
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: machine.title,
     description: machine.description || `${machine.title} available at Novatech Machinery`,
     image: [machine.imageSrc.startsWith("http") ? machine.imageSrc : `${baseUrl}${machine.imageSrc}`],
+    brand: machine.manufacturer
+      ? {
+          "@type": "Brand",
+          name: machine.manufacturer,
+        }
+      : undefined,
+    model: machine.model,
+    sku: machine.stockNumber || machine.id,
+    category: machine.subcategory || machine.category,
     offers: {
       "@type": "Offer",
       availability: "https://schema.org/InStock",
       priceCurrency: "INR",
       price: "0",
-      url: `${baseUrl}/used-machinery?machine=${encodeURIComponent(machine.id)}`,
+      url,
     },
   };
 }

@@ -60,7 +60,7 @@ export type AdminMachineInput = {
   categoryId: string;
   specialDeal?: boolean;
   images?: string[];
-  specifications?: Record<string, string>;
+  specifications?: Record<string, unknown>;
 };
 
 export type DashboardMetric = {

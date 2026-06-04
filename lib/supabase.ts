@@ -36,6 +36,19 @@ type SupabaseRequestInit = RequestInit & {
   };
 };
 
+async function parseSupabaseResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) {
+    return null as T;
+  }
+
+  const body = await response.text();
+  if (!body.trim()) {
+    return null as T;
+  }
+
+  return JSON.parse(body) as T;
+}
+
 export async function supabaseRest<T>(
   path: string,
   init: SupabaseRequestInit = {},
@@ -63,11 +76,7 @@ export async function supabaseRest<T>(
     throw new Error(`Supabase request failed (${response.status}): ${body}`);
   }
 
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return (await response.json()) as T;
+  return parseSupabaseResponse<T>(response);
 }
 
 export async function supabaseRestCached<T>(
@@ -109,11 +118,7 @@ export async function supabaseRestAdmin<T>(
     throw new Error(`Supabase admin request failed (${response.status}): ${body}`);
   }
 
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return (await response.json()) as T;
+  return parseSupabaseResponse<T>(response);
 }
 
 /**

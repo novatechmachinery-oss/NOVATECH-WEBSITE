@@ -82,7 +82,7 @@ export async function POST() {
         for (let i = 0; i < updatedImages.length; i++) {
           if (!isBase64Image(updatedImages[i])) continue;
 
-          const url = await uploadBase64ImageToStorage(updatedImages[i], machine.id, i);
+          const url = await uploadBase64ImageToStorage(updatedImages[i], machine.id, i, machine.name);
 
           if (url) {
             updatedImages[i] = url;

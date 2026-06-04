@@ -17,6 +17,7 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const machineId = formData.get("machineId");
+    const machineName = formData.get("machineName");
     const imageIndex = formData.get("imageIndex");
     const file = formData.get("file");
 
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
       fileBuffer,
       machineId,
       Number(imageIndex),
+      typeof machineName === "string" ? machineName : undefined,
     );
 
     return NextResponse.json({ url: publicUrl });

@@ -32,6 +32,16 @@ export function sanitizePathSegment(value: string): string {
     || "unknown";
 }
 
+function buildMachineFolder(machineId: string, machineName?: string): string {
+  return sanitizePathSegment(machineName?.trim() || machineId);
+}
+
+function buildMachineStoragePath(machineId: string, imageIndex: number, machineName?: string): string {
+  const machineFolder = buildMachineFolder(machineId, machineName);
+  const safeMachineId = sanitizePathSegment(machineId);
+  return `${machineFolder}/${safeMachineId}-${imageIndex}.webp`;
+}
+
 /**
  * Strip the `data:image/...;base64,` prefix if present, returning raw base64.
  */
@@ -65,6 +75,7 @@ export async function uploadBase64ImageToStorage(
   base64Value: string,
   machineId: string,
   imageIndex: number,
+  machineName?: string,
 ): Promise<string | null> {
   if (!hasSupabaseConfig()) {
     return null;
@@ -75,8 +86,7 @@ export async function uploadBase64ImageToStorage(
     const rawBuffer = Buffer.from(rawBase64, "base64");
     const optimizedBuffer = await optimizeImageBuffer(rawBuffer);
 
-    const safeMachineId = sanitizePathSegment(machineId);
-    const storagePath = `${safeMachineId}/${imageIndex}.webp`;
+    const storagePath = buildMachineStoragePath(machineId, imageIndex, machineName);
 
     return await supabaseStorageUpload(BUCKET, storagePath, optimizedBuffer, "image/webp");
   } catch (error) {
@@ -96,10 +106,10 @@ export async function uploadImageFileToStorage(
   fileBuffer: Buffer,
   machineId: string,
   imageIndex: number,
+  machineName?: string,
 ): Promise<string> {
   const optimizedBuffer = await optimizeImageBuffer(fileBuffer);
-  const safeMachineId = sanitizePathSegment(machineId);
-  const storagePath = `${safeMachineId}/${imageIndex}.webp`;
+  const storagePath = buildMachineStoragePath(machineId, imageIndex, machineName);
 
   return supabaseStorageUpload(BUCKET, storagePath, optimizedBuffer, "image/webp");
 }

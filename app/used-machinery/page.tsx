@@ -3,7 +3,7 @@ import UsedMachineryPage from "@/components/UsedMachineryPage";
 import type { MachineMode } from "@/components/MetalWorkingCatalogue";
 import { getMachineCatalogData } from "@/lib/machines";
 import { buildSeoRoute, generatePageMetadata } from "@/lib/seo/metadata";
-import { getBreadcrumbSchema } from "@/lib/seo/schema";
+import { getBreadcrumbSchema, getProductSchema } from "@/lib/seo/schema";
 
 type SearchParamsInput = Promise<{
   category?: string | string[];
@@ -30,10 +30,16 @@ export async function generateMetadata({
   searchParams: SearchParamsInput;
 }): Promise<Metadata> {
   const params = await searchParams;
+  const category = readParam(params.category);
+  const subcategory = readParam(params.subcategory);
+  const machine = readParam(params.machine);
   const route = buildSeoRoute("/used-machinery", {
-    category: readParam(params.category),
-    subcategory: readParam(params.subcategory),
+    category,
+    subcategory,
+    machine,
   });
+  const categoryRoute = buildSeoRoute("/used-machinery", { category, subcategory });
+  const machineRoute = buildSeoRoute("/used-machinery", { machine });
 
   return generatePageMetadata(route, {
     fallbackTitle: "Used Machinery for Sale",
@@ -44,6 +50,10 @@ export async function generateMetadata({
       "used cnc machines",
       "industrial machines inventory",
     ],
+    lookupRoutes: [
+      ...(machine ? [machineRoute] : []),
+      ...(category || subcategory ? [categoryRoute] : []),
+    ],
   });
 }
 
@@ -53,14 +63,22 @@ export default async function UsedMachineryRoutePage({
   searchParams: SearchParamsInput;
 }) {
   const params = await searchParams;
+  const category = readParam(params.category);
+  const subcategory = readParam(params.subcategory);
+  const machine = readParam(params.machine);
   const route = buildSeoRoute("/used-machinery", {
-    category: readParam(params.category),
-    subcategory: readParam(params.subcategory),
+    category,
+    subcategory,
+    machine,
   });
   const [{ machineCategories, machineInventory }, breadcrumbSchema] = await Promise.all([
     getMachineCatalogData(),
     getBreadcrumbSchema(route),
   ]);
+  const selectedMachine = machine
+    ? machineInventory.find((item) => item.id === machine) ?? null
+    : null;
+  const productSchema = selectedMachine ? await getProductSchema(selectedMachine) : null;
 
   return (
     <>
@@ -69,12 +87,19 @@ export default async function UsedMachineryRoutePage({
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {productSchema ? (
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+      ) : null}
       <UsedMachineryPage
         machineCategories={machineCategories}
         machineInventory={machineInventory}
-        initialCategory={readParam(params.category)}
-        initialSubcategory={readParam(params.subcategory)}
-        initialMachineId={readParam(params.machine)}
+        initialCategory={category}
+        initialSubcategory={subcategory}
+        initialMachineId={machine}
         initialMachineMode={readMachineMode(params.mode)}
         pageHeading="All Machines"
       />

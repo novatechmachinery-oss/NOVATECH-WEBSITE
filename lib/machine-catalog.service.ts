@@ -8,7 +8,7 @@ import type {
   MachineItem,
   MachineRow,
 } from "@/lib/machine-catalog.types";
-import { hasSupabaseConfig, supabaseRestCached } from "@/lib/supabase";
+import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
 function asText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -186,6 +186,7 @@ function normalizeMachine(row: MachineRow, categoryMap: Map<string, CategoryRow>
       asOptionalText(row.brand && row.model ? `${row.brand} ${row.model}` : row.description) ??
       "Premium industrial machine",
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
     specifications: buildMachineSpecifications(row, mainCategory.name, subcategory?.name),
   };
 }
@@ -236,6 +237,7 @@ function normalizeAdminMachine(
       asOptionalText(machine.brand && machine.model ? `${machine.brand} ${machine.model}` : machine.description) ??
       "Premium industrial machine",
     createdAt: machine.createdAt,
+    updatedAt: machine.updatedAt,
     specifications: [
       ...(machine.brand ? [{ label: "Manufacturer", value: machine.brand }] : []),
       ...(machine.model ? [{ label: "Model", value: machine.model }] : []),
@@ -253,7 +255,7 @@ function normalizeAdminMachine(
 }
 
 export async function getCategories() {
-  const adminCatalog = await getAdminCatalog({ cache: "public" });
+  const adminCatalog = await getAdminCatalog();
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     return createCategoryRowsFromAdmin(adminCatalog.categories);
   }
@@ -263,7 +265,7 @@ export async function getCategories() {
   }
 
   try {
-    return await supabaseRestCached<CategoryRow[]>("categories?select=*&order=name.asc");
+    return await supabaseRest<CategoryRow[]>("categories?select=*&order=name.asc");
   } catch (error) {
     console.error("Failed to fetch categories from Supabase.", error);
     return [] as CategoryRow[];
@@ -271,7 +273,7 @@ export async function getCategories() {
 }
 
 export async function getMachineInventory() {
-  const adminCatalog = await getAdminCatalog({ cache: "public" });
+  const adminCatalog = await getAdminCatalog();
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     const categoryMap = buildCategoryIndex(adminCatalog.categories);
     return adminCatalog.machines
@@ -286,7 +288,7 @@ export async function getMachineInventory() {
 
   const [categories, machineRows] = await Promise.all([
     getCategories(),
-    supabaseRestCached<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
+    supabaseRest<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
       (error) => {
         console.error("Failed to fetch machines from Supabase.", error);
         return [] as MachineRow[];
@@ -340,15 +342,23 @@ export async function getMachineCatalogData() {
   };
 }
 
+function compareMachineRecency(left: MachineItem, right: MachineItem) {
+  const leftDate = Date.parse(left.updatedAt ?? left.createdAt ?? "") || 0;
+  const rightDate = Date.parse(right.updatedAt ?? right.createdAt ?? "") || 0;
+  return rightDate - leftDate;
+}
+
 export async function getSpecialDeals(limit?: number) {
   const machines = await getMachineInventory();
-  const source = machines.some((machine) => machine.isSpecialDeal)
-    ? machines.filter((machine) => machine.isSpecialDeal)
-    : machines;
+  const specialDeals = machines
+    .filter((machine) => machine.isSpecialDeal)
+    .sort(compareMachineRecency);
+  const source = specialDeals.length > 0
+    ? specialDeals
+    : machines.slice(0, limit ?? 4);
+  const selectedDeals = typeof limit === "number" ? source.slice(0, limit) : source;
 
-  const selectedMachines = typeof limit === "number" ? source.slice(0, limit) : source;
-
-  return selectedMachines.map((machine) => ({
+  return selectedDeals.map((machine) => ({
     machineId: machine.id,
     badge: machine.dealBadge ?? machine.category,
     title: machine.title,

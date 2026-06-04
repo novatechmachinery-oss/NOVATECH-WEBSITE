@@ -33,6 +33,7 @@ export type MachineItem = {
   dealBadge?: string;
   dealDescription?: string;
   createdAt?: string;
+  updatedAt?: string;
   specifications?: Array<{ label: string; value: string }>;
 };
 
@@ -62,6 +63,7 @@ export type MachineRow = {
   images: string[] | null;
   specifications: unknown;
   created_at: string;
+  updated_at?: string | null;
   stock_status: string | null;
   category_id: string | null;
 };
