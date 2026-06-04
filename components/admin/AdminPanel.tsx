@@ -1724,9 +1724,11 @@ export default function AdminPanel() {
                 </button>
                 <a
                   href={
-                    typeof window !== "undefined" && window.location.port === "3002"
-                      ? "http://localhost:3000"
-                      : "/"
+                    process.env.NEXT_PUBLIC_MAIN_SITE_URL
+                      ? process.env.NEXT_PUBLIC_MAIN_SITE_URL
+                      : typeof window !== "undefined" && window.location.port === "3002"
+                        ? "http://localhost:3000"
+                        : "/"
                   }
                   target="_blank"
                   rel="noreferrer"

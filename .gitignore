@@ -44,6 +44,7 @@ data/admin-catalog.json
 data/site-settings.json
 data/seo-settings.json
 machines_dump.json
+temp-site-settings.json
 
 # ========================
 # Logs
