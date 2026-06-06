@@ -575,7 +575,7 @@ export default function MetalWorkingCatalogue({
           {pageHeading}
         </h1>
 
-        <div className="hidden">
+        <div>
           <div className="min-w-0">
             {activeFilters.length > 0 ? (
               <div className="mt-4 flex flex-col gap-3">
