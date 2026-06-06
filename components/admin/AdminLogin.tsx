@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const ADMIN_EMAIL_HINT = "info@novatechmachinery.com";
+const ADMIN_EMAIL_HINT = "";
 
 function LoginForm() {
   const router = useRouter();
@@ -25,7 +25,7 @@ function LoginForm() {
   const defaultFrom = isStandalone ? "/" : "/admin";
   const from = searchParams.get("from") || defaultFrom;
 
-  const [email, setEmail] = useState(ADMIN_EMAIL_HINT);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
@@ -170,7 +170,7 @@ function LoginForm() {
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder={ADMIN_EMAIL_HINT}
+                  placeholder="Enter admin email"
                   readOnly={step === "otp"}
                   autoFocus
                   autoComplete="username"
@@ -221,10 +221,7 @@ function LoginForm() {
                 </label>
               )}
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Authorized account:{" "}
-                <span className="font-semibold text-slate-900">{ADMIN_EMAIL_HINT}</span>
-              </div>
+
 
               <button
                 type="submit"
