@@ -137,7 +137,6 @@ export async function getSeoSettings() {
     }
   }
 
-  await saveSeoSettings(defaultSeoSettings);
   return defaultSeoSettings;
 }
 

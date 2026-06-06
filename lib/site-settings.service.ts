@@ -224,7 +224,6 @@ export async function getSiteSettings() {
     }
   }
 
-  await saveSiteSettings(defaultSettings);
   return defaultSettings;
 }
 
