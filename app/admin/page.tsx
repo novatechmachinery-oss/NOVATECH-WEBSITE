@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-
-import AdminPanel from "@/components/admin/AdminPanel";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Novatech Admin Panel",
-  description: "Local admin dashboard for machines, categories, and inventory management.",
+  title: "Novatech Admin",
+  robots: "noindex, nofollow",
 };
 
 export default function AdminPage() {
-  return <AdminPanel />;
+  const adminUrl = (process.env.ADMIN_APP_URL ?? "https://admin.novatechmachinery.in").replace(/\/$/, "");
+  redirect(adminUrl);
 }

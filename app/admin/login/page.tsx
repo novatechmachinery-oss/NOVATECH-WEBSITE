@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-
-import AdminLogin from "@/components/admin/AdminLogin";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Admin Login - Novatech",
-  description: "Sign in to access the Novatech admin panel.",
   robots: "noindex, nofollow",
 };
 
 export default function AdminLoginPage() {
-  return <AdminLogin />;
+  const adminUrl = (process.env.ADMIN_APP_URL ?? "https://admin.novatechmachinery.in").replace(/\/$/, "");
+  redirect(`${adminUrl}/login`);
 }
