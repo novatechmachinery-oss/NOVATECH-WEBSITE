@@ -101,7 +101,7 @@ const defaultSettings: SiteSettings = {
       { id: "machine-5", label: "Grinding Machines", href: "/metal-working-machinery" },
       { id: "machine-6", label: "Gear Hobbing", href: "/metal-working-machinery" },
     ],
-    copyrightText: "© 2026 All rights reserved by Novatech Digisoft.",
+    copyrightText: "© 2026 All rights reserved by Novatech Digisoft Labs.",
     policyLinks: [
       { id: "policy-1", label: "Privacy Policy", href: "/" },
       { id: "policy-2", label: "Terms of Service", href: "/" },

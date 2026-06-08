@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Phone,
   Search,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
@@ -40,15 +41,16 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
     <button
       type="button"
       onClick={onClick}
-      className="overflow-hidden border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.1)]"
+      className="group overflow-hidden rounded-[0.55rem] border border-slate-200 bg-white text-left shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_34px_rgba(20,91,147,0.12)] active:translate-y-0"
     >
-      <div className="group relative h-[220px] w-full overflow-hidden sm:h-[260px] lg:h-[300px]">
+      <div className="relative h-[168px] w-full overflow-hidden bg-slate-100 sm:h-[205px] md:h-[220px] lg:h-[235px]">
         <Image
           src={imageList[activeImageIndex]}
           alt={m.title}
           fill
-          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover transition duration-700 hover:scale-[1.03]"
+          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+          loading="lazy"
+          className="object-cover transition duration-700 group-hover:scale-[1.035]"
           style={{ objectPosition: activePosition }}
         />
         {imageList.length > 1 ? (
@@ -65,16 +67,16 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
         ) : null}
       </div>
 
-      <div className="border-t border-slate-200 p-3 text-center sm:p-4">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#145b93]">
+      <div className="border-t border-slate-200 p-2.5 text-center sm:p-3.5">
+        <p className="text-[0.66rem] font-black uppercase tracking-[0.12em] text-[#145b93] sm:text-[0.72rem]">
           {m.machineType.toUpperCase()}
           {m.subcategory ? ` - ${m.subcategory.toUpperCase()}` : ` - ${m.category.toUpperCase()}`}
         </p>
-        <h2 className="mt-2 line-clamp-2 min-h-[2.7rem] text-[0.95rem] font-semibold uppercase leading-5 text-slate-950 sm:min-h-[3.1rem] sm:text-[1.03rem] sm:leading-6">
+        <h2 className="mt-1.5 line-clamp-2 min-h-[2.35rem] text-[0.9rem] font-black uppercase leading-[1.18] text-slate-950 sm:min-h-[2.7rem] sm:text-[1rem] sm:leading-[1.28]">
           {m.title}
         </h2>
         {m.location ? (
-          <p className="mt-1 text-sm uppercase tracking-[0.06em] text-slate-400">
+          <p className="mt-1 text-[0.72rem] font-semibold uppercase tracking-[0.06em] text-slate-400 sm:text-sm">
             {m.location}
           </p>
         ) : null}
@@ -463,7 +465,6 @@ export default function MetalWorkingCatalogue({
     window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   }
 
-  const backLabel = selectedSubcategory ?? selectedCategory ?? "All Machines";
   const machineDetailGallery = selectedMachine
     ? (selectedMachine.images?.length ? selectedMachine.images : [selectedMachine.imageSrc]).map((src, index) => ({
         id: `${selectedMachine.id}-thumb-${index}`,
@@ -476,26 +477,14 @@ export default function MetalWorkingCatalogue({
       }))
     : [];
 
-  const machineDetailDescription = selectedMachine
-    ? [selectedMachine.description]
-    : [];
+  const machineDetailDescription = selectedMachine ? [selectedMachine.description].filter(Boolean) : [];
 
   const machineSpecifications = selectedMachine
-    ? (
-        selectedMachine.specifications && selectedMachine.specifications.length > 0
-          ? selectedMachine.specifications
-          : [
-        { label: "Manufacturer", value: selectedMachine.manufacturer },
-        { label: "Model", value: selectedMachine.model },
-        { label: "Condition", value: selectedMachine.condition },
-        { label: "Serial / Stock Number", value: selectedMachine.stockNumber },
-        { label: "Category", value: selectedMachine.category },
-        { label: "Subcategory", value: selectedMachine.subcategory ?? "General Machinery" },
-        { label: "Machine Type", value: selectedMachine.machineType.toUpperCase() },
-        { label: "Location", value: selectedMachine.location },
-        { label: "Support", value: selectedMachine.support },
-      ].filter((spec): spec is { label: string; value: string } => Boolean(spec.value))
-      )
+    ? [
+        { label: "Brand", value: selectedMachine.manufacturer || "-" },
+        { label: "Model", value: selectedMachine.model || "-" },
+        { label: "Condition", value: selectedMachine.condition || "-" },
+      ]
     : [];
 
   const activeGalleryImage =
@@ -569,13 +558,61 @@ export default function MetalWorkingCatalogue({
   }
 
   return (
-    <section className="w-full overflow-x-hidden px-3 pb-12 pt-6 sm:px-4 lg:px-6 xl:px-8 2xl:px-10">
-      <div className="border-b border-slate-200 pb-3">
-        <h1 className="mt-3 text-[1.7rem] font-black tracking-tight text-slate-950 sm:text-[2.2rem] lg:text-[3rem]">
+    <section className="w-full overflow-x-hidden px-2.5 pb-8 pt-3 sm:px-4 sm:pb-10 sm:pt-4 lg:px-5 xl:px-8 2xl:px-10">
+      {!selectedMachine ? (
+      <div className="border-b border-slate-200 pb-2.5 sm:pb-3">
+        <h1 className="mt-1 text-[1.55rem] font-black tracking-tight text-slate-950 sm:text-[2rem] lg:text-[2.65rem]">
           {pageHeading}
         </h1>
 
-        <div>
+        <div className="sticky top-0 z-30 -mx-3 mt-3 border-y border-slate-200 bg-slate-50/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 lg:hidden">
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen((current) => !current)}
+              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 border border-[#145b93] bg-white px-3 text-sm font-black uppercase tracking-[0.08em] text-[#145b93] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-sky-50"
+              aria-expanded={isMobileSidebarOpen}
+              aria-label={isMobileSidebarOpen ? "Close filters" : "Open filters"}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>Filters</span>
+              {activeFilters.length > 0 ? (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#145b93] px-1.5 text-[0.68rem] leading-none text-white">
+                  {activeFilters.length}
+                </span>
+              ) : null}
+              <ChevronDown className={`h-4 w-4 transition ${isMobileSidebarOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {activeFilters.length > 0 ? (
+              <button
+                type="button"
+                onClick={handleAllMachinesClick}
+                className="min-h-10 shrink-0 border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.08em] text-slate-600 transition hover:border-[#145b93] hover:text-[#145b93]"
+              >
+                Clear all
+              </button>
+            ) : null}
+          </div>
+
+          {activeFilters.length > 0 ? (
+            <div className="mt-2 flex min-w-0 gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {activeFilters.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => clearCategoryFilter(filter)}
+                  className="inline-flex min-h-9 shrink-0 items-center gap-2 border border-sky-200 bg-white px-3 text-sm font-semibold text-[#145b93] shadow-[0_8px_18px_rgba(20,91,147,0.06)] transition hover:border-[#145b93]"
+                >
+                  <span>{filter}</span>
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="hidden lg:block">
           <div className="min-w-0">
             {activeFilters.length > 0 ? (
               <div className="mt-4 flex flex-col gap-3">
@@ -621,9 +658,11 @@ export default function MetalWorkingCatalogue({
 
         </div>
       </div>
+      ) : null}
 
-      <div className="mt-6 grid min-w-0 gap-4 md:grid-cols-[minmax(220px,25%)_minmax(0,1fr)] lg:grid-cols-[minmax(240px,20%)_minmax(0,1fr)]">
-        <div className="md:hidden">
+      <div className={selectedMachine ? "mt-1 min-w-0" : "mt-3 grid min-w-0 gap-3 lg:grid-cols-[minmax(230px,19%)_minmax(0,1fr)] lg:gap-4"}>
+        {!selectedMachine ? (
+        <div className="hidden">
           <button
             type="button"
             onClick={() => setIsMobileSidebarOpen((current) => !current)}
@@ -633,11 +672,15 @@ export default function MetalWorkingCatalogue({
             {isMobileSidebarOpen ? <X className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </button>
         </div>
+        ) : null}
 
+        {!selectedMachine ? (
         <aside
-          className={`border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] md:sticky md:top-20 md:flex md:max-h-[calc(100vh-10rem)] md:flex-col md:self-start md:overflow-hidden lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:self-start lg:overflow-hidden ${
-            isMobileSidebarOpen ? "block" : "hidden"
-          } md:flex`}
+          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
+            isMobileSidebarOpen
+              ? "max-h-[70vh] border border-slate-200 p-3 opacity-100"
+              : "max-h-0 border border-transparent p-0 opacity-0"
+          }`}
         >
           <div className="border-b border-slate-200 px-2 pb-3">
             <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#145b93]">
@@ -746,73 +789,51 @@ export default function MetalWorkingCatalogue({
             })}
           </div>
         </aside>
+        ) : null}
 
         {/* PRODUCTS */}
         {selectedMachine ? (
-          <div className="min-w-0 overflow-hidden border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
-            <div className="mb-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap">
-              {toolbarButtons.map((btn) => (
-                <button
-                  key={btn.value}
-                  type="button"
-                  onClick={() => handleMachineModeChange(btn.value as MachineMode)}
-                  className={`min-h-11 rounded-[2px] border px-3 py-2 text-[0.82rem] font-bold leading-tight transition sm:px-4 ${
-                    machineMode === btn.value
-                      ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"
-                  }`}
-                >
-                  {btn.label}
-                </button>
-              ))}
-            </div>
-
+          <div className="min-w-0 overflow-hidden border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-4 lg:p-5">
             <button
               type="button"
               onClick={handleBackToResults}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+              className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to {backLabel}
+              Back to Machines
             </button>
 
-            <div className="mt-5 min-w-0">
-              <div className="mb-4 min-w-0 border border-slate-200 bg-white px-3 py-3 sm:px-5 sm:py-4">
-                <div className="min-w-0">
-                  <p className="break-words text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#145b93] sm:text-[0.72rem] sm:tracking-[0.18em]">
-                    {selectedMachine.machineType.toUpperCase()}
-                    {selectedMachine.subcategory ? ` / ${selectedMachine.subcategory}` : ` / ${selectedMachine.category}`}
-                  </p>
-                  <h2 className="mt-1.5 break-words text-[1.25rem] font-semibold leading-tight text-slate-950 sm:text-[1.55rem] lg:text-[1.7rem]">
-                    {selectedMachine.title}
-                  </h2>
-                </div>
+            <div className="mt-3 min-w-0">
+              <div className="mb-3 min-w-0">
+                <h1 className="break-words text-[1.35rem] font-semibold uppercase leading-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">
+                  {selectedMachine.title}
+                </h1>
 
-                <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3 lg:gap-3">
+                <div className="mt-2 flex min-w-0 gap-1.5 sm:gap-2 lg:gap-3">
                   <a
                     href={REQUEST_PRICE_WHATSAPP_HREF}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-[#145b93] bg-[#145b93] px-3 py-2 text-center text-sm font-semibold leading-tight text-white transition hover:bg-[#0f4c7c]"
+                    className="inline-flex min-h-[38px] min-w-0 flex-1 items-center justify-center gap-1 border border-[#145b93] bg-[#145b93] px-1.5 py-1 text-center text-[0.72rem] font-semibold leading-tight text-white transition hover:bg-[#0f4c7c] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
                   >
-                    <CircleDollarSign className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 break-words">Request Price</span>
+                    <CircleDollarSign className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                    <span className="min-w-0 whitespace-nowrap">Request Price</span>
                   </a>
                   <a
                     href={WHATSAPP_HREF}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                    className="inline-flex min-h-[38px] min-w-0 flex-1 items-center justify-center gap-1 border border-slate-300 bg-white px-1.5 py-1 text-center text-[0.72rem] font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
                   >
-                    <MessageCircle className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 break-words">WhatsApp</span>
+                    <MessageCircle className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                    <span className="min-w-0 whitespace-nowrap">WhatsApp</span>
                   </a>
                   <a
                     href="tel:+919646255855"
-                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 border border-slate-300 bg-white px-3 py-2 text-center text-sm font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93]"
+                    className="inline-flex min-h-[38px] min-w-0 flex-1 items-center justify-center gap-1 border border-slate-300 bg-white px-1.5 py-1 text-center text-[0.72rem] font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
                   >
-                    <Phone className="h-4 w-4 shrink-0" />
-                    <span className="min-w-0 break-words">Call Now</span>
+                    <Phone className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                    <span className="min-w-0 whitespace-nowrap">Call Now</span>
                   </a>
                 </div>
               </div>
@@ -933,50 +954,48 @@ export default function MetalWorkingCatalogue({
                   </div>
                 </div>
 
-                <div className="min-w-0 flex flex-col gap-4 lg:h-[530px] xl:h-[530px]">
-                  <div
-                    className="min-w-0 border border-slate-200 bg-white p-3 sm:p-5 lg:flex lg:h-full lg:flex-col lg:overflow-hidden"
-                  >
-                    <div className="mb-3 flex items-center gap-3">
-                      <span className="text-[0.9rem] font-semibold uppercase tracking-[0.08em] text-slate-950 sm:text-[0.98rem]">
+                <div className="min-w-0 flex flex-col gap-2">
+                  <div className="min-w-0 border border-slate-200 bg-white p-2.5 sm:p-3">
+                    <div className="mb-2 flex items-center gap-2.5">
+                      <span className="text-[0.84rem] font-semibold uppercase tracking-[0.08em] text-slate-950 sm:text-[0.95rem]">
                         Specifications
                       </span>
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="min-w-0 overflow-hidden lg:flex-1 lg:overflow-y-auto">
-                      {machineSpecifications.map((spec, index) => (
+                    <div className="flex min-w-0 flex-nowrap gap-1.5 sm:gap-2">
+                      {machineSpecifications.length > 0 ? machineSpecifications.map((spec, index) => (
                         <div
                           key={`${spec.label}-${index}`}
-                          className={`grid min-w-0 grid-cols-1 gap-1 px-2 py-2.5 sm:grid-cols-[minmax(130px,0.9fr)_minmax(0,1.1fr)] sm:px-3 ${
-                            index === 0 ? "" : "border-t border-slate-200"
-                          }`}
+                          className="min-w-0 flex-1 border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-3 sm:py-2"
                         >
-                          <span className="min-w-0 break-words text-[0.92rem] font-semibold leading-6 text-slate-500 sm:text-[0.95rem]">{spec.label}</span>
-                          <span className="min-w-0 break-words text-[0.92rem] font-semibold leading-6 text-slate-900 sm:text-[0.95rem]">{spec.value}</span>
+                          <span className="block min-w-0 break-words text-[0.62rem] font-semibold uppercase leading-4 tracking-[0.06em] text-slate-500 sm:text-[0.78rem] sm:leading-5">{spec.label}</span>
+                          <span className="mt-0.5 block min-w-0 break-words text-[0.78rem] font-semibold leading-4 text-slate-950 sm:text-[0.95rem] sm:leading-5">{spec.value}</span>
                         </div>
-                      ))}
+                      )) : (
+                        <p className="px-2 py-2 text-sm text-slate-500">Please contact Novatech for machine details.</p>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="mt-4 min-w-0 border border-slate-200 bg-white p-3 sm:p-5">
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="text-[0.98rem] font-semibold uppercase tracking-[0.08em] text-slate-950">
-                    Description
-                  </span>
-                  <span className="h-[2px] flex-1 bg-[#145b93]" />
-                </div>
+                  <div className="min-w-0 border border-slate-200 bg-white p-3 sm:p-4">
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="text-[0.9rem] font-semibold uppercase tracking-[0.08em] text-slate-950 sm:text-[0.98rem]">
+                        Description
+                      </span>
+                      <span className="h-[2px] flex-1 bg-[#145b93]" />
+                    </div>
 
-                <div className="min-w-0 space-y-2.5 break-words text-[0.95rem] leading-7 text-slate-600 sm:text-[0.98rem]">
-                  {machineDetailDescription.length > 0 ? (
-                    machineDetailDescription.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))
-                  ) : (
-                    <p>Please contact Novatech for complete machine details.</p>
-                  )}
+                    <div className="min-w-0 space-y-2 whitespace-pre-line break-words text-[0.94rem] leading-6 text-slate-600 sm:text-[0.98rem]">
+                      {machineDetailDescription.length > 0 ? (
+                        machineDetailDescription.map((line) => (
+                          <p key={line}>{line}</p>
+                        ))
+                      ) : (
+                        <p>Please contact Novatech for complete machine details.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -985,16 +1004,16 @@ export default function MetalWorkingCatalogue({
           <div>
             <div ref={resultsTopRef} />
             <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex w-full min-w-0 flex-nowrap items-stretch gap-1.5 sm:gap-2">
               {toolbarButtons.map((btn) => (
                 <button
                   key={btn.value}
                   type="button"
                   onClick={() => handleMachineModeChange(btn.value as MachineMode)}
-                  className={`rounded-[2px] border px-4 py-2 text-[0.82rem] font-bold transition ${
+                  className={`flex h-14 min-w-0 flex-1 basis-0 items-center justify-center rounded-[2px] border px-1.5 py-1 text-center text-[0.9rem] font-black leading-tight transition sm:h-12 sm:px-4 sm:text-[1rem] ${
                     machineMode === btn.value
                       ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                        : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"
+                        : "border-slate-300 bg-white text-slate-950 hover:border-sky-300 hover:text-slate-950"
                     }`}
                   >
                     {btn.label}
@@ -1018,7 +1037,7 @@ export default function MetalWorkingCatalogue({
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 min-[520px]:grid-cols-2 lg:grid-cols-3 xl:gap-4">
               {paginatedMachines.length > 0 ? (
                 paginatedMachines.map((m) => (
                   <GridMachineCard

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type HeroSliderProps = {
@@ -48,22 +49,49 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
   }, [currentIndex, slides]);
 
   return (
-    <section className="relative left-1/2 -mt-4 h-[280px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 sm:h-[340px] md:h-[400px] lg:h-[460px] xl:h-[500px] 2xl:h-[540px]">
+    <section className="relative left-1/2 -mt-4 h-[60vh] min-h-[520px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 md:h-[70vh] md:min-h-[560px] lg:h-[85vh] lg:min-h-[620px]">
       <div className="absolute inset-0">
         <Image
           src={slides[currentIndex].src}
           alt={slides[currentIndex].alt}
           fill
           sizes="100vw"
+          priority={currentIndex === 0}
           className="object-cover object-center transition-opacity duration-700 ease-in-out"
         />
-        <div className="absolute inset-0 bg-slate-950/10" />
+      </div>
+
+      <div className="hero-content-zone relative z-10 flex h-full w-full items-end px-4 pb-8 pt-6 md:items-center md:px-8 md:py-8 lg:px-0">
+        <div className="w-full max-w-[620px] pb-2 md:max-w-[560px] lg:ml-[clamp(32px,5vw,90px)] lg:w-[40vw] lg:pb-0">
+          <h1 className="hero-heading max-w-[620px] text-[clamp(2.4rem,4.5vw,4.5rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#163d6b]">
+            Connecting Global Buyers
+            <br />
+            with Quality Industrial Machinery
+          </h1>
+          <p className="hero-subheading mt-[18px] max-w-[560px] text-[clamp(1rem,1.4vw,1.25rem)] leading-[1.7] text-slate-600">
+            Specialists in Used CNC Machines, Metal Working Equipment, Textile, Pharmaceutical &amp; Plastic Processing Machinery
+          </p>
+          <div className="hero-actions mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/used-machinery"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#16548b] px-6 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_rgba(22,84,139,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#0f4777] hover:shadow-[0_18px_38px_rgba(22,84,139,0.28)]"
+            >
+              Explore Machines
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-[#16548b] bg-white/80 px-6 text-sm font-black uppercase tracking-[0.08em] text-[#16548b] transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_30px_rgba(22,84,139,0.12)]"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
       </div>
 
       <button
         type="button"
         onClick={() => setCurrentIndex(getPrevIndex(currentIndex, slides.length))}
-        className="absolute left-3 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:left-5 sm:h-12 sm:w-12"
+        className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[#16548b] hover:text-white sm:left-5 md:inline-flex"
         aria-label="Previous slide"
       >
         {"<"}
@@ -72,7 +100,7 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
       <button
         type="button"
         onClick={() => setCurrentIndex(getNextIndex(currentIndex, slides.length))}
-        className="absolute right-3 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[var(--accent)] hover:text-white sm:right-5 sm:h-12 sm:w-12"
+        className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md border border-white/70 bg-white/95 text-2xl font-extrabold text-slate-950 shadow-lg shadow-slate-950/20 transition hover:bg-[#16548b] hover:text-white sm:right-5 md:inline-flex"
         aria-label="Next slide"
       >
         {">"}

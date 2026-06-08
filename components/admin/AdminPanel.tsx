@@ -462,6 +462,7 @@ export default function AdminPanel() {
 
     return () => window.clearTimeout(timeout);
   }, [message, error]);
+  
 
   const topCategories = useMemo(
     () => (catalog?.categories ?? []).filter((item) => !item.parentId).sort((a, b) => a.name.localeCompare(b.name)),

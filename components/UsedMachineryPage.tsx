@@ -40,10 +40,12 @@ export default function UsedMachineryPage({
         />
       </main>
 
-      <MachineCard
-        title="Need a Specific Machine?"
-        description="Browse the full catalogue and connect with Novatech on WhatsApp for quick help."
-      />
+      {!initialMachineId ? (
+        <MachineCard
+          title="Need a Specific Machine?"
+          description="Browse the full catalogue and connect with Novatech on WhatsApp for quick help."
+        />
+      ) : null}
       <Footer />
     </div>
   );
