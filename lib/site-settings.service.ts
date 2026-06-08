@@ -103,8 +103,8 @@ const defaultSettings: SiteSettings = {
     ],
     copyrightText: "© 2026 All rights reserved by Novatech Digisoft Labs.",
     policyLinks: [
-      { id: "policy-1", label: "Privacy Policy", href: "/" },
-      { id: "policy-2", label: "Terms of Service", href: "/" },
+      { id: "policy-1", label: "Privacy Policy", href: "/privacy-policy" },
+      { id: "policy-2", label: "Terms of Service", href: "/terms-of-service" },
     ],
   },
   operations: {
@@ -131,6 +131,33 @@ function pickString(value: string | undefined, fallback: string) {
   return normalized ? normalized : fallback;
 }
 
+function normalizeCopyrightText(value: string | undefined) {
+  const fallback = defaultSettings.footer.copyrightText;
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  return normalized.replace(/Novatech Digisoft\.?$/i, "Novatech Digisoft Labs.");
+}
+
+function normalizePolicyLinks(links: SiteSettings["footer"]["policyLinks"] | undefined) {
+  const source = links && links.length > 0 ? links : defaultSettings.footer.policyLinks;
+
+  return source.map((link) => {
+    if (link.label.toLowerCase() === "privacy policy") {
+      return { ...link, href: "/privacy-policy" };
+    }
+
+    if (link.label.toLowerCase() === "terms of service") {
+      return { ...link, href: "/terms-of-service" };
+    }
+
+    return link;
+  });
+}
+
 function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
   return {
     ...defaultSettings,
@@ -153,7 +180,12 @@ function normalizeSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
     },
     navigation: { ...defaultSettings.navigation, ...settings.navigation },
     contact: { ...defaultSettings.contact, ...settings.contact },
-    footer: { ...defaultSettings.footer, ...settings.footer },
+    footer: {
+      ...defaultSettings.footer,
+      ...settings.footer,
+      copyrightText: normalizeCopyrightText(settings.footer?.copyrightText),
+      policyLinks: normalizePolicyLinks(settings.footer?.policyLinks),
+    },
     operations: {
       smtp: {
         host: pickString(settings.operations?.smtp?.host, defaultSettings.operations.smtp.host),

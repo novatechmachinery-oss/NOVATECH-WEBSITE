@@ -201,6 +201,37 @@ function normalizeNewsletterSubscribers(value: unknown): NewsletterSubscriber[] 
   });
 }
 
+function updateFooterPolicyLink(
+  current: SiteSettings,
+  label: "Privacy Policy" | "Terms of Service",
+  href: string,
+): SiteSettings {
+  const existingLinks = current.footer.policyLinks ?? [];
+  const hasLink = existingLinks.some((link) => link.label === label);
+  const policyLinks = hasLink
+    ? existingLinks.map((link) => (link.label === label ? { ...link, href } : link))
+    : [
+        ...existingLinks,
+        {
+          id: label === "Privacy Policy" ? "policy-1" : "policy-2",
+          label,
+          href,
+        },
+      ];
+
+  return {
+    ...current,
+    footer: {
+      ...current.footer,
+      policyLinks,
+    },
+  };
+}
+
+function getFooterPolicyHref(settings: SiteSettings, label: "Privacy Policy" | "Terms of Service") {
+  return settings.footer.policyLinks.find((link) => link.label === label)?.href ?? "";
+}
+
 function Field({
   label,
   value,
@@ -2736,6 +2767,75 @@ export default function AdminPanel() {
                         >
                           <Save className="h-4 w-4" />
                           Save Profile
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_14px_40px_rgba(15,23,42,0.05)]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-[#145b93]">
+                          <Globe className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-[1.75rem] font-black text-slate-950">Footer & Legal Links</h3>
+                          <p className="mt-1 text-sm text-slate-500">
+                            Manage footer copyright and policy links. Saving updates syncs these values to Supabase.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                        <div className="lg:col-span-2">
+                          <Field
+                            label="Footer Copyright Text"
+                            value={siteSettingsDraft.footer.copyrightText}
+                            onChange={(value) =>
+                              setSiteSettingsDraft((current) =>
+                                current
+                                  ? {
+                                      ...current,
+                                      footer: {
+                                        ...current.footer,
+                                        copyrightText: value,
+                                      },
+                                    }
+                                  : current,
+                              )
+                            }
+                            placeholder="© 2026 All rights reserved by Novatech Digisoft Labs."
+                          />
+                        </div>
+                        <Field
+                          label="Privacy Policy URL"
+                          value={getFooterPolicyHref(siteSettingsDraft, "Privacy Policy")}
+                          onChange={(value) =>
+                            setSiteSettingsDraft((current) =>
+                              current ? updateFooterPolicyLink(current, "Privacy Policy", value) : current,
+                            )
+                          }
+                          placeholder="/privacy-policy"
+                        />
+                        <Field
+                          label="Terms of Service URL"
+                          value={getFooterPolicyHref(siteSettingsDraft, "Terms of Service")}
+                          onChange={(value) =>
+                            setSiteSettingsDraft((current) =>
+                              current ? updateFooterPolicyLink(current, "Terms of Service", value) : current,
+                            )
+                          }
+                          placeholder="/terms-of-service"
+                        />
+                      </div>
+
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => void saveSiteSettings()}
+                          disabled={saving}
+                          className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Save className="h-4 w-4" />
+                          Save Footer Settings
                         </button>
                       </div>
                     </div>
