@@ -4,28 +4,48 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 import { getSiteSettings } from "@/lib/site-settings.service";
 
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-emerald-400" aria-hidden="true">
+      <path d="M12.04 3.5a8.43 8.43 0 0 0-7.24 12.75L3.88 20l3.85-.9A8.42 8.42 0 1 0 12.04 3.5Zm0 15.36a6.9 6.9 0 0 1-3.52-.96l-.25-.15-2.27.53.54-2.22-.16-.26a6.9 6.9 0 1 1 5.66 3.06Zm3.8-5.15c-.2-.1-1.2-.6-1.39-.66-.19-.07-.33-.1-.47.1-.14.2-.54.66-.66.8-.12.14-.24.15-.44.05-.2-.1-.86-.32-1.64-1.02-.61-.54-1.02-1.21-1.14-1.41-.12-.2-.01-.31.09-.41.09-.09.2-.24.3-.36.1-.12.14-.2.2-.34.07-.14.03-.26-.02-.36-.05-.1-.47-1.13-.64-1.55-.17-.4-.34-.35-.47-.36h-.4c-.14 0-.36.05-.55.26-.19.2-.72.7-.72 1.72 0 1.01.74 1.99.84 2.13.1.14 1.46 2.23 3.54 3.12.49.21.88.34 1.18.44.5.16.95.14 1.31.08.4-.06 1.2-.49 1.37-.96.17-.47.17-.88.12-.96-.05-.08-.19-.13-.39-.23Z" />
+    </svg>
+  );
+}
+
+function getEmailComposeHref(emailAddress: string) {
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailAddress)}`;
+}
+
 export default async function Footer() {
   const settings = await getSiteSettings();
   const { contact, footer, branding } = settings;
 
   const contactItems = [
     {
-      icon: Phone,
+      icons: [Phone, WhatsAppIcon],
       content: (
-        <div className="space-y-1">
-          <a href={`tel:${contact.phonePrimary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
-            {contact.phonePrimary}
-          </a>
-          <a href={`tel:${contact.phoneSecondary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
-            {contact.phoneSecondary}
-          </a>
-        </div>
+        <a href={`tel:${contact.phonePrimary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
+          {contact.phonePrimary}
+        </a>
+      ),
+    },
+    {
+      icons: [Phone, WhatsAppIcon],
+      content: (
+        <a href={`tel:${contact.phoneSecondary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
+          {contact.phoneSecondary}
+        </a>
       ),
     },
     {
       icon: Mail,
       content: (
-        <a href={`mailto:${contact.emailAddress}`} className="block break-all transition hover:text-white">
+        <a
+          href={getEmailComposeHref(contact.emailAddress)}
+          target="_blank"
+          rel="noreferrer"
+          className="block break-all transition hover:text-white"
+        >
           {contact.emailAddress}
         </a>
       ),
@@ -115,11 +135,20 @@ export default async function Footer() {
             <div className="mt-3.5 space-y-2.5 text-[0.98rem] text-sky-50/95">
               {contactItems.map((item, index) => {
                 const Icon = item.icon;
+                const Icons = item.icons;
                 return (
                   <div key={index} className="grid grid-cols-[38px_1fr] items-start gap-3">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/14 bg-white/6 text-sky-200">
-                      <Icon className="h-4 w-4" />
-                    </span>
+                    {Icons ? (
+                      <span className="inline-flex h-9 w-9 items-center justify-center gap-1 rounded-md text-sky-200">
+                        {Icons.map((InlineIcon, iconIndex) => (
+                          <InlineIcon key={iconIndex} className="h-4 w-4" />
+                        ))}
+                      </span>
+                    ) : Icon ? (
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/14 bg-white/6 text-sky-200">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                    ) : null}
                     <div className="pt-0.5 leading-7">{item.content}</div>
                   </div>
                 );

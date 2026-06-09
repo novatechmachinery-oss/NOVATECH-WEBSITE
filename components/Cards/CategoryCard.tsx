@@ -34,7 +34,7 @@ export default function CategoryCard({
   return (
     <Link
       href={resolvedHref}
-      className="group relative block h-full cursor-pointer overflow-hidden rounded-[1rem] border border-[#cfdceb] bg-[#16548b] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition duration-300 hover:border-[#7aa5cb] hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)]"
+      className="group relative block h-full cursor-pointer overflow-hidden border border-[#cfdceb] bg-[#16548b] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition duration-300 hover:border-[#7aa5cb] hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)]"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-[#e4edf5]" />
 

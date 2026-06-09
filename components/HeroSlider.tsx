@@ -57,13 +57,13 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
           fill
           sizes="100vw"
           priority={currentIndex === 0}
-          className="object-cover object-center transition-opacity duration-700 ease-in-out"
+          className="hero-slide-image object-cover object-center transition-opacity duration-700 ease-in-out"
         />
       </div>
 
       <div className="hero-content-zone relative z-10 flex h-full w-full items-end px-4 pb-8 pt-6 md:items-center md:px-8 md:py-8 lg:px-0">
         <div className="w-full max-w-[620px] pb-2 md:max-w-[560px] lg:ml-[clamp(32px,5vw,90px)] lg:w-[40vw] lg:pb-0">
-          <h1 className="hero-heading max-w-[620px] text-[clamp(2.4rem,4.5vw,4.5rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#163d6b]">
+          <h1 className="hero-heading max-w-[620px] text-[clamp(1.7rem,3.15vw,3.15rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#163d6b]">
             Connecting Global Buyers
             <br />
             with Quality Industrial Machinery

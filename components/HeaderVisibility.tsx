@@ -1,0 +1,57 @@
+"use client";
+
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+type HeaderVisibilityProps = {
+  children: ReactNode;
+};
+
+export default function HeaderVisibility({ children }: HeaderVisibilityProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isAwayFromTop, setIsAwayFromTop] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    function handleScroll() {
+      const shouldStick = window.scrollY > 40;
+
+      if (!shouldStick) {
+        if (timerRef.current) {
+          window.clearTimeout(timerRef.current);
+        }
+        setIsAwayFromTop(false);
+        setIsVisible(true);
+        return;
+      }
+
+      if (!isAwayFromTop) {
+        setIsAwayFromTop(true);
+        setIsVisible(false);
+
+        timerRef.current = window.setTimeout(() => {
+          setIsVisible(true);
+        }, 1000);
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, [isAwayFromTop]);
+
+  return (
+    <header
+      className={`sticky top-0 z-50 bg-white shadow-sm shadow-slate-950/5 transition-transform duration-500 ease-out ${
+        isVisible ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
+      {children}
+    </header>
+  );
+}

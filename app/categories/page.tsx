@@ -160,7 +160,7 @@ export default async function CategoriesPage() {
                       <Link
                         key={category.name}
                         href={category.href}
-                        className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3.5 py-1.5 text-[0.84rem] font-semibold text-sky-800 shadow-[0_8px_20px_rgba(14,116,144,0.08)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-sky-200 bg-white px-3.5 py-1.5 text-[0.84rem] font-semibold text-sky-800 shadow-[0_8px_20px_rgba(14,116,144,0.08)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50"
                       >
                         <category.Icon className="h-4 w-4" />
                         <span>{category.name}</span>
@@ -244,7 +244,7 @@ export default async function CategoriesPage() {
                     <Link
                       key={category.name}
                       href={category.href}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[0.82rem] font-medium text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[0.82rem] font-medium text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
                     >
                       <span>{category.name}</span>
                     </Link>

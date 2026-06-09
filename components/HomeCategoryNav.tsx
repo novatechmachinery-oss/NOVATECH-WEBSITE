@@ -23,18 +23,18 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
 
   return (
     <div className="border-b border-[#d3dfeb] bg-white text-[#16548b] shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-      <div className="mx-auto max-w-[1460px] px-2 py-1 sm:px-4 lg:px-6 xl:px-8">
-        <div className="grid grid-cols-2 gap-[1px] bg-[#dbe5ef]">
+      <div className="w-full py-0.5">
+        <div className="grid grid-cols-2 gap-[1px] bg-[#dbe5ef] md:grid-cols-4">
         {types.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.label}
               href={item.href}
-              className={`group relative flex items-center justify-center bg-white px-2 py-1 text-center text-[0.54rem] font-extrabold uppercase tracking-[0.03em] text-[#16548b] transition duration-300 sm:text-[0.58rem] md:text-[0.62rem] lg:min-h-10 lg:px-4 lg:py-2 lg:text-[0.72rem] xl:flex-1 xl:px-5 xl:text-[0.8rem] ${
+              className={`group relative flex min-h-11 items-center justify-center bg-white px-2 py-1.5 text-center text-[0.76rem] font-black uppercase tracking-[0.03em] text-[#16548b] transition duration-300 sm:text-[0.84rem] md:min-h-10 md:px-3 md:text-[0.9rem] lg:min-h-9 lg:px-4 lg:text-[1rem] xl:flex-1 xl:px-5 xl:text-[1.08rem] ${
                 isActive
                   ? "text-[#16548b]"
-                  : "hover:bg-[#f4f8fb] hover:text-[#16548b]"
+                  : "hover:bg-[#16548b] hover:text-white"
               }`}
             >
               <span className="text-balance leading-none lg:leading-[1.1]">{item.label}</span>

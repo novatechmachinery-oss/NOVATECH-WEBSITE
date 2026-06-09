@@ -8,7 +8,7 @@ export const contactDetails = {
   emailAddress: "info@novatechmachinery.com",
   mapLocation: "Jubilee Walk, Sector 70, Mohali",
   officeAddress: "6th Floor, Office No. 621, Jubilee Walk, Sector 70, Mohali",
-  businessHours: "Mon-Sat, 9 AM - 6 PM IST",
+  businessHours: "Mon-Sat, 9 AM - 9 PM IST",
 } as const;
 
 const mapsQuery = encodeURIComponent(contactDetails.mapLocation);
