@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { getAuthenticatedAdmin } from "@/lib/admin-auth";
+import { clearAdminAuthCookies, getAuthenticatedAdmin } from "@/lib/admin-auth";
 
 const LOGIN_PAGE = "/login";
 const PUBLIC_ADMIN_API_ROUTES = new Set([
@@ -21,15 +21,19 @@ export async function middleware(request: NextRequest) {
 
   if (!admin) {
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json(
+      const unauthorizedResponse = NextResponse.json(
         { error: "Unauthorized. Please log in to access this resource." },
         { status: 401 },
       );
+      clearAdminAuthCookies(request, unauthorizedResponse);
+      return unauthorizedResponse;
     }
 
     const loginUrl = new URL(LOGIN_PAGE, request.url);
     loginUrl.searchParams.set("from", pathname);
-    return NextResponse.redirect(loginUrl);
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    clearAdminAuthCookies(request, redirectResponse);
+    return redirectResponse;
   }
 
   return response;

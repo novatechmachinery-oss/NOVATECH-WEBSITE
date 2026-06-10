@@ -8,6 +8,7 @@ import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getItemListSchema } from "@/lib/seo/schema";
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/categories", {
@@ -41,6 +42,12 @@ const iconMap = {
 } as const;
 
 function getCategoryHref(categoryValue: string) {
+  const normalizedCategory = categoryValue.trim().toLowerCase();
+
+  if (normalizedCategory === "special deals" || normalizedCategory === "special-deals") {
+    return "/special-deals";
+  }
+
   return {
     pathname: "/used-machinery",
     query: { category: categoryValue },
@@ -81,7 +88,10 @@ export default async function CategoriesPage() {
     "Machine Categories",
     activeCategories.map((category) => ({
       name: category.name,
-      url: `/used-machinery?category=${encodeURIComponent(category.name)}`,
+      url:
+        category.name.trim().toLowerCase() === "special deals"
+          ? "/special-deals"
+          : `/used-machinery?category=${encodeURIComponent(category.name)}`,
     })),
   );
 

@@ -16,6 +16,7 @@ import { getSiteSettings } from "@/lib/site-settings.service";
 import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/", {

@@ -8,6 +8,7 @@ import { getMachineInventory } from "@/lib/machines";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/special-deals", {

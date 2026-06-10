@@ -7,6 +7,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseConfig, hasSupabaseConfig } from "@/lib/supabase";
 
 const LEGACY_COOKIE_NAME = "nv_admin";
+const SUPABASE_COOKIE_PREFIX = "sb-";
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: "lax",
@@ -136,6 +137,23 @@ export function clearLegacyAdminCookie(response: NextResponse) {
     ...COOKIE_OPTIONS,
     maxAge: 0,
   });
+}
+
+export function clearAdminAuthCookies(request: NextRequest, response: NextResponse) {
+  const cookieNames = new Set<string>([LEGACY_COOKIE_NAME]);
+
+  for (const cookie of request.cookies.getAll()) {
+    if (cookie.name.startsWith(SUPABASE_COOKIE_PREFIX)) {
+      cookieNames.add(cookie.name);
+    }
+  }
+
+  for (const name of cookieNames) {
+    response.cookies.set(name, "", {
+      ...COOKIE_OPTIONS,
+      maxAge: 0,
+    });
+  }
 }
 
 export { LEGACY_COOKIE_NAME };

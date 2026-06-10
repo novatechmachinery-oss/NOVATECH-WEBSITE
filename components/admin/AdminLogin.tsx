@@ -14,8 +14,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const ADMIN_EMAIL_HINT = "";
-
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();

@@ -82,6 +82,26 @@ type MachineFormState = {
   specifications: string;
 };
 
+type MachineFilterState = {
+  text: string;
+  diameterMin: string;
+  diameterMax: string;
+  machineType: "" | AdminMachine["machineType"];
+  xTravelMin: string;
+  xTravelMax: string;
+};
+
+type MachineRow = AdminMachine & {
+  categoryLabel: string;
+  subcategoryLabel?: string;
+};
+
+type MachineSearchEntry = {
+  key: string;
+  value: string;
+  text: string;
+};
+
 type DeleteModalState = {
   title: string;
   description: string;
@@ -119,6 +139,15 @@ const defaultMachineForm: MachineFormState = {
   specialDeal: false,
   images: [],
   specifications: "",
+};
+
+const defaultMachineFilters: MachineFilterState = {
+  text: "",
+  diameterMin: "",
+  diameterMax: "",
+  machineType: "",
+  xTravelMin: "",
+  xTravelMax: "",
 };
 
 function slugify(value: string) {
@@ -167,6 +196,185 @@ function parseMachineSpecifications(value: string) {
 
     throw error;
   }
+}
+
+function labelizeMachineKey(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function collectMachineSearchEntries(value: unknown, path = ""): MachineSearchEntry[] {
+  if (value === null || value === undefined || path === "images") {
+    return [];
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    const key = labelizeMachineKey(path);
+    const textValue = String(value).trim();
+
+    if (!textValue) {
+      return [];
+    }
+
+    return [{ key, value: textValue, text: `${key} ${textValue}`.trim() }];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => collectMachineSearchEntries(item, `${path} ${index + 1}`.trim()));
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value).flatMap(([key, nestedValue]) => {
+      const nextPath = `${path} ${labelizeMachineKey(key)}`.trim();
+      return collectMachineSearchEntries(nestedValue, nextPath);
+    });
+  }
+
+  return [];
+}
+
+function getMachineSearchEntries(machine: MachineRow) {
+  return collectMachineSearchEntries({
+    id: machine.id,
+    name: machine.name,
+    brand: machine.brand,
+    model: machine.model,
+    serialNumber: machine.serialNumber,
+    inventoryNumber: machine.inventoryNumber,
+    countryOfOrigin: machine.countryOfOrigin,
+    price: machine.price,
+    condition: machine.condition,
+    stockStatus: machine.stockStatus,
+    machineType: machine.machineType,
+    category: machine.categoryLabel,
+    subcategory: machine.subcategoryLabel,
+    description: machine.description,
+    specialDeal: machine.specialDeal,
+    specifications: machine.specifications,
+    createdAt: machine.createdAt,
+    updatedAt: machine.updatedAt,
+  });
+}
+
+function parseFilterNumber(value: string) {
+  const normalizedValue = value.replace(/,/g, "").trim();
+
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number(normalizedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : undefined;
+}
+
+function normalizeRange(minValue: string, maxValue: string) {
+  const min = parseFilterNumber(minValue);
+  const max = parseFilterNumber(maxValue);
+
+  if (min === undefined && max === undefined) {
+    return null;
+  }
+
+  if (min !== undefined && max !== undefined && min > max) {
+    return { min: max, max: min };
+  }
+
+  return { min, max };
+}
+
+function isNumberInRange(value: number, range: { min?: number; max?: number }) {
+  return (range.min === undefined || value >= range.min) && (range.max === undefined || value <= range.max);
+}
+
+function extractNumbers(value: string) {
+  return Array.from(value.matchAll(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g))
+    .map((match) => Number(match[0].replace(/,/g, "")))
+    .filter((number) => Number.isFinite(number));
+}
+
+function hasDiameterContext(entry: MachineSearchEntry) {
+  return /\b(diameter|dia|bore|swing)\b|\u00f8/i.test(`${entry.key} ${entry.value}`);
+}
+
+function hasXTravelContext(entry: MachineSearchEntry) {
+  const context = `${entry.key} ${entry.value}`.toLowerCase();
+  const key = entry.key.toLowerCase().trim();
+
+  return (
+    /\bx[\s-]*(?:axis[\s-]*)?travel\b/.test(context) ||
+    /\btravel[\s-]*x\b/.test(context) ||
+    /\bx[\s-]*axis\b/.test(context) ||
+    /\blongitudinal\s+travel\b/.test(context) ||
+    /\bx\s*[:=]\s*\d/.test(context) ||
+    /^x(?:\s*axis)?$/.test(key)
+  );
+}
+
+function extractXTravelNumbers(entry: MachineSearchEntry) {
+  const context = `${entry.key} ${entry.value}`;
+  const labeledXValue = context.match(
+    /\bx\s*(?:axis|travel)?\s*[:=]?\s*(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)/i,
+  );
+
+  if (labeledXValue) {
+    return extractNumbers(labeledXValue[1]);
+  }
+
+  const numbers = extractNumbers(entry.value);
+  const key = entry.key.toLowerCase();
+
+  if (/\bx\s*[/,-]\s*y(?:\s*[/,-]\s*z)?\b/.test(key) || /\bx\s+y(?:\s+z)?\b/.test(key)) {
+    return numbers.slice(0, 1);
+  }
+
+  return numbers;
+}
+
+function hasNumberInMachineRange(
+  entries: MachineSearchEntry[],
+  range: { min?: number; max?: number } | null,
+  contextMatcher: (entry: MachineSearchEntry) => boolean,
+  numberExtractor: (entry: MachineSearchEntry) => number[] = (entry) => extractNumbers(entry.value),
+) {
+  if (!range) {
+    return true;
+  }
+
+  return entries.some((entry) => {
+    if (!contextMatcher(entry)) {
+      return false;
+    }
+
+    return numberExtractor(entry).some((number) => isNumberInRange(number, range));
+  });
+}
+
+function machineMatchesFilters(machine: MachineRow, filters: MachineFilterState) {
+  const entries = getMachineSearchEntries(machine);
+  const searchQuery = filters.text.trim().toLowerCase();
+  const diameterRange = normalizeRange(filters.diameterMin, filters.diameterMax);
+  const xTravelRange = normalizeRange(filters.xTravelMin, filters.xTravelMax);
+
+  if (searchQuery && !entries.some((entry) => entry.text.toLowerCase().includes(searchQuery))) {
+    return false;
+  }
+
+  if (filters.machineType && machine.machineType !== filters.machineType) {
+    return false;
+  }
+
+  if (!hasNumberInMachineRange(entries, diameterRange, hasDiameterContext)) {
+    return false;
+  }
+
+  if (!hasNumberInMachineRange(entries, xTravelRange, hasXTravelContext, extractXTravelNumbers)) {
+    return false;
+  }
+
+  return true;
 }
 
 function normalizeNewsletterSubscribers(value: unknown): NewsletterSubscriber[] {
@@ -382,7 +590,7 @@ export default function AdminPanel() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [machineSpecificationsError, setMachineSpecificationsError] = useState<string | null>(null);
-  const [machineSearch, setMachineSearch] = useState("");
+  const [machineFilters, setMachineFilters] = useState<MachineFilterState>(defaultMachineFilters);
   const [categorySearch, setCategorySearch] = useState("");
   const [machineModalOpen, setMachineModalOpen] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -520,7 +728,7 @@ export default function AdminPanel() {
 
   const machineRows = useMemo(() => {
     if (!catalog) {
-      return [] as Array<AdminMachine & { categoryLabel: string; subcategoryLabel?: string }>;
+      return [] as MachineRow[];
     }
 
     const categoryIndex = new Map(catalog.categories.map((item) => [item.id, item]));
@@ -535,24 +743,11 @@ export default function AdminPanel() {
           subcategoryLabel: parentCategory ? currentCategory?.name : undefined,
         };
       })
-      .filter((machine) => {
-        const query = machineSearch.trim().toLowerCase();
-        if (!query) {
-          return true;
-        }
-
-        return [
-          machine.name,
-          machine.brand,
-          machine.model,
-          machine.categoryLabel,
-          machine.subcategoryLabel,
-        ]
-          .filter(Boolean)
-          .some((value) => value?.toLowerCase().includes(query));
-      })
+      .filter((machine) => machineMatchesFilters(machine, machineFilters))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }, [catalog, machineSearch]);
+  }, [catalog, machineFilters]);
+
+  const machineFiltersActive = Object.values(machineFilters).some((value) => value.trim());
 
   const activeSubcategories = machineForm.categoryId
     ? childCategories.get(machineForm.categoryId) ?? []
@@ -1955,14 +2150,12 @@ export default function AdminPanel() {
             {activeSection === "machines" ? (
               <div className="space-y-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="relative w-full lg:w-80">
-                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                      value={machineSearch}
-                      onChange={(event) => setMachineSearch(event.target.value)}
-                      placeholder="Search machines..."
-                      className="w-full rounded-full border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-slate-400"
-                    />
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Inventory Filters</p>
+                    <h2 className="mt-2 text-2xl font-black text-slate-950">Machines</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Showing {machineRows.length} of {catalog?.machines.length ?? 0} machines
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -1972,6 +2165,83 @@ export default function AdminPanel() {
                     <Plus className="h-4 w-4" />
                     Add Machine
                   </button>
+                </div>
+
+                <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                  <div className="grid gap-4 xl:grid-cols-[minmax(260px,1.25fr)_repeat(5,minmax(140px,1fr))_auto] xl:items-end">
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Text Search
+                      <span className="relative">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <input
+                          value={machineFilters.text}
+                          onChange={(event) =>
+                            setMachineFilters((current) => ({ ...current, text: event.target.value }))
+                          }
+                          placeholder="Search any machine field..."
+                          className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400"
+                        />
+                      </span>
+                    </label>
+
+                    <Field
+                      label="Min Diameter"
+                      type="number"
+                      value={machineFilters.diameterMin}
+                      placeholder="2000"
+                      onChange={(value) => setMachineFilters((current) => ({ ...current, diameterMin: value }))}
+                    />
+                    <Field
+                      label="Max Diameter"
+                      type="number"
+                      value={machineFilters.diameterMax}
+                      placeholder="4000"
+                      onChange={(value) => setMachineFilters((current) => ({ ...current, diameterMax: value }))}
+                    />
+
+                    <label className="grid gap-2 text-sm font-medium text-slate-700">
+                      Machine Type
+                      <select
+                        value={machineFilters.machineType}
+                        onChange={(event) =>
+                          setMachineFilters((current) => ({
+                            ...current,
+                            machineType: event.target.value as MachineFilterState["machineType"],
+                          }))
+                        }
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                      >
+                        <option value="">All Types</option>
+                        <option value="cnc">CNC</option>
+                        <option value="conventional">Conventional</option>
+                      </select>
+                    </label>
+
+                    <Field
+                      label="Min X Travel"
+                      type="number"
+                      value={machineFilters.xTravelMin}
+                      placeholder="1000"
+                      onChange={(value) => setMachineFilters((current) => ({ ...current, xTravelMin: value }))}
+                    />
+                    <Field
+                      label="Max X Travel"
+                      type="number"
+                      value={machineFilters.xTravelMax}
+                      placeholder="3000"
+                      onChange={(value) => setMachineFilters((current) => ({ ...current, xTravelMax: value }))}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setMachineFilters(defaultMachineFilters)}
+                      disabled={!machineFiltersActive}
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      <X className="h-4 w-4" />
+                      Clear Filters
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
@@ -2019,6 +2289,22 @@ export default function AdminPanel() {
                           </td>
                         </tr>
                       ))}
+                      {machineRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-12 text-center">
+                            <div className="mx-auto max-w-md rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-7">
+                              <p className="font-semibold text-slate-900">
+                                {machineFiltersActive ? "No machines match these filters." : "No machines found."}
+                              </p>
+                              <p className="mt-2 text-sm text-slate-500">
+                                {machineFiltersActive
+                                  ? "Clear filters or widen the diameter and X travel ranges to see more machines."
+                                  : "Add a machine to start building the inventory."}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
                     </tbody>
                   </table>
                 </div>
