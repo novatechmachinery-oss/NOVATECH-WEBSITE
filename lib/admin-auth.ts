@@ -14,6 +14,9 @@ const COOKIE_OPTIONS: CookieOptions = {
   secure: process.env.NODE_ENV === "production",
   path: "/",
 };
+const AUTH_COOKIE_MARKER = "auth-token";
+const AUTH_COOKIE_CHUNK_PATTERN = /\.\d+$/;
+const TOKEN_EXPIRY_SKEW_SECONDS = 30;
 
 type AdminCredentials = {
   email: string;
@@ -48,6 +51,107 @@ function constantTimeEqual(left: string, right: string) {
   }
 
   return diff === 0;
+}
+
+function decodeBase64Url(value: string) {
+  const normalizedValue = value.replace(/-/g, "+").replace(/_/g, "/");
+  const paddedValue = normalizedValue.padEnd(Math.ceil(normalizedValue.length / 4) * 4, "=");
+  const binaryValue = atob(paddedValue);
+  const bytes = Uint8Array.from(binaryValue, (character) => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function parseJsonCookie(value: string) {
+  const decodedValue = decodeURIComponent(value);
+  const jsonValue = decodedValue.startsWith("base64-")
+    ? decodeBase64Url(decodedValue.slice("base64-".length))
+    : decodedValue;
+
+  return JSON.parse(jsonValue) as unknown;
+}
+
+function getCookieBaseName(name: string) {
+  return name.replace(AUTH_COOKIE_CHUNK_PATTERN, "");
+}
+
+function getSupabaseAuthCookieValue(cookies: ReturnType<NextRequest["cookies"]["getAll"]>) {
+  const groupedCookies = new Map<string, Array<{ name: string; value: string }>>();
+
+  for (const cookie of cookies) {
+    if (!cookie.name.startsWith(SUPABASE_COOKIE_PREFIX) || !cookie.name.includes(AUTH_COOKIE_MARKER)) {
+      continue;
+    }
+
+    const baseName = getCookieBaseName(cookie.name);
+    const current = groupedCookies.get(baseName) ?? [];
+    current.push(cookie);
+    groupedCookies.set(baseName, current);
+  }
+
+  for (const group of groupedCookies.values()) {
+    const sortedGroup = [...group].sort((left, right) => left.name.localeCompare(right.name, undefined, { numeric: true }));
+    const value = sortedGroup.map((cookie) => cookie.value).join("");
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function getSessionAccessToken(session: unknown) {
+  if (!session) {
+    return null;
+  }
+
+  if (Array.isArray(session)) {
+    const accessToken = session.find((value): value is string => typeof value === "string" && value.split(".").length === 3);
+    return accessToken ?? null;
+  }
+
+  if (typeof session === "object") {
+    const accessToken = (session as { access_token?: unknown }).access_token;
+    return typeof accessToken === "string" ? accessToken : null;
+  }
+
+  return null;
+}
+
+function getJwtExpiry(accessToken: string) {
+  try {
+    const [, payload] = accessToken.split(".");
+    if (!payload) {
+      return null;
+    }
+
+    const parsedPayload = JSON.parse(decodeBase64Url(payload)) as { exp?: unknown };
+    return typeof parsedPayload.exp === "number" ? parsedPayload.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasFreshSupabaseSessionCookie(cookies: ReturnType<NextRequest["cookies"]["getAll"]>) {
+  const authCookieValue = getSupabaseAuthCookieValue(cookies);
+
+  if (!authCookieValue) {
+    return false;
+  }
+
+  try {
+    const session = parseJsonCookie(authCookieValue);
+    const accessToken = getSessionAccessToken(session);
+
+    if (!accessToken) {
+      return false;
+    }
+
+    const expiresAt = getJwtExpiry(accessToken);
+    return expiresAt === null || expiresAt > Math.floor(Date.now() / 1000) + TOKEN_EXPIRY_SKEW_SECONDS;
+  } catch {
+    return false;
+  }
 }
 
 export function getAdminCredentials(): AdminCredentials {
@@ -112,6 +216,10 @@ export async function getAuthenticatedAdmin(
   const hasAuthHeader = request.headers.get("Authorization")?.startsWith("Bearer ");
 
   if (!hasAuthCookie && !hasAuthHeader) {
+    return null;
+  }
+
+  if (!hasAuthHeader && !hasFreshSupabaseSessionCookie(cookies)) {
     return null;
   }
 
