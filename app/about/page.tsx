@@ -260,7 +260,7 @@ export default async function AboutPage() {
               <div className="mt-6 border-t border-white/18 pt-4">
                 <div className="flex items-start gap-2 text-sm text-sky-50/88">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India</span>
+                  <span>Office No. 621, 6th Floor, Jubilee Walk, Sector 70, Mohali, Punjab, India</span>
                 </div>
 
                 <Link

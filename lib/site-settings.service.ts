@@ -79,8 +79,8 @@ const defaultSettings: SiteSettings = {
     phoneSecondary: "+91 96462 55855",
     whatsappNumber: "+91 96462 55755",
     emailAddress: "info@novatechmachinery.in",
-    mapLocation: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
-    officeAddress: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
+    mapLocation: "Office No. 621, 6th Floor, Jubilee Walk, Sector 70, Mohali, Punjab, India",
+    officeAddress: "Office No. 621, 6th Floor, Jubilee Walk, Sector 70, Mohali, Punjab, India",
     businessHours: "Mon-Sat, 9 AM - 9 PM IST",
   },
   footer: {
