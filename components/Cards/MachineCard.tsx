@@ -10,7 +10,7 @@ type MachineCardProps = {
   whatsappLabel?: string;
 };
 
-const highlights = ["50+ Machine Types", "Quick Response", "Quality Assured"];
+const highlights = ["200+ Machine Types", "Quick Response", ];
 
 function SearchIcon() {
   return (

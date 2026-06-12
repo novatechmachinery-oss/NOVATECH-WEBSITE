@@ -5,9 +5,9 @@ export const contactDetails = {
   phonePrimary: "+91 96462 55755",
   phoneSecondary: "+91 96462 55855",
   whatsappNumber: WHATSAPP_NUMBER,
-  emailAddress: "info@novatechmachinery.com",
-  mapLocation: "Jubilee Walk, Sector 70, Mohali",
-  officeAddress: "6th Floor, Office No. 621, Jubilee Walk, Sector 70, Mohali",
+  emailAddress: "info@novatechmachinery.in",
+  mapLocation: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
+  officeAddress: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
   businessHours: "Mon-Sat, 9 AM - 9 PM IST",
 } as const;
 

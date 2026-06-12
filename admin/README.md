@@ -27,7 +27,7 @@ Start command: npm run start
 Use a separate domain such as:
 
 ```text
-https://admin.novatechmachinery.com
+https://admin.novatechmachinery.in
 ```
 
 Admin URLs:
@@ -46,14 +46,14 @@ Set these variables on the admin deployment:
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
-ADMIN_EMAIL=info@novatechmachinery.com
+ADMIN_EMAIL=info@novatechmachinery.in
 ADMIN_PASSWORD=...
 ```
 
 Use `ADMIN_EMAILS` instead of `ADMIN_EMAIL` for multiple allowed admin emails:
 
 ```env
-ADMIN_EMAILS=info@novatechmachinery.com,second-admin@example.com
+ADMIN_EMAILS=info@novatechmachinery.in,second-admin@example.com
 ```
 
 ## Main Website Env
@@ -62,7 +62,7 @@ On the public website deployment, disable the built-in admin surface:
 
 ```env
 DISABLE_MAIN_ADMIN_ROUTES=true
-ADMIN_APP_URL=https://admin.novatechmachinery.com
+ADMIN_APP_URL=https://admin.novatechmachinery.in
 ```
 
 With those set, `/admin/*` on the main website redirects to the standalone admin app, and `/api/admin/*` returns `404` on the public deployment.

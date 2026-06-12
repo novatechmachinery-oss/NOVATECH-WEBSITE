@@ -52,7 +52,7 @@ export default function CategoryCard({
         </div>
 
         <div className="flex min-h-[54px] items-end justify-between gap-2 bg-[#16548b] px-3 py-2.5 sm:min-h-[60px] sm:px-4 sm:py-3 lg:min-h-[68px] lg:px-6 lg:py-3.5">
-          <h3 className="max-w-[60%] font-serif text-[0.9rem] font-semibold uppercase leading-[1.02] text-white sm:text-[1rem] lg:text-[1.2rem]">
+          <h3 className="max-w-[60%] text-[0.9rem] font-black uppercase leading-[1.02] text-white sm:text-[1rem] lg:text-[1.2rem]">
             {title}
           </h3>
 

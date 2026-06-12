@@ -25,7 +25,7 @@ const paragraphs = [
 
 const stats = [
   { icon: Globe, title: "Europe & USA", label: "Global Sourcing" },
-  { icon: Wrench, title: "50+", label: "Machine Types" },
+  { icon: Wrench, title: "200+", label: "Machine Types" },
   { icon: Factory, title: "Multi-Industry", label: "Turn-Key Projects" },
   { icon: BadgeCheck, title: "100%", label: "Quality Tested" },
 ];
@@ -260,7 +260,7 @@ export default async function AboutPage() {
               <div className="mt-6 border-t border-white/18 pt-4">
                 <div className="flex items-start gap-2 text-sm text-sky-50/88">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Sixth Floor, Office No. 621, Sector 70, SAS Nagar, Punjab 160071</span>
+                  <span>Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India</span>
                 </div>
 
                 <Link

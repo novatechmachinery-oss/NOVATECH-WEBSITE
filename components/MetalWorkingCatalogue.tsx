@@ -97,6 +97,41 @@ type MetalWorkingCatalogueProps = {
   pageHeading?: string;
 };
 
+type PaginationItem = number | "ellipsis-left" | "ellipsis-right";
+
+function getPaginationItems(currentPage: number, totalPages: number): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set<number>([1, totalPages, currentPage]);
+
+  if (currentPage <= 3) {
+    [2, 3].forEach((page) => pages.add(page));
+  } else if (currentPage >= totalPages - 2) {
+    [totalPages - 2, totalPages - 1].forEach((page) => pages.add(page));
+  } else {
+    [currentPage - 1, currentPage + 1].forEach((page) => pages.add(page));
+  }
+
+  const sortedPages = Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+  const items: PaginationItem[] = [];
+
+  sortedPages.forEach((page, index) => {
+    const previousPage = sortedPages[index - 1];
+
+    if (previousPage && page - previousPage > 1) {
+      items.push(previousPage === 1 ? "ellipsis-left" : "ellipsis-right");
+    }
+
+    items.push(page);
+  });
+
+  return items;
+}
+
 export default function MetalWorkingCatalogue({
   machineCategories,
   machineInventory,
@@ -676,7 +711,7 @@ export default function MetalWorkingCatalogue({
 
         {!selectedMachine ? (
         <aside
-          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
+          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-2rem)] lg:max-h-[calc(100vh-2rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
             isMobileSidebarOpen
               ? "max-h-[70vh] border border-slate-200 p-3 opacity-100"
               : "max-h-0 border border-transparent p-0 opacity-0"
@@ -697,7 +732,7 @@ export default function MetalWorkingCatalogue({
             </div>
           </div>
 
-          <div className="mt-3 max-h-[500px] min-h-0 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:flex-1">
+          <div className="mt-3 max-h-[500px] min-h-0 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:flex-1 lg:pb-4">
             {filteredSidebarCategories.map((cat) => {
               const isOpen = openCategories[cat.name];
               const hasChildren = !!cat.sub?.length;
@@ -1056,28 +1091,63 @@ export default function MetalWorkingCatalogue({
             </div>
 
             {totalPages > 1 ? (
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-                {Array.from({ length: totalPages }, (_, index) => {
-                  const page = index + 1;
+              <div className="mt-8 flex justify-center px-2">
+                <div className="flex max-w-full flex-nowrap items-center justify-start gap-1.5 overflow-x-auto rounded-full border border-slate-200 bg-white/90 p-1.5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] ring-1 ring-white/70 backdrop-blur [scrollbar-width:none] sm:gap-2 sm:p-2 md:justify-center [&::-webkit-scrollbar]:hidden">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentPage((page) => Math.max(1, page - 1));
+                      scrollToResultsTop();
+                    }}
+                    disabled={currentPage === 1}
+                    className="inline-flex h-9 min-w-9 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 text-[0.72rem] font-black uppercase tracking-[0.08em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:px-3 sm:text-xs"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Prev</span>
+                  </button>
 
-                  return (
-                    <button
-                      key={page}
-                      type="button"
-                      onClick={() => {
-                        setCurrentPage(page);
-                        scrollToResultsTop();
-                      }}
-                      className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-bold transition ${
-                        currentPage === page
-                          ? "border-[#145b93] bg-[#145b93] text-white"
-                          : "border-slate-300 bg-white text-slate-700 hover:border-[#145b93] hover:text-[#145b93]"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+                  {getPaginationItems(currentPage, totalPages).map((item) =>
+                    typeof item === "number" ? (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          setCurrentPage(item);
+                          scrollToResultsTop();
+                        }}
+                        aria-current={currentPage === item ? "page" : undefined}
+                        className={`inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border px-2 text-sm font-black transition sm:h-10 sm:min-w-10 sm:px-3 ${
+                          currentPage === item
+                            ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_52%,#0d4b80_100%)] text-white shadow-[0_10px_24px_rgba(20,91,147,0.26)]"
+                            : "border-slate-200 bg-white text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93]"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ) : (
+                      <span
+                        key={item}
+                        className="inline-flex h-9 min-w-7 shrink-0 items-center justify-center rounded-full text-sm font-black tracking-[0.1em] text-slate-400 sm:h-10"
+                        aria-hidden="true"
+                      >
+                        ...
+                      </span>
+                    ),
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentPage((page) => Math.min(totalPages, page + 1));
+                      scrollToResultsTop();
+                    }}
+                    disabled={currentPage === totalPages}
+                    className="inline-flex h-9 min-w-9 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 text-[0.72rem] font-black uppercase tracking-[0.08em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:px-3 sm:text-xs"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             ) : null}
           </div>

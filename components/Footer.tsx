@@ -88,7 +88,7 @@ export default async function Footer() {
 
             <div className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1 text-[0.72rem] font-black uppercase tracking-[0.14em] text-sky-50/90">
               <span>Global Sourcing</span>
-              <span>50+ Machine Types</span>
+              <span>200+ Machine Types</span>
             </div>
           </div>
 

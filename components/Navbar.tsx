@@ -38,7 +38,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="border-b border-[#1f5e95] bg-[#16548b] text-white shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+    <nav
+      className="border-b border-[#1f5e95] bg-[#16548b] text-white shadow-[0_8px_24px_rgba(15,23,42,0.08)]"
+      style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
+    >
       <div className="mx-auto flex max-w-[1460px] items-center justify-end px-3 py-1 sm:px-4 md:px-6 xl:hidden">
         <button
           type="button"

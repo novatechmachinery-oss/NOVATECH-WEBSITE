@@ -17,7 +17,7 @@ const defaultSettings: SiteSettings = {
     logoSrc: "/images/MAIN%20LOGO.png",
     logoAlt: "Novatech logo",
   },
-  adminEmail: "info@novatechmachinery.com",
+  adminEmail: "info@novatechmachinery.in",
   adminProfile: {
     fullName: "Admin Novatech Machinery",
     phone: "+91 9646255855",
@@ -78,9 +78,9 @@ const defaultSettings: SiteSettings = {
     phonePrimary: "+91 96462 55755",
     phoneSecondary: "+91 96462 55855",
     whatsappNumber: "+91 96462 55755",
-    emailAddress: "info@novatechmachinery.com",
-    mapLocation: "Jubilee Walk, Sector 70, Mohali",
-    officeAddress: "6th Floor, Office No. 621, Jubilee Walk, Sector 70, Mohali",
+    emailAddress: "info@novatechmachinery.in",
+    mapLocation: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
+    officeAddress: "Office No. 621,6th Floor, , Jubilee Walk, Sector 70, Mohali, Punjab,India",
     businessHours: "Mon-Sat, 9 AM - 9 PM IST",
   },
   footer: {
@@ -111,9 +111,9 @@ const defaultSettings: SiteSettings = {
     smtp: {
       host: "smtp.gmail.com",
       port: "587",
-      username: "info@novatechmachinery.com",
+      username: "info@novatechmachinery.in",
       password: "",
-      fromEmail: "info@novatechmachinery.com",
+      fromEmail: "info@novatechmachinery.in",
       fromName: "Novatech Machinery",
       secure: false,
       testEmail: "test@example.com",

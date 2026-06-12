@@ -6,7 +6,6 @@ import {
   FileText,
   Mail,
   MapPin,
-  MessageCircle,
   Phone,
   Send,
   User,
@@ -23,7 +22,7 @@ import {
   validateContactForm,
 } from "@/lib/contactForm";
 import type { SiteSettings } from "@/lib/site-settings.types";
-import { WHATSAPP_HREF, WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
 type SubmitState =
   | { kind: "idle"; message: string }
@@ -33,6 +32,14 @@ type SubmitState =
 type ContactPageClientProps = {
   settings: SiteSettings["contact"];
 };
+
+function WhatsAppIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12.04 2.25A9.67 9.67 0 0 0 3.7 16.78l-1.08 3.98 4.08-1.07a9.66 9.66 0 0 0 5.34 1.62h.01a9.53 9.53 0 0 0 6.79-2.82 9.62 9.62 0 0 0 2.82-6.82c0-5.19-4.32-9.42-9.62-9.42Zm0 17.42h-.01a8.08 8.08 0 0 1-4.12-1.13l-.29-.17-2.42.63.65-2.35-.19-.31a8.02 8.02 0 1 1 6.38 3.33Zm4.38-6.02c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.18a7.2 7.2 0 0 1-1.34-1.67c-.14-.24-.02-.37.1-.49.11-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.19-.47-.39-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.09 3.62.57.25 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.43-.58 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28Z" />
+    </svg>
+  );
+}
 
 function buildTouchedState() {
   return contactFormFields.reduce(
@@ -62,8 +69,8 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   };
   const contactCards = [
     {
-      icon: Phone,
-      label: "Call Us",
+      icons: [Phone, WhatsAppIcon],
+      label: "Call Us/WhatsApp Us",
       title: `${settings.phonePrimary} / ${settings.phoneSecondary}`,
       detail: settings.businessHours,
       href: contactLinks.primaryCallLink,
@@ -74,13 +81,6 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
       title: emailAddress,
       detail: "We reply within 24 hours.",
       href: contactLinks.emailLink,
-    },
-    {
-      icon: MessageCircle,
-      label: "WhatsApp",
-      title: WHATSAPP_NUMBER,
-      detail: "Fast responses during business hours.",
-      href: contactLinks.whatsappLink,
     },
     {
       icon: MapPin,
@@ -263,32 +263,16 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                 />
               </div>
 
-              <div className="grid gap-2 border-t border-slate-200 bg-white p-3 sm:grid-cols-3 sm:gap-3 sm:p-5">
+              <div className="border-t border-slate-200 bg-white p-3 sm:p-5">
                 <a
                   href={contactLinks.mapsOpenUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
                 >
                   <MapPin className="h-4 w-4" />
                   View on Map
                   <ArrowUpRight className="h-4 w-4" />
-                </a>
-                <a
-                  href={contactLinks.whatsappLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  WhatsApp Now
-                </a>
-                <a
-                  href={contactLinks.primaryCallLink}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-100"
-                >
-                  <Phone className="h-4 w-4" />
-                  Call Now
                 </a>
               </div>
             </div>
@@ -501,9 +485,10 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
             
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
             {contactCards.map((item) => {
               const Icon = item.icon;
+              const Icons = item.icons;
 
               return (
                 <a
@@ -516,8 +501,17 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   className="group rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_22px_42px_rgba(20,91,147,0.12)]"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                      <Icon className="h-5 w-5" />
+                    <span className="inline-flex min-h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl bg-sky-50 text-sky-700">
+                      {Icons ? (
+                        Icons.map((InlineIcon, iconIndex) => (
+                          <InlineIcon
+                            key={iconIndex}
+                            className={`h-5 w-5 ${iconIndex === 1 ? "text-emerald-600" : ""}`}
+                          />
+                        ))
+                      ) : Icon ? (
+                        <Icon className="h-5 w-5" />
+                      ) : null}
                     </span>
                     <div className="min-w-0">
                       <p className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-slate-500">

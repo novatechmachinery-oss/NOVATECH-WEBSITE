@@ -24,7 +24,7 @@ type SmtpMessage = {
   html: string;
 };
 
-const SMTP_HELO_HOSTNAME = "novatechmachinery.com";
+const SMTP_HELO_HOSTNAME = "novatechmachinery.in";
 
 function pickRuntimeValue(value: string | undefined, fallback: string) {
   const normalized = value?.trim();

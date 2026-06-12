@@ -7,7 +7,7 @@ import type { SeoPageRecord } from "@/lib/seo-settings.types";
 import { getSiteSettings } from "@/lib/site-settings.service";
 import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
-const FALLBACK_SITE_URL = "https://novatechmachinery.com";
+const FALLBACK_SITE_URL = "https://novatechmachinery.in";
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, "");

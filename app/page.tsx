@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import HeroSlider from "../components/HeroSlider";
 
@@ -7,6 +6,7 @@ import CategoryCard from "../components/Cards/CategoryCard";
 import MachineCard from "../components/Cards/MachineCard";
 import Footer from "../components/Footer";
 import SiteHeader from "../components/SiteHeader";
+import SpecialDealsHeadingLink from "@/components/SpecialDealsHeadingLink";
 import SpecialDealsSlider from "../components/SpecialDealsSlider";
 import { getSpecialDeals } from "@/lib/machines";
 import { HOME_HERO_SLIDES } from "@/lib/home-hero-slides";
@@ -57,7 +57,7 @@ export default async function Home() {
           <div className="mx-auto max-w-[1680px] px-3 sm:px-4 lg:px-6 xl:px-8">
             <div className="mb-4 text-center sm:mb-5">
               <h2 className="inline-flex items-center justify-center rounded-[1rem] bg-[#16548b] px-6 py-2.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(21,84,139,0.16)] sm:text-[1.58rem] lg:text-[1.9rem]">
-                <span className="font-serif">Explore Our Machines</span>
+                <span>Explore Our Machines</span>
               </h2>
             </div>
 
@@ -78,18 +78,13 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-[-0.75rem] mb-5 sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
+        <section className="mx-[-0.75rem] mb-2 sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
           <div className="border-y border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-[1460px] justify-center px-3 py-8 sm:px-4 sm:py-9 lg:px-6">
-              <div className="relative overflow-visible py-3 text-center">
+            <div className="mx-auto flex max-w-[1460px] justify-center px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+              <div className="relative overflow-visible py-1 text-center">
                 <div className="relative inline-flex overflow-visible">
                   <h2>
-                    <Link
-                      href="/special-deals"
-                      className="special-deals-heading-link relative z-10 inline-flex items-center justify-center overflow-hidden rounded-[1rem] border-2 border-[#16548b] bg-white px-7 py-2.5 text-[1.36rem] font-black tracking-[0.01em] text-[#16548b] shadow-[0_12px_28px_rgba(20,91,147,0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-sky-50 hover:shadow-[0_18px_36px_rgba(20,91,147,0.18)] sm:px-8 sm:text-[1.58rem] lg:text-[1.9rem]"
-                    >
-                      <span className="relative z-10 font-serif">{settings.home.sectionTitle}</span>
-                    </Link>
+                    <SpecialDealsHeadingLink title={settings.home.sectionTitle} />
                   </h2>
                 </div>
               </div>

@@ -45,7 +45,7 @@ export default async function SpecialDealsPage() {
         <section className="mx-auto max-w-[1680px]">
           <div className="mb-6 border border-slate-200 bg-white px-4 py-6 text-center shadow-[0_14px_34px_rgba(15,23,42,0.06)] sm:px-6 sm:py-8">
             <h1 className="text-[1.7rem] font-semibold tracking-[0.01em] text-[#16548b] sm:text-[2.1rem] lg:text-[2.45rem]">
-              <span className="font-serif">Special Deals</span>
+              <span>Special Deals</span>
             </h1>
             <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
               Current special deal machines available from Novatech Machinery.

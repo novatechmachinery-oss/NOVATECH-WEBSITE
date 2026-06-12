@@ -43,7 +43,7 @@ export default function NewsletterSignup({ variant }: NewsletterSignupProps) {
           onClick={() => setIsModalOpen(true)}
           suppressHydrationWarning
           aria-label="Subscribe to newsletter"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#e4414c]/20 bg-[#e4414c] text-white shadow-[0_8px_18px_rgba(228,65,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#cf2632] hover:shadow-[0_12px_24px_rgba(228,65,76,0.24)] focus:outline-none focus:ring-2 focus:ring-[#e4414c]/25 focus:ring-offset-2 lg:hidden"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e4414c]/20 bg-[#e4414c] text-white shadow-[0_8px_18px_rgba(228,65,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#cf2632] hover:shadow-[0_12px_24px_rgba(228,65,76,0.24)] focus:outline-none focus:ring-2 focus:ring-[#e4414c]/25 focus:ring-offset-2 lg:hidden"
         >
           <BellIcon />
         </button>
@@ -58,10 +58,15 @@ export default function NewsletterSignup({ variant }: NewsletterSignupProps) {
         type="button"
         onClick={() => setIsModalOpen(true)}
         suppressHydrationWarning
-        className="ml-1 inline-flex h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#e4414c]/20 bg-[#e4414c] px-4 text-[0.76rem] font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(228,65,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#cf2632] hover:shadow-[0_12px_24px_rgba(228,65,76,0.24)] focus:outline-none focus:ring-2 focus:ring-[#e4414c]/25 focus:ring-offset-2"
+        className="inline-flex h-9 max-w-full items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[#e4414c]/20 bg-[#e4414c] px-2 text-[clamp(0.56rem,0.55vw,0.68rem)] font-black uppercase tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(228,65,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#cf2632] hover:shadow-[0_12px_24px_rgba(228,65,76,0.24)] focus:outline-none focus:ring-2 focus:ring-[#e4414c]/25 focus:ring-offset-2 max-[1366px]:lg:h-8 max-[1366px]:lg:w-8 max-[1366px]:lg:px-0"
       >
-        <NewsletterIcon />
-        <span>Subscribe to Newsletter</span>
+        <span className="max-[1366px]:lg:hidden">
+          <NewsletterIcon />
+        </span>
+        <span className="hidden max-[1366px]:lg:inline-flex">
+          <BellIcon />
+        </span>
+        <span className="min-w-0 whitespace-nowrap max-[1366px]:lg:hidden">Subscribe to Newsletter</span>
       </button>
       {isModalOpen ? <NewsletterModal onClose={() => setIsModalOpen(false)} /> : null}
     </>

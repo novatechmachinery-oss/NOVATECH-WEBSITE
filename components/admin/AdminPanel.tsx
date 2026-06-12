@@ -149,6 +149,10 @@ const defaultMachineFilters: MachineFilterState = {
   xTravelMin: "",
   xTravelMax: "",
 };
+const MAIN_SITE_URL =
+  process.env.NEXT_PUBLIC_MAIN_SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://novatechmachinery.in";
 
 function slugify(value: string) {
   return value
@@ -1904,7 +1908,7 @@ export default function AdminPanel() {
               </div>
               <div>
                 <p className="text-xl font-black">{siteSettings?.companyName ?? "Novatech"}</p>
-                <p className="text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.com"}</p>
+                <p className="text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.in"}</p>
               </div>
             </div>
           </div>
@@ -1951,11 +1955,9 @@ export default function AdminPanel() {
                 </button>
                 <a
                   href={
-                    process.env.NEXT_PUBLIC_MAIN_SITE_URL
-                      ? process.env.NEXT_PUBLIC_MAIN_SITE_URL
-                      : typeof window !== "undefined" && window.location.port === "3002"
-                        ? "http://localhost:3000"
-                        : "/"
+                    typeof window !== "undefined" && window.location.port === "3002"
+                      ? "http://localhost:3000"
+                      : MAIN_SITE_URL
                   }
                   target="_blank"
                   rel="noreferrer"
