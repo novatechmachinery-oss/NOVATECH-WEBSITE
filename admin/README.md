@@ -46,14 +46,14 @@ Set these variables on the admin deployment:
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
-ADMIN_EMAIL=info@novatechmachinery.in
+ADMIN_EMAIL=info@novatechmachinery.com
 ADMIN_PASSWORD=...
 ```
 
 Use `ADMIN_EMAILS` instead of `ADMIN_EMAIL` for multiple allowed admin emails:
 
 ```env
-ADMIN_EMAILS=info@novatechmachinery.in,second-admin@example.com
+ADMIN_EMAILS=info@novatechmachinery.com,second-admin@example.com
 ```
 
 ## Main Website Env

@@ -1908,7 +1908,7 @@ export default function AdminPanel() {
               </div>
               <div>
                 <p className="text-xl font-black">{siteSettings?.companyName ?? "Novatech"}</p>
-                <p className="text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.in"}</p>
+                <p className="text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.com"}</p>
               </div>
             </div>
           </div>
