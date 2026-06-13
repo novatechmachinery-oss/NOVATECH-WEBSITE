@@ -55,7 +55,7 @@ export default function SpecialDealsHeadingLink({ title }: SpecialDealsHeadingLi
     <Link
       ref={linkRef}
       href="/special-deals"
-      className={`special-deals-heading-link relative z-10 inline-flex items-center justify-center overflow-hidden rounded-full border-2 border-[#16548b] bg-white px-5 py-1.5 text-[1.05rem] font-black tracking-[0.01em] text-[#16548b] shadow-[0_8px_20px_rgba(20,91,147,0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-sky-50 sm:px-6 sm:py-2 sm:text-[1.24rem] lg:px-7 lg:text-[1.48rem] ${
+      className={`special-deals-heading-link relative z-10 inline-flex items-center justify-center overflow-hidden rounded-none border-2 border-[#16548b] bg-white px-5 py-1.5 text-[1.05rem] font-black tracking-[0.01em] text-[#16548b] shadow-[0_8px_20px_rgba(20,91,147,0.12)] transition duration-300 hover:-translate-y-0.5 hover:bg-sky-50 sm:px-6 sm:py-2 sm:text-[1.24rem] lg:px-7 lg:text-[1.48rem] ${
         isScrollActive ? "special-deals-heading-link--scroll-active" : ""
       }`}
     >

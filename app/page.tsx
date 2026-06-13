@@ -13,7 +13,6 @@ import { HOME_HERO_SLIDES } from "@/lib/home-hero-slides";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
-import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
 export const revalidate = 300;
 export const dynamic = "force-dynamic";
@@ -43,7 +42,7 @@ export default async function Home() {
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <SiteHeader />
 
-      <main className="space-y-6 px-3 py-4 sm:space-y-8 sm:px-5 lg:px-6 xl:px-8">
+      <main className="space-y-1 px-3 pb-0 pt-2 sm:space-y-2 sm:px-5 lg:px-6 xl:px-8">
         <script
           type="application/ld+json"
           suppressHydrationWarning
@@ -53,10 +52,10 @@ export default async function Home() {
           <HeroSlider slides={HOME_HERO_SLIDES} />
         </div>
 
-        <section className="mx-[-0.75rem] bg-white py-4 sm:mx-[-1.25rem] sm:py-5 lg:mx-[-1.5rem] xl:mx-[-2rem]">
-          <div className="mx-auto max-w-[1680px] px-3 sm:px-4 lg:px-6 xl:px-8">
-            <div className="mb-4 text-center sm:mb-5">
-              <h2 className="inline-flex items-center justify-center rounded-[1rem] bg-[#16548b] px-6 py-2.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(21,84,139,0.16)] sm:text-[1.58rem] lg:text-[1.9rem]">
+        <section className="mx-[-0.75rem] bg-white py-2.5 sm:mx-[-1.25rem] sm:py-3 lg:mx-[-1.5rem] xl:mx-[-2rem]">
+          <div className="mx-auto w-full px-2 sm:px-3 lg:px-4 xl:px-5">
+            <div className="mb-2.5 text-center sm:mb-3">
+              <h2 className="inline-flex items-center justify-center rounded-none bg-[#B82100] px-6 py-2.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(184,33,0,0.18)] sm:text-[1.58rem] lg:text-[1.9rem]">
                 <span>Explore Our Machines</span>
               </h2>
             </div>
@@ -78,10 +77,10 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-[-0.75rem] mb-2 sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
+        <section className="mx-[-0.75rem] mb-1 sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
           <div className="border-y border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-[1460px] justify-center px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-              <div className="relative overflow-visible py-1 text-center">
+            <div className="mx-auto flex max-w-[1460px] justify-center px-3 py-2 sm:px-4 sm:py-2.5 lg:px-6 lg:py-3">
+              <div className="relative overflow-visible py-0 text-center">
                 <div className="relative inline-flex overflow-visible">
                   <h2>
                     <SpecialDealsHeadingLink title={settings.home.sectionTitle} />
@@ -102,7 +101,6 @@ export default async function Home() {
       <MachineCard
         title={settings.home.machineCtaTitle}
         description={settings.home.machineCtaDescription}
-        whatsappHref={WHATSAPP_HREF}
       />
       <Footer />
     </div>

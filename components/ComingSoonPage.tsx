@@ -21,26 +21,26 @@ export default function ComingSoonPage({ title, tag, description }: ComingSoonPa
               <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-amber-200/45 blur-3xl" />
 
               <div className="relative">
-                <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-xs font-black uppercase tracking-[0.24em] text-sky-700">
+                <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.24em] text-sky-700">
                   {tag}
                 </span>
-                <h1 className="mt-6 text-4xl font-black uppercase tracking-[0.05em] text-slate-950 sm:text-5xl">
+                <h1 className="mt-6 text-[1.42rem] font-black uppercase leading-tight tracking-[0.05em] text-slate-950 sm:text-[1.92rem]">
                   {title}
                 </h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+                <p className="mt-5 max-w-2xl text-[0.9rem] leading-8 text-slate-600 sm:text-[1.0125rem]">
                   {description}
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link
                     href="/"
-                    className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#145b93_0%,#2f80c6_100%)] px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_16px_36px_rgba(20,91,147,0.28)] transition hover:-translate-y-0.5"
+                    className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#145b93_0%,#2f80c6_100%)] px-6 py-3 text-[0.7875rem] font-black uppercase tracking-[0.08em] text-white shadow-[0_16px_36px_rgba(20,91,147,0.28)] transition hover:-translate-y-0.5"
                   >
                     Back To Home
                   </Link>
                   <Link
                     href="/metal-working-machinery"
-                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-slate-900 transition hover:border-sky-300 hover:text-sky-700"
+                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-6 py-3 text-[0.7875rem] font-black uppercase tracking-[0.08em] text-slate-900 transition hover:border-sky-300 hover:text-sky-700"
                   >
                     View All Machines
                   </Link>
@@ -54,16 +54,16 @@ export default function ComingSoonPage({ title, tag, description }: ComingSoonPa
               <div className="absolute inset-x-10 top-10 h-px bg-white/20" />
 
               <div className="relative text-center">
-                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-white/25 bg-white/10 text-3xl font-black shadow-[0_16px_40px_rgba(8,47,73,0.28)]">
+                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-white/25 bg-white/10 text-[1.6875rem] font-black shadow-[0_16px_40px_rgba(8,47,73,0.28)]">
                   01
                 </div>
-                <p className="mt-6 text-xs font-black uppercase tracking-[0.28em] text-sky-100">
+                <p className="mt-6 text-[0.68rem] font-black uppercase tracking-[0.28em] text-sky-100">
                   Coming Soon
                 </p>
-                <h2 className="mt-3 text-2xl font-black uppercase tracking-[0.06em]">
+                <h2 className="mt-3 text-[1.35rem] font-black uppercase tracking-[0.06em]">
                   New Section In Progress
                 </h2>
-                <p className="mt-4 max-w-xs text-sm leading-7 text-sky-100">
+                <p className="mt-4 max-w-xs text-[0.7875rem] leading-7 text-sky-100">
                   We are preparing this category page with a polished layout and fresh machinery details.
                 </p>
               </div>

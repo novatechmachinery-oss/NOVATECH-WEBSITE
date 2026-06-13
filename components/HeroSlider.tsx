@@ -49,7 +49,7 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
   }, [currentIndex, slides]);
 
   return (
-    <section className="relative left-1/2 -mt-4 h-[60vh] min-h-[520px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 md:h-[70vh] md:min-h-[560px] lg:h-[85vh] lg:min-h-[620px]">
+    <section className="relative left-1/2 -mt-4 h-[46vh] min-h-[380px] max-h-[430px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 md:h-[50vh] md:min-h-[390px] md:max-h-[470px] lg:h-[52vh] lg:min-h-[410px] lg:max-h-[500px]">
       <div className="absolute inset-0">
         <Image
           src={slides[currentIndex].src}
@@ -61,26 +61,26 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
         />
       </div>
 
-      <div className="hero-content-zone relative z-10 flex h-full w-full items-end px-4 pb-8 pt-6 md:items-center md:px-8 md:py-8 lg:px-0">
+      <div className="hero-content-zone relative z-10 flex h-full w-full items-end px-4 pb-6 pt-5 md:items-center md:px-8 md:py-7 lg:px-0">
         <div className="w-full max-w-[620px] pb-2 md:max-w-[560px] lg:ml-[clamp(32px,5vw,90px)] lg:w-[40vw] lg:pb-0">
-          <h1 className="hero-heading max-w-[620px] text-[clamp(1.7rem,3.15vw,3.15rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#163d6b]">
+          <h1 className="hero-heading max-w-[620px] text-[clamp(1.35rem,2.43vw,2.45rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#163d6b]">
             Connecting Global Buyers
             <br />
             with Quality Industrial Machinery
           </h1>
-          <p className="hero-subheading mt-[18px] max-w-[560px] text-[clamp(1rem,1.4vw,1.25rem)] leading-[1.7] text-slate-600">
+          <p className="hero-subheading mt-3 max-w-[560px] text-[clamp(0.94rem,1.18vw,1.12rem)] leading-[1.55] text-slate-600">
             Specialists in Used CNC Machines, Metal Working Equipment, Textile, Pharmaceutical &amp; Plastic Processing Machinery
           </p>
-          <div className="hero-actions mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="hero-actions mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center">
             <Link
               href="/used-machinery"
-              className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#16548b] px-6 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_rgba(22,84,139,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#0f4777] hover:shadow-[0_18px_38px_rgba(22,84,139,0.28)]"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#16548b] px-6 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_rgba(22,84,139,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#0f4777] hover:shadow-[0_18px_38px_rgba(22,84,139,0.28)]"
             >
               Explore Machines
             </Link>
             <Link
               href="/contact"
-              className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-[#16548b] bg-white/80 px-6 text-sm font-black uppercase tracking-[0.08em] text-[#16548b] transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_30px_rgba(22,84,139,0.12)]"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border-2 border-[#16548b] bg-white/80 px-6 text-sm font-black uppercase tracking-[0.08em] text-[#16548b] transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_30px_rgba(22,84,139,0.12)]"
             >
               Contact Us
             </Link>

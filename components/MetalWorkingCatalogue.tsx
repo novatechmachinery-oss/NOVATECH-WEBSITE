@@ -593,7 +593,7 @@ export default function MetalWorkingCatalogue({
   }
 
   return (
-    <section className="w-full overflow-x-hidden px-2.5 pb-8 pt-3 sm:px-4 sm:pb-10 sm:pt-4 lg:px-5 xl:px-8 2xl:px-10">
+    <section className="w-full overflow-x-clip px-2.5 pb-8 pt-3 sm:px-4 sm:pb-10 sm:pt-4 lg:px-5 xl:px-8 2xl:px-10">
       {!selectedMachine ? (
       <div className="border-b border-slate-200 pb-2.5 sm:pb-3">
         <h1 className="mt-1 text-[1.55rem] font-black tracking-tight text-slate-950 sm:text-[2rem] lg:text-[2.65rem]">
@@ -711,7 +711,7 @@ export default function MetalWorkingCatalogue({
 
         {!selectedMachine ? (
         <aside
-          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-2rem)] lg:max-h-[calc(100vh-2rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
+          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
             isMobileSidebarOpen
               ? "max-h-[70vh] border border-slate-200 p-3 opacity-100"
               : "max-h-0 border border-transparent p-0 opacity-0"
