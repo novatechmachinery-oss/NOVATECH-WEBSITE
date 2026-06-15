@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 
 import {
@@ -6,7 +7,9 @@ import {
   isAdminConfigured,
   isAllowedAdminEmail,
   verifyAdminPassword,
+  getAdminCredentials,
 } from "@/lib/admin-auth";
+import { getSupabaseConfig } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   let body: { email?: string; password?: string };
@@ -38,22 +41,45 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Incorrect admin email or password." }, { status: 401 });
   }
 
-  const response = NextResponse.json({
-    message: "Verification code sent to the admin email.",
-    nextStep: "otp",
-  });
-  const supabase = createAdminSupabaseClient(request, response);
-  const { error } = await supabase.auth.signInWithOtp({
-    email: submittedEmail,
-    options: {
-      shouldCreateUser: false,
-    },
+  // Use service role to ensure the admin user exists in Supabase with the correct password.
+  // This keeps Supabase in sync with the .env credentials so password login always works.
+  const { url, storageKey } = getSupabaseConfig();
+  const adminClient = createClient(url, storageKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  if (error) {
+  // Try to find the existing user by email
+  const { data: listData } = await adminClient.auth.admin.listUsers();
+  const existingUser = listData?.users?.find(
+    (u) => u.email?.toLowerCase() === submittedEmail,
+  );
+
+  if (existingUser) {
+    // Update password to keep it in sync with .env
+    await adminClient.auth.admin.updateUserById(existingUser.id, {
+      password: submittedPassword,
+    });
+  } else {
+    // Create the user in Supabase if it doesn't exist yet
+    await adminClient.auth.admin.createUser({
+      email: submittedEmail,
+      password: submittedPassword,
+      email_confirm: true,
+    });
+  }
+
+  // Now sign in with email+password to get a real Supabase session (sets auth cookies)
+  const response = NextResponse.json({ message: "Login successful." });
+  const supabase = createAdminSupabaseClient(request, response);
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: submittedEmail,
+    password: submittedPassword,
+  });
+
+  if (signInError) {
     return NextResponse.json(
-      { error: error.message || "Unable to send verification code." },
-      { status: 400 },
+      { error: signInError.message || "Login failed. Please try again." },
+      { status: 401 },
     );
   }
 

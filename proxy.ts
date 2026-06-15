@@ -7,7 +7,6 @@ const DISABLE_MAIN_ADMIN_ROUTES = process.env.DISABLE_MAIN_ADMIN_ROUTES === "tru
 const ADMIN_APP_URL = (process.env.ADMIN_APP_URL ?? "").trim();
 const PUBLIC_ADMIN_API_ROUTES = new Set([
   "/api/admin/login",
-  "/api/admin/login/verify",
   "/api/admin/logout",
 ]);
 

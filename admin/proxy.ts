@@ -5,7 +5,6 @@ import { clearAdminAuthCookies, getAuthenticatedAdmin } from "@/lib/admin-auth";
 const LOGIN_PAGE = "/login";
 const PUBLIC_ADMIN_API_ROUTES = new Set([
   "/api/admin/login",
-  "/api/admin/login/verify",
   "/api/admin/logout",
 ]);
 
