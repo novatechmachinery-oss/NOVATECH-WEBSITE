@@ -219,9 +219,10 @@ export async function getAuthenticatedAdmin(
     return null;
   }
 
-  if (!hasAuthHeader && !hasFreshSupabaseSessionCookie(cookies)) {
-    return null;
-  }
+  // Note: We intentionally do NOT check hasFreshSupabaseSessionCookie() here.
+  // Supabase's getUser() will automatically refresh an expired access token
+  // using the refresh token. Blocking early on expiry caused 401s during
+  // normal use when the access token expired mid-session.
 
   try {
     const supabase = createAdminSupabaseClient(request, response);
