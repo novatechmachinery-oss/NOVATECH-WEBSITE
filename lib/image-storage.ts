@@ -39,7 +39,8 @@ function buildMachineFolder(machineId: string, machineName?: string): string {
 function buildMachineStoragePath(machineId: string, imageIndex: number, machineName?: string): string {
   const machineFolder = buildMachineFolder(machineId, machineName);
   const safeMachineId = sanitizePathSegment(machineId);
-  return `${machineFolder}/${safeMachineId}-${imageIndex}.webp`;
+  const version = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `${machineFolder}/${safeMachineId}-${imageIndex}-${version}.webp`;
 }
 
 /**

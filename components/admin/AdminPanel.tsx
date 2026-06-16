@@ -1827,9 +1827,13 @@ export default function AdminPanel() {
   }
 
   async function handleImageFiles(files: FileList | null) {
-    if (!files) return;
+    const selectedFiles = files ? Array.from(files) : [];
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    if (selectedFiles.length === 0) return;
 
-    const valid = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    const valid = selectedFiles.filter((file) => file.type.startsWith("image/"));
     if (valid.length === 0) return;
 
     const machineName = machineForm.name.trim();
