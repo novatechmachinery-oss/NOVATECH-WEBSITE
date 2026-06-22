@@ -206,16 +206,19 @@ export async function getAuthenticatedAdmin(
   response: NextResponse,
 ): Promise<User | null> {
   if (!isAdminConfigured()) {
+    console.warn("[auth] isAdminConfigured() returned false");
     return null;
   }
 
   const cookies = request.cookies.getAll();
+  const sbCookies = cookies.filter((c) => c.name.startsWith("sb-"));
   const hasAuthCookie = cookies.some(
     (c) => c.name.startsWith("sb-") || c.name === LEGACY_COOKIE_NAME
   );
   const hasAuthHeader = request.headers.get("Authorization")?.startsWith("Bearer ");
 
   if (!hasAuthCookie && !hasAuthHeader) {
+    console.warn("[auth] No auth cookie or header found. sb- cookies:", sbCookies.length, "All cookie names:", cookies.map(c => c.name).join(", "));
     return null;
   }
 
@@ -231,12 +234,19 @@ export async function getAuthenticatedAdmin(
       error,
     } = await supabase.auth.getUser();
 
-    if (error || !user?.email || !isAllowedAdminEmail(user.email)) {
+    if (error) {
+      console.warn("[auth] getUser() error:", error.message);
+      return null;
+    }
+
+    if (!user?.email || !isAllowedAdminEmail(user.email)) {
+      console.warn("[auth] getUser() returned user but email not allowed:", user?.email);
       return null;
     }
 
     return user;
-  } catch {
+  } catch (e) {
+    console.error("[auth] getAuthenticatedAdmin threw:", e);
     return null;
   }
 }

@@ -71,17 +71,29 @@ export async function POST(request: NextRequest) {
   // Now sign in with email+password to get a real Supabase session (sets auth cookies)
   const response = NextResponse.json({ message: "Login successful." });
   const supabase = createAdminSupabaseClient(request, response);
-  const { error: signInError } = await supabase.auth.signInWithPassword({
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
     email: submittedEmail,
     password: submittedPassword,
   });
 
   if (signInError) {
+    console.error("[admin/login] signInWithPassword error:", signInError.message, signInError.status);
     return NextResponse.json(
       { error: signInError.message || "Login failed. Please try again." },
       { status: 401 },
     );
   }
+
+  if (!signInData.session) {
+    console.error("[admin/login] signInWithPassword returned no session");
+    return NextResponse.json({ error: "Login failed: no session returned." }, { status: 401 });
+  }
+
+  // Log what cookies were set so we can debug in Vercel logs
+  const setCookieHeader = response.headers.get("set-cookie");
+  console.log("[admin/login] Login successful for:", submittedEmail);
+  console.log("[admin/login] Set-Cookie header present:", !!setCookieHeader);
+  console.log("[admin/login] Session expires_at:", signInData.session.expires_at);
 
   clearLegacyAdminCookie(response);
   return response;
