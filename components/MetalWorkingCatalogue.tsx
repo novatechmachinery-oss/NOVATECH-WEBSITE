@@ -1499,7 +1499,6 @@ export default function MetalWorkingCatalogue({
                           <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
                             {activeImageIndex + 1} / {machineDetailGallery.length}
                           </span>
-<<<<<<< HEAD
                           <div className="flex items-center gap-2">
                             <a
                               href={activeImageDownloadHref}
@@ -1519,16 +1518,6 @@ export default function MetalWorkingCatalogue({
                               <Maximize2 className="h-4 w-4" />
                             </button>
                           </div>
-=======
-                          <button suppressHydrationWarning
-                            type="button"
-                            onClick={() => setIsLightboxOpen(true)}
-                            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
-                            aria-label="Open enlarged image"
-                          >
-                            <Maximize2 className="h-4 w-4" />
-                          </button>
->>>>>>> 0672bd6 (update public website experience)
                         </div>
 
                         {hasMultipleGalleryImages ? (
