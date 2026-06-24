@@ -532,7 +532,12 @@ export default function MetalWorkingCatalogue({
       }))
     : [];
 
-  const machineDetailDescription = selectedMachine ? [selectedMachine.description].filter(Boolean) : [];
+  const machineDetailDescription = selectedMachine
+    ? (selectedMachine.description ?? "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+    : [];
 
   const machineSpecifications = selectedMachine
     ? [
@@ -1056,10 +1061,10 @@ export default function MetalWorkingCatalogue({
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="min-w-0 space-y-2 whitespace-pre-line break-words text-[0.94rem] leading-6 text-slate-600 sm:text-[0.98rem]">
+                    <div className="min-w-0 space-y-2 break-words text-[0.94rem] leading-6 text-slate-600 sm:text-[0.98rem]">
                       {machineDetailDescription.length > 0 ? (
-                        machineDetailDescription.map((line) => (
-                          <p key={line}>{line}</p>
+                        machineDetailDescription.map((line, i) => (
+                          <p key={i}>{line}</p>
                         ))
                       ) : (
                         <p>Please contact Novatech for complete machine details.</p>
