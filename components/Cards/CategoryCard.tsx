@@ -34,12 +34,12 @@ export default function CategoryCard({
   return (
     <Link
       href={resolvedHref}
-      className="group relative block h-full cursor-pointer overflow-hidden border border-[#cfdceb] bg-[#16548b] shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition duration-300 hover:border-[#7aa5cb] hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)]"
+      className="group relative block h-full cursor-pointer overflow-hidden rounded-[0.35rem] border border-[#d7e2ee] bg-[#16548b] shadow-[0_22px_46px_rgba(20,91,147,0.24)] transition duration-300 hover:border-[#7aa5cb] hover:shadow-[0_30px_58px_rgba(20,91,147,0.3)]"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-[#e4edf5]" />
 
-      <div className="relative flex min-h-[220px] flex-col sm:min-h-[248px] lg:min-h-[284px]">
-        <div className="relative h-[156px] overflow-hidden bg-white sm:h-[178px] lg:h-[208px]">
+      <div className="relative flex min-h-[165px] flex-col sm:min-h-[186px] lg:min-h-[213px]">
+        <div className="relative h-[117px] overflow-hidden bg-white sm:h-[134px] lg:h-[156px]">
           <Image
             src={imageSrc}
             alt={title}
@@ -51,12 +51,12 @@ export default function CategoryCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.01),rgba(15,23,42,0.06))]" />
         </div>
 
-        <div className="flex min-h-[54px] items-end justify-between gap-2 bg-[#16548b] px-3 py-2.5 sm:min-h-[60px] sm:px-4 sm:py-3 lg:min-h-[68px] lg:px-6 lg:py-3.5">
-          <h3 className="max-w-[60%] text-[0.9rem] font-black uppercase leading-[1.02] text-white sm:text-[1rem] lg:text-[1.2rem]">
+        <div className="flex flex-1 items-center justify-between gap-3 bg-[#16548b] px-2.5 py-0 sm:px-3.5 lg:px-5">
+          <h3 className="mr-auto flex max-w-[60%] items-center whitespace-nowrap text-[1rem] font-black uppercase leading-none text-white sm:text-[1.1rem] lg:text-[1.22rem]">
             {title}
           </h3>
 
-          <span className="inline-flex h-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white px-2.5 text-[0.6rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_10px_22px_rgba(21,84,139,0.16)] transition duration-300 group-hover:bg-[#eef5fb] sm:h-9 sm:px-3 sm:text-[0.66rem] lg:h-10 lg:px-4 lg:text-[0.7rem]">
+          <span className="ml-3 inline-flex h-6 shrink-0 self-center items-center justify-center rounded-[0.45rem] border border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-2 text-[0.6rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_8px_18px_rgba(8,47,73,0.18)] transition duration-300 group-hover:bg-[#f7fbff] sm:h-7 sm:px-2.5 sm:text-[0.66rem] lg:h-8 lg:px-3 lg:text-[0.7rem]">
             {ctaLabel}
           </span>
         </div>

@@ -1,7 +1,12 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import NewsletterSignup from "./NewsletterSignup";
+import type { MachineItem } from "@/lib/machines";
 
 type TopHeaderProps = {
   phonePrimary?: string;
@@ -9,7 +14,16 @@ type TopHeaderProps = {
   emailAddress?: string;
   logoSrc?: string;
   logoAlt?: string;
+  machines?: MachineItem[];
 };
+
+const mobileNavItems = [
+  { label: "HOME", href: "/" },
+  { label: "USED MACHINERY", href: "/used-machinery" },
+  { label: "CATEGORIES", href: "/categories" },
+  { label: "ABOUT US", href: "/about" },
+  { label: "CONTACT US", href: "/contact" },
+];
 
 function cleanPhoneNumber(phoneNumber: string) {
   return phoneNumber.replace(/\s+/g, "");
@@ -23,6 +37,22 @@ function getEmailComposeHref(emailAddress: string) {
   return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailAddress)}`;
 }
 
+function buildMachineHref(machine: MachineItem) {
+  const params = new URLSearchParams();
+
+  if (machine.categorySlug ?? machine.category) {
+    params.set("category", machine.categorySlug ?? machine.category);
+  }
+
+  if (machine.subcategorySlug ?? machine.subcategory) {
+    params.set("subcategory", machine.subcategorySlug ?? machine.subcategory ?? "");
+  }
+
+  params.set("machine", machine.id);
+
+  return `/used-machinery?${params.toString()}`;
+}
+
 function PhoneIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -33,9 +63,15 @@ function PhoneIcon() {
 
 function MailIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">
-      <path d="M4 6.75h16v10.5H4z" />
-      <path d="m5 8 7 5 7-5" />
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+      <rect x="3.5" y="6" width="17" height="12" rx="1.5" fill="currentColor" opacity="0.12" />
+      <path
+        d="M4.75 7.25h14.5c.69 0 1.25.56 1.25 1.25v7c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-7c0-.69.56-1.25 1.25-1.25Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path d="m4.5 8 7.5 5.3L19.5 8" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="m4.8 16.4 5.4-4.3M19.2 16.4l-5.4-4.3" stroke="currentColor" strokeWidth="1.35" opacity="0.72" />
     </svg>
   );
 }
@@ -54,117 +90,285 @@ export default function TopHeader({
   emailAddress = "info@novatechmachinery.com",
   logoSrc = "/images/MAIN%20LOGO.png",
   logoAlt = "Novatech logo",
+  machines = [],
 }: TopHeaderProps) {
+  const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCompactSearchOpen, setIsCompactSearchOpen] = useState(false);
+  const [compactSearchQuery, setCompactSearchQuery] = useState("");
+  const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
+
+  const compactSearchSuggestions = useMemo(() => {
+    const normalizedQuery = compactSearchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    return machines
+      .filter((machine) => {
+        const haystack = [
+          machine.title,
+          machine.category,
+          machine.subcategory,
+          machine.manufacturer,
+          machine.model,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(normalizedQuery);
+      })
+      .slice(0, 6);
+  }, [compactSearchQuery, machines]);
+
+  function submitCompactSearch() {
+    const trimmedQuery = compactSearchQuery.trim();
+    if (!trimmedQuery) {
+      router.push("/used-machinery");
+      setIsCompactSuggestionsOpen(false);
+      return;
+    }
+
+    router.push(`/used-machinery?q=${encodeURIComponent(trimmedQuery)}`);
+    setIsCompactSuggestionsOpen(false);
+  }
+
   return (
-    // Outer top header: bottom border, cream background, default text color, and global header shadow/brand font.
     <div
       className="border-b border-slate-200 bg-[#fff7e6] text-slate-800"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      {/* Main header grid: one column on small/medium screens, switches to logo/name + contacts on 2xl screens; py controls header height. */}
-      <div className="grid w-full grid-cols-1 gap-0 px-0 py-3 text-[0.74rem] sm:py-4 md:py-5 2xl:grid-cols-[65%_35%] 2xl:items-center 2xl:py-6">
-        {/* Logo and company name row: flex keeps logo and text aligned, overflow-visible prevents long title clipping. */}
-        <Link href="/" className="flex min-w-0 max-w-full items-center gap-0 overflow-visible transition hover:opacity-95">
-          {/* Logo box: responsive height/width controls the logo size at mobile, tablet, desktop, and 2xl. */}
-          <div className="relative h-[72px] w-[94px] flex-none overflow-hidden sm:h-[88px] sm:w-[116px] md:h-[104px] md:w-[136px] lg:h-[106px] lg:w-[140px] 2xl:h-[136px] 2xl:w-[178px]">
-            <Image src={logoSrc} alt={logoAlt} fill sizes="120px" className="object-contain" />
-          </div>
-          {/* Company name block: flex-col stacks both lines; responsive text clamps keep the title fitting across devices. */}
-          <div
-            className="min-w-0 max-w-full flex-1 overflow-visible flex flex-col leading-[1.02] text-[#163d6b] lg:leading-[1.05] 2xl:-translate-y-5"
-            style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
-          >
-            {/* First company title line: uppercase, heavy font, responsive text size, no wrapping on 2xl. */}
-            <span className="block max-w-full whitespace-normal text-[0.98rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.14rem] sm:text-[1.48rem] md:text-[1.9rem] lg:text-[clamp(1.35rem,2.25vw,1.9rem)] 2xl:whitespace-nowrap 2xl:text-[clamp(1.72rem,calc((65vw-170px)/18.2),2.30rem)]">
-              NOVATECH MACHINERY CORPORATION
-            </span>
-            {/* Second company title line: same sizing behavior, slightly larger max size on 2xl for balance. */}
-            <span className="mt-0 block max-w-full whitespace-normal text-[0.98rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.14rem] sm:text-[1.48rem] md:text-[1.9rem] lg:text-[clamp(1.35rem,2.25vw,1.9rem)] 2xl:whitespace-nowrap 2xl:text-[clamp(1.72rem,calc((65vw-170px)/18.2),2.52rem)]">
-              (OPC) PRIVATE LIMITED
-            </span>
-          </div>
-        </Link>
-
-        {/* Contact area: wraps on smaller screens, becomes a two-column contact grid on 2xl desktop. */}
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 overflow-hidden text-sm text-slate-900 2xl:grid 2xl:grid-cols-[max-content_max-content] 2xl:justify-start 2xl:gap-x-4 2xl:gap-y-0">
-          {/* Mobile/tablet phone rows: visible below 2xl, wraps numbers and icons cleanly. */}
-          <div className="flex w-full flex-wrap items-center justify-center gap-2 leading-none 2xl:hidden">
-            {[phonePrimary, phoneSecondary].map((phoneNumber) => (
-              <div key={phoneNumber} className="inline-flex shrink-0 items-center justify-center gap-0.5">
-                <a
-                  href={`tel:${cleanPhoneNumber(phoneNumber)}`}
-                  aria-label={`Call ${phoneNumber}`}
-                  className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 transition hover:border-sky-300 hover:bg-sky-100"
-                >
-                  <PhoneIcon />
-                </a>
-                <a
-                  href={getWhatsAppHref(phoneNumber)}
-                  aria-label={`WhatsApp ${phoneNumber}`}
-                  className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-100"
-                >
-                  <WhatsAppIcon />
-                </a>
-                <a
-                  href={`tel:${cleanPhoneNumber(phoneNumber)}`}
-                  className="whitespace-nowrap text-[0.84rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.94rem] sm:text-[1.05rem] md:text-[1.14rem]"
-                >
-                  {phoneNumber}
-                </a>
+      <div className="grid w-full grid-cols-1 gap-0 px-2 py-1 text-[0.74rem] sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
+        <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible 2xl:contents">
+          <Link href="/" className="flex-none transition hover:opacity-95">
+            <div className="relative h-[60px] w-[80px] overflow-hidden sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] 2xl:h-[108px] 2xl:w-[150px]">
+              <Image src={logoSrc} alt={logoAlt} fill sizes="120px" className="object-contain" />
+            </div>
+          </Link>
+          <div className="relative min-w-0 max-w-full flex-1 2xl:flex 2xl:h-[108px] 2xl:flex-col 2xl:justify-start">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((current) => !current)}
+              className="absolute right-0 top-1 inline-flex h-10 w-10 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm 2xl:hidden"
+              aria-label="Open menu"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className="h-0.5 w-5 rounded-full bg-current" />
+              <span className="h-0.5 w-5 rounded-full bg-current" />
+              <span className="h-0.5 w-5 rounded-full bg-current" />
+            </button>
+            <div
+              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-12 text-left leading-[1.01] text-[#163d6b] lg:leading-[1.03] 2xl:justify-start 2xl:pr-4"
+              style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
+            >
+              <span className="block max-w-full whitespace-normal text-[1.02rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.18rem] sm:text-[1.42rem] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
+                NOVATECH MACHINERY CORPORATION
+              </span>
+              <div className="mt-0 flex max-w-full flex-col gap-1">
+                <span className="block max-w-full whitespace-normal text-[1.02rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.18rem] sm:text-[1.42rem] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
+                  (OPC) PRIVATE LIMITED
+                </span>
               </div>
-            ))}
+            </div>
+          </div>
+        </div>
+
+        {isMobileMenuOpen ? (
+          <div className="mt-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.12)] 2xl:hidden">
+            <div className="space-y-2">
+              {mobileNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block bg-[linear-gradient(135deg,#145b93_0%,#2f80c6_100%)] px-4 py-3 text-center text-[0.82rem] font-black uppercase tracking-[0.06em] text-white shadow-[0_10px_24px_rgba(20,91,147,0.18)]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-4 space-y-3 border-t border-slate-200 pt-4">
+              <a
+                href={getEmailComposeHref(emailAddress)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-10 items-center gap-3 border border-slate-200 bg-slate-50 px-3 text-[0.9rem] font-black text-slate-900"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
+                  <MailIcon />
+                </span>
+                <span className="break-all">{emailAddress}</span>
+              </a>
+              <NewsletterSignup variant="mobile-full" />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="hidden min-w-0 flex-col items-center justify-center gap-2 px-2 pb-1 pt-1 text-sm text-slate-900 2xl:flex 2xl:items-end 2xl:justify-end 2xl:pb-0 2xl:pt-2">
+          <div className="hidden shrink-0 2xl:flex">
+            <NewsletterSignup variant="desktop" />
           </div>
 
-          {/* 2xl desktop phone rows: hidden on smaller screens, shown as compact aligned contact lines. */}
-          <div className="hidden min-w-0 leading-none 2xl:grid 2xl:gap-0 2xl:justify-items-start">
-            {[phonePrimary, phoneSecondary].map((phoneNumber) => (
-              <div key={phoneNumber} className="flex shrink-0 items-center justify-center gap-1 2xl:justify-start">
-                <a
-                  href={`tel:${cleanPhoneNumber(phoneNumber)}`}
-                  aria-label={`Call ${phoneNumber}`}
-                  className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 transition hover:border-sky-300 hover:bg-sky-100"
-                >
-                  <PhoneIcon />
-                </a>
-                <a
-                  href={getWhatsAppHref(phoneNumber)}
-                  aria-label={`WhatsApp ${phoneNumber}`}
-                  className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-100"
-                >
-                  <WhatsAppIcon />
-                </a>
-                <a
-                  href={`tel:${cleanPhoneNumber(phoneNumber)}`}
-                  className="whitespace-nowrap text-[1.06rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 sm:text-[1.18rem] 2xl:text-[clamp(1rem,0.84vw,1.2rem)]"
-                >
-                  {phoneNumber}
-                </a>
-              </div>
-            ))}
-          </div>
+          <div className="hidden w-full translate-y-4 flex-wrap items-center justify-center gap-x-5 gap-y-2 leading-none 2xl:flex 2xl:flex-nowrap 2xl:justify-end">
+            <div className="inline-flex shrink-0 items-center gap-1">
+              <a
+                href={`tel:${cleanPhoneNumber(phonePrimary)}`}
+                aria-label={`Call ${phonePrimary}`}
+                className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 transition hover:border-sky-300 hover:bg-sky-100"
+              >
+                <PhoneIcon />
+              </a>
+              <a
+                href={getWhatsAppHref(phonePrimary)}
+                aria-label={`WhatsApp ${phonePrimary}`}
+                className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-100"
+              >
+                <WhatsAppIcon />
+              </a>
+              <a
+                href={`tel:${cleanPhoneNumber(phonePrimary)}`}
+                className="whitespace-nowrap text-[0.94rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[1rem] sm:text-[1.08rem] md:text-[1.14rem] lg:text-[1.16rem]"
+              >
+                {phonePrimary}
+              </a>
+            </div>
 
-          {/* Email + newsletter area: flex-wrap keeps it responsive; 2xl switches newsletter to desktop button. */}
-          <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-6 gap-y-1 sm:gap-x-10 md:gap-x-14 2xl:grid 2xl:gap-1 2xl:justify-items-end">
+            <div className="inline-flex shrink-0 items-center">
+              <a
+                href={`tel:${cleanPhoneNumber(phoneSecondary)}`}
+                className="whitespace-nowrap text-[0.94rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[1rem] sm:text-[1.08rem] md:text-[1.14rem] lg:text-[1.16rem]"
+              >
+                {phoneSecondary}
+              </a>
+            </div>
+
             <a
               href={getEmailComposeHref(emailAddress)}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-w-0 max-w-full items-center justify-center gap-1 overflow-hidden text-[1.04rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 sm:text-[1.16rem] 2xl:justify-end 2xl:text-[clamp(0.98rem,0.8vw,1.14rem)]"
+              className="inline-flex min-w-0 shrink-0 items-center justify-center gap-1 overflow-hidden whitespace-nowrap text-[0.96rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[1rem] sm:text-[1.06rem] md:text-[1.1rem] lg:text-[1.12rem] 2xl:justify-end"
             >
-              <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
+              <span className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
                 <MailIcon />
               </span>
-              <span className="min-w-0 max-w-full whitespace-nowrap">{emailAddress}</span>
+              <span className="whitespace-nowrap">{emailAddress}</span>
             </a>
-
-            <div className="flex shrink-0 items-center justify-center 2xl:hidden">
-              <NewsletterSignup variant="mobile-icon" />
-            </div>
-
-            <div className="hidden shrink-0 2xl:flex">
-              <NewsletterSignup variant="desktop" />
-            </div>
           </div>
+
+        </div>
+
+        <div className="border-t border-slate-200 px-2 pb-1 pt-1 2xl:hidden">
+          {isCompactSearchOpen ? (
+            <div className="relative">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  submitCompactSearch();
+                }}
+                className="flex h-10 w-full overflow-hidden border border-[#1a4a7a] bg-white"
+              >
+                <input
+                  value={compactSearchQuery}
+                  onChange={(event) => {
+                    setCompactSearchQuery(event.target.value);
+                    setIsCompactSuggestionsOpen(true);
+                  }}
+                  onFocus={() => {
+                    if (compactSearchQuery.trim()) {
+                      setIsCompactSuggestionsOpen(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    window.setTimeout(() => setIsCompactSuggestionsOpen(false), 120);
+                  }}
+                  placeholder="Search machines..."
+                  className="h-full flex-1 border-0 px-4 text-[0.9rem] font-semibold text-slate-700 outline-none placeholder:text-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCompactSearchOpen(false);
+                    setCompactSearchQuery("");
+                    setIsCompactSuggestionsOpen(false);
+                  }}
+                  className="inline-flex w-10 items-center justify-center border-l border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                  aria-label="Close search"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex w-10 items-center justify-center bg-[#0f4f89] text-white transition hover:bg-[#0c4475]"
+                  aria-label="Search machinery"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                    <circle cx="11" cy="11" r="6.5" />
+                    <path d="m16 16 4.5 4.5" />
+                  </svg>
+                </button>
+              </form>
+
+              {isCompactSuggestionsOpen && compactSearchSuggestions.length > 0 ? (
+                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-40 overflow-hidden border border-slate-200 bg-white shadow-[0_16px_34px_rgba(15,23,42,0.16)]">
+                  {compactSearchSuggestions.map((machine) => (
+                    <Link
+                      key={machine.id}
+                      href={buildMachineHref(machine)}
+                      onClick={() => {
+                        setIsCompactSearchOpen(false);
+                        setCompactSearchQuery("");
+                        setIsCompactSuggestionsOpen(false);
+                      }}
+                      className="flex w-full flex-col items-start gap-1 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-sky-50"
+                    >
+                      <span className="text-[0.82rem] font-black uppercase leading-tight text-slate-900">
+                        {machine.title}
+                      </span>
+                      <span className="text-[0.68rem] font-semibold uppercase tracking-[0.06em] text-slate-500">
+                        {[machine.category, machine.subcategory].filter(Boolean).join(" | ")}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_32px] items-center gap-2">
+              <a
+                href={`tel:${cleanPhoneNumber(phonePrimary)}`}
+                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.76rem] sm:text-[0.84rem]"
+              >
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
+                  <PhoneIcon />
+                </span>
+                <span className="truncate">{phonePrimary}</span>
+              </a>
+              <a
+                href={`tel:${cleanPhoneNumber(phoneSecondary)}`}
+                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.76rem] sm:text-[0.84rem]"
+              >
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
+                  <WhatsAppIcon />
+                </span>
+                <span className="truncate">{phoneSecondary}</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => setIsCompactSearchOpen(true)}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-sky-200 bg-sky-50 text-[#145b93] transition hover:border-sky-300 hover:bg-sky-100"
+                aria-label="Open machine search"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                  <circle cx="11" cy="11" r="6.5" />
+                  <path d="m16 16 4.5 4.5" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

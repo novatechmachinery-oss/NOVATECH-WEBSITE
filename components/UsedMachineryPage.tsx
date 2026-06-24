@@ -11,6 +11,7 @@ type UsedMachineryPageProps = {
   initialSubcategory?: string | null;
   initialMachineId?: string | null;
   initialMachineMode?: MachineMode | null;
+  initialSearchQuery?: string | null;
   pageHeading?: string;
 };
 
@@ -21,6 +22,7 @@ export default function UsedMachineryPage({
   initialSubcategory = null,
   initialMachineId = null,
   initialMachineMode = null,
+  initialSearchQuery = null,
   pageHeading = "Metal Working Machinery",
 }: UsedMachineryPageProps) {
   return (
@@ -29,13 +31,14 @@ export default function UsedMachineryPage({
 
       <main>
         <MetalWorkingCatalogue
-          key={`${initialCategory ?? ""}:${initialSubcategory ?? ""}:${initialMachineId ?? ""}:${initialMachineMode ?? ""}`}
+          key={`${initialCategory ?? ""}:${initialSubcategory ?? ""}:${initialMachineId ?? ""}:${initialMachineMode ?? ""}:${initialSearchQuery ?? ""}`}
           machineCategories={machineCategories}
           machineInventory={machineInventory}
           initialCategory={initialCategory}
           initialSubcategory={initialSubcategory}
           initialMachineId={initialMachineId}
           initialMachineMode={initialMachineMode}
+          initialSearchQuery={initialSearchQuery}
           pageHeading={pageHeading}
         />
       </main>

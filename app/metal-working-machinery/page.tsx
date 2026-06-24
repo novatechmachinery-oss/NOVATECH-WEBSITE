@@ -8,6 +8,7 @@ type SearchParamsInput = Promise<{
   category?: string | string[];
   subcategory?: string | string[];
   machine?: string | string[];
+  q?: string | string[];
 }>;
 
 function readParam(value: string | string[] | undefined) {
@@ -61,6 +62,7 @@ export default async function MetalWorkingMachineryPage({
   const category = readParam(params.category);
   const subcategory = readParam(params.subcategory);
   const machine = readParam(params.machine);
+  const q = readParam(params.q);
   const route = buildSeoRoute("/metal-working-machinery", {
     category,
     subcategory,
@@ -95,6 +97,7 @@ export default async function MetalWorkingMachineryPage({
         initialCategory={category}
         initialSubcategory={subcategory}
         initialMachineId={machine}
+        initialSearchQuery={q}
       />
     </>
   );

@@ -21,7 +21,7 @@ export default function TextileMachineryPage() {
   return (
     <ComingSoonPage
       title="Textile Machinery"
-      tag="Textile"
+      tag="UP"
       description="This section is being prepared for weaving, knitting, dyeing, finishing, and textile production machinery."
     />
   );

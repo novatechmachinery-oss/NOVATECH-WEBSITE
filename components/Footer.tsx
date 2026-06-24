@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, PhoneCall } from "lucide-react";
 
 import { getSiteSettings } from "@/lib/site-settings.service";
 
@@ -22,7 +22,7 @@ export default async function Footer() {
 
   const contactItems = [
     {
-      icons: [Phone, WhatsAppIcon],
+      icons: [PhoneCall, WhatsAppIcon],
       content: (
         <a href={`tel:${contact.phonePrimary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
           {contact.phonePrimary}
@@ -30,7 +30,7 @@ export default async function Footer() {
       ),
     },
     {
-      icons: [Phone, WhatsAppIcon],
+      icons: [PhoneCall, WhatsAppIcon],
       content: (
         <a href={`tel:${contact.phoneSecondary.replace(/\s+/g, "")}`} className="block transition hover:text-white">
           {contact.phoneSecondary}
@@ -139,9 +139,16 @@ export default async function Footer() {
                 return (
                   <div key={index} className="grid grid-cols-[38px_1fr] items-start gap-3">
                     {Icons ? (
-                      <span className="inline-flex h-9 w-9 items-center justify-center gap-1 rounded-md text-sky-200">
+                      <span className="inline-flex items-center gap-1.5">
                         {Icons.map((InlineIcon, iconIndex) => (
-                          <InlineIcon key={iconIndex} className="h-4 w-4" />
+                          <span
+                            key={iconIndex}
+                            className={`inline-flex items-center justify-center ${
+                              iconIndex === 0 ? "text-sky-300" : "text-emerald-400"
+                            }`}
+                          >
+                            <InlineIcon className="h-4 w-4" />
+                          </span>
                         ))}
                       </span>
                     ) : Icon ? (

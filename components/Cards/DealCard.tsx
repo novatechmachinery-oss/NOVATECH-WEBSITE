@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const FALLBACK_IMAGE = "/images/ChatGPT Image May 29, 2026, 04_08_37 PM.png";
 
@@ -19,8 +19,6 @@ type DealCardProps = {
   imagePositions?: string[];
   specifications?: Array<{ label: string; value: string }>;
 };
-
-const IMAGE_ROTATE_MS = 2600;
 
 export default function DealCard({
   machineId,
@@ -43,24 +41,11 @@ export default function DealCard({
     return [imageSrc];
   }, [imageSrc, images]);
 
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [failedImages, setFailedImages] = useState<Record<string, true>>({});
-
-  useEffect(() => {
-    if (imageList.length <= 1) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      setActiveImageIndex((current) => (current + 1) % imageList.length);
-    }, IMAGE_ROTATE_MS);
-
-    return () => window.clearInterval(timer);
-  }, [imageList]);
 
   const [badgeType] = badge.split(" - ");
   const displayType = machineType ?? badgeType ?? description;
-  const safeImageIndex = imageList.length > 0 ? activeImageIndex % imageList.length : 0;
+  const safeImageIndex = 0;
   const activeImagePosition = imagePositions?.[safeImageIndex] ?? imagePosition;
   const activeImageSrc = failedImages[imageList[safeImageIndex]]
     ? FALLBACK_IMAGE
@@ -100,9 +85,9 @@ export default function DealCard({
           openDeal();
         }
       }}
-      className="flex h-full min-h-[268px] cursor-pointer flex-col overflow-hidden rounded-[0.65rem] border border-slate-200 bg-white shadow-[0_10px_26px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)] active:translate-y-0 sm:min-h-[300px]"
+      className="flex h-full min-h-[268px] cursor-pointer flex-col overflow-hidden border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_24px_48px_rgba(15,23,42,0.18)] active:translate-y-0 sm:min-h-[300px]"
     >
-      <div className="relative h-[158px] w-full bg-slate-100 sm:h-[205px] 2xl:h-[190px]">
+      <div className="relative h-[176px] w-full bg-slate-100 sm:h-[224px] xl:h-[236px]">
         <Image
           src={activeImageSrc}
           alt={imageAlt}
@@ -128,7 +113,7 @@ export default function DealCard({
               <span
                 key={index}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === activeImageIndex ? "w-4 bg-white" : "w-1.5 bg-white/60"
+                  index === safeImageIndex ? "w-4 bg-white" : "w-1.5 bg-white/60"
                 }`}
               />
             ))}
@@ -158,7 +143,7 @@ export default function DealCard({
               {detailsPreview.length > 0 ? detailsPreview.join(" | ") : "Manufacturer | Model"}
             </span>
           </div>
-          <span className="mt-2 inline-flex w-full items-center justify-center rounded-[0.5rem] bg-[#16548b] px-4 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-white sm:mt-2.5 sm:px-5 sm:text-[0.78rem] sm:tracking-[0.08em]">
+          <span className="mt-2 inline-flex w-[70%] self-center items-center justify-center rounded-[0.5rem] bg-[#16548b] px-4 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-white sm:mt-2.5 sm:px-5 sm:text-[0.78rem] sm:tracking-[0.08em]">
             View More Details
           </span>
         </div>

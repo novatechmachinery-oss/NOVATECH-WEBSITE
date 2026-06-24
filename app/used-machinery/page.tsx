@@ -10,6 +10,7 @@ type SearchParamsInput = Promise<{
   subcategory?: string | string[];
   machine?: string | string[];
   mode?: string | string[];
+  q?: string | string[];
 }>;
 
 function readParam(value: string | string[] | undefined) {
@@ -66,6 +67,7 @@ export default async function UsedMachineryRoutePage({
   const category = readParam(params.category);
   const subcategory = readParam(params.subcategory);
   const machine = readParam(params.machine);
+  const q = readParam(params.q);
   const route = buildSeoRoute("/used-machinery", {
     category,
     subcategory,
@@ -101,6 +103,7 @@ export default async function UsedMachineryRoutePage({
         initialSubcategory={subcategory}
         initialMachineId={machine}
         initialMachineMode={readMachineMode(params.mode)}
+        initialSearchQuery={q}
         pageHeading="All Machines"
       />
     </>

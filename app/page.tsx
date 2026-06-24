@@ -52,15 +52,15 @@ export default async function Home() {
           <HeroSlider slides={HOME_HERO_SLIDES} />
         </div>
 
-        <section className="mx-[-0.75rem] bg-white py-2.5 sm:mx-[-1.25rem] sm:py-3 lg:mx-[-1.5rem] xl:mx-[-2rem]">
-          <div className="mx-auto w-full px-2 sm:px-3 lg:px-4 xl:px-5">
-            <div className="mb-2.5 text-center sm:mb-3">
-              <h2 className="inline-flex items-center justify-center rounded-none bg-[#B82100] px-6 py-2.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(184,33,0,0.18)] sm:text-[1.58rem] lg:text-[1.9rem]">
+        <section className="mx-[-0.75rem] bg-white py-4 sm:mx-[-1.25rem] sm:py-5 lg:mx-[-1.5rem] lg:py-6 xl:mx-[-2rem]">
+          <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 xl:px-8">
+            <div className="mb-3.5 text-center sm:mb-4 lg:mb-5">
+              <h2 className="inline-flex items-center justify-center rounded-[0.35rem] bg-[#16548b] px-6 py-1.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(20,91,147,0.2)] sm:px-7 sm:py-2 sm:text-[1.58rem] lg:px-8 lg:py-2 lg:text-[1.9rem]">
                 <span>Explore Our Machines</span>
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
               {settings.home.featureCards.map((feature) => (
                 <div key={feature.title} className="h-full">
                   <CategoryCard
@@ -77,9 +77,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-[-0.75rem] mb-1 sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
+        <section className="mx-[-0.75rem] mb-2 mt-2 sm:mx-[-1.25rem] sm:mb-3 sm:mt-3 lg:mx-[-1.5rem] xl:mx-[-2rem]">
           <div className="border-y border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-[1460px] justify-center px-3 py-2 sm:px-4 sm:py-2.5 lg:px-6 lg:py-3">
+            <div className="mx-auto flex max-w-[1660px] justify-center px-3 py-3 sm:px-4 sm:py-3.5 lg:px-6 lg:py-4">
               <div className="relative overflow-visible py-0 text-center">
                 <div className="relative inline-flex overflow-visible">
                   <h2>
@@ -92,7 +92,7 @@ export default async function Home() {
         </section>
 
         <section className="mx-[-0.75rem] bg-white sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
-          <div className="mx-auto max-w-[1740px] px-3 pb-2 sm:px-4 lg:px-6 xl:px-8">
+          <div className="mx-auto max-w-[1840px] px-2 pb-4 sm:px-3 sm:pb-5 lg:px-4 xl:px-5">
             <SpecialDealsSlider deals={specialDeals} />
           </div>
         </section>

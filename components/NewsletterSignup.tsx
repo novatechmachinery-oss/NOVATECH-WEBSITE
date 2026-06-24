@@ -9,7 +9,7 @@ const NewsletterModal = dynamic(() => import("./NewsletterModal"), {
 });
 
 type NewsletterSignupProps = {
-  variant: "desktop" | "mobile-icon";
+  variant: "desktop" | "mobile-icon" | "mobile-full";
 };
 
 function BellIcon() {
@@ -52,13 +52,30 @@ export default function NewsletterSignup({ variant }: NewsletterSignupProps) {
     );
   }
 
+  if (variant === "mobile-full") {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          suppressHydrationWarning
+          className="inline-flex h-10 w-full items-center justify-center gap-2 border border-[#B82100]/20 bg-[#B82100] px-4 text-[0.84rem] font-black uppercase tracking-[0.03em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2"
+        >
+          <NewsletterIcon />
+          <span className="min-w-0 whitespace-nowrap">Subscribe to Newsletter</span>
+        </button>
+        {isModalOpen ? <NewsletterModal onClose={() => setIsModalOpen(false)} /> : null}
+      </>
+    );
+  }
+
   return (
     <>
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
         suppressHydrationWarning
-        className="inline-flex h-9 max-w-full items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[#B82100]/20 bg-[#B82100] px-2 text-[clamp(0.56rem,0.55vw,0.68rem)] font-black uppercase tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2 max-[1366px]:lg:h-8 max-[1366px]:lg:w-8 max-[1366px]:lg:px-0"
+        className="inline-flex h-9 w-[20.5rem] max-w-full items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[#B82100]/20 bg-[#B82100] px-2 text-[clamp(0.56rem,0.55vw,0.68rem)] font-black uppercase tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2 max-[1366px]:lg:h-8 max-[1366px]:lg:w-8 max-[1366px]:lg:px-0"
       >
         <span className="max-[1366px]:lg:hidden">
           <NewsletterIcon />
