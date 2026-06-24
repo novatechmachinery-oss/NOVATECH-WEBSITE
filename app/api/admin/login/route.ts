@@ -3,7 +3,6 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 import {
-  clearLegacyAdminCookie,
   isAdminConfigured,
   isAllowedAdminEmail,
   verifyAdminPassword,
@@ -50,39 +49,63 @@ export async function POST(request: NextRequest) {
 
   const { url, anonKey, storageKey } = getSupabaseConfig();
 
-  // Step 1: Use service role to ensure the admin user exists with the correct password.
-  const adminClient = createClient(url, storageKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-
-  const { data: listData } = await adminClient.auth.admin.listUsers();
-  const existingUser = listData?.users?.find(
-    (u) => u.email?.toLowerCase() === submittedEmail,
-  );
-
-  if (existingUser) {
-    await adminClient.auth.admin.updateUserById(existingUser.id, {
-      password: submittedPassword,
-    });
-  } else {
-    await adminClient.auth.admin.createUser({
-      email: submittedEmail,
-      password: submittedPassword,
-      email_confirm: true,
-    });
-  }
-
-  // Step 2: Sign in with a plain client (no SSR, no cookie storage) to get the raw session tokens.
+  // Step 1: Try signing in directly first.
+  // IMPORTANT: We do NOT update the password on every login because updateUserById()
+  // invalidates ALL existing sessions for that user — meaning any other logged-in
+  // admin would be immediately kicked out. We only sync the password when sign-in
+  // fails (i.e. the Supabase password is out of sync with .env).
   const plainClient = createClient(url, anonKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  const { data: signInData, error: signInError } = await plainClient.auth.signInWithPassword({
+  let signInData = null;
+  let signInError = null;
+
+  const result = await plainClient.auth.signInWithPassword({
     email: submittedEmail,
     password: submittedPassword,
   });
+  signInData = result.data;
+  signInError = result.error;
 
-  if (signInError || !signInData.session) {
+  // Step 2: If sign-in failed, it likely means the Supabase user doesn't exist yet
+  // or the password in Supabase is out of sync with .env. Sync it now, then retry.
+  if (signInError || !signInData?.session) {
+    console.log("[admin/login] Direct sign-in failed, syncing password via service role...");
+
+    const adminClient = createClient(url, storageKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: listData } = await adminClient.auth.admin.listUsers();
+    const existingUser = listData?.users?.find(
+      (u) => u.email?.toLowerCase() === submittedEmail,
+    );
+
+    if (existingUser) {
+      // Sync password — only happens when .env password changed or first deploy
+      await adminClient.auth.admin.updateUserById(existingUser.id, {
+        password: submittedPassword,
+      });
+    } else {
+      // First time: create the user in Supabase
+      await adminClient.auth.admin.createUser({
+        email: submittedEmail,
+        password: submittedPassword,
+        email_confirm: true,
+      });
+    }
+
+    // Retry sign-in after sync
+    const retry = await plainClient.auth.signInWithPassword({
+      email: submittedEmail,
+      password: submittedPassword,
+    });
+    signInData = retry.data;
+    signInError = retry.error;
+  }
+
+  if (signInError || !signInData?.session) {
     console.error("[admin/login] signInWithPassword error:", signInError?.message ?? "no session");
     return NextResponse.json(
       { error: signInError?.message || "Login failed. Please try again." },
@@ -105,12 +128,6 @@ export async function POST(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        console.log(
-          "[admin/login] setAll called with",
-          cookiesToSet.length,
-          "cookies:",
-          cookiesToSet.map((c) => c.name).join(", "),
-        );
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, {
             ...COOKIE_OPTIONS,
@@ -136,13 +153,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const setCookieHeader = response.headers.get("set-cookie");
   console.log("[admin/login] Login successful for:", submittedEmail);
-  console.log("[admin/login] Set-Cookie header present:", !!setCookieHeader);
-  console.log(
-    "[admin/login] Cookies being set:",
-    response.cookies.getAll().map((c) => c.name).join(", "),
-  );
 
   return response;
 }
