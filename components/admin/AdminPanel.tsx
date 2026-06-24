@@ -3505,8 +3505,14 @@ export default function AdminPanel() {
       </div>
 
       {categoryModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-xl rounded-[1.6rem] bg-white p-6 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
+          onClick={() => setCategoryModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-xl rounded-[1.6rem] bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black">
                 {categoryForm.id
@@ -3716,8 +3722,14 @@ export default function AdminPanel() {
       ) : null}
 
       {machineModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[1.7rem] bg-white p-5 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
+          onClick={() => setMachineModalOpen(false)}
+        >
+          <div
+            className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[1.7rem] bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-[1.8rem] font-black">{machineForm.id ? "Edit Machine" : "Add Machine"}</h3>
               <button type="button" onClick={() => setMachineModalOpen(false)} className="rounded-full border border-slate-200 p-2 text-slate-500">

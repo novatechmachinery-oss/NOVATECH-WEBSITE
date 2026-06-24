@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   CircleDollarSign,
+  Download,
   Maximize2,
   MessageCircle,
   Phone,
@@ -98,6 +99,25 @@ type MetalWorkingCatalogueProps = {
 };
 
 type PaginationItem = number | "ellipsis-left" | "ellipsis-right";
+
+function sanitizeDownloadName(value: string) {
+  return (
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "novatech-machine-image"
+  );
+}
+
+function buildJpegDownloadHref(imageSrc: string, machineTitle: string, imageIndex: number) {
+  const params = new URLSearchParams({
+    src: imageSrc,
+    name: `${sanitizeDownloadName(machineTitle)}-${imageIndex + 1}`,
+  });
+
+  return `/api/download-image?${params.toString()}`;
+}
 
 function getPaginationItems(currentPage: number, totalPages: number): PaginationItem[] {
   if (totalPages <= 7) {
@@ -525,6 +545,10 @@ export default function MetalWorkingCatalogue({
   const activeGalleryImage =
     machineDetailGallery[activeImageIndex] ?? machineDetailGallery[0] ?? null;
   const hasMultipleGalleryImages = machineDetailGallery.length > 1;
+  const activeImageDownloadHref =
+    selectedMachine && activeGalleryImage
+      ? buildJpegDownloadHref(activeGalleryImage.src, selectedMachine.title, activeImageIndex)
+      : "#";
 
   useEffect(() => {
     if (!isLightboxOpen) {
@@ -902,14 +926,25 @@ export default function MetalWorkingCatalogue({
                           <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
                             {activeImageIndex + 1} / {machineDetailGallery.length}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setIsLightboxOpen(true)}
-                            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
-                            aria-label="Open enlarged image"
-                          >
-                            <Maximize2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={activeImageDownloadHref}
+                              className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
+                              aria-label="Download selected image as JPEG"
+                              title="Download JPEG"
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <Download className="h-4 w-4" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setIsLightboxOpen(true)}
+                              className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
+                              aria-label="Open enlarged image"
+                            >
+                              <Maximize2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
 
                         {hasMultipleGalleryImages ? (
@@ -1177,14 +1212,24 @@ export default function MetalWorkingCatalogue({
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsLightboxOpen(false)}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(0,0,0,0.25)] backdrop-blur transition hover:bg-white/20"
-                aria-label="Close enlarged image"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <a
+                  href={activeImageDownloadHref}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(0,0,0,0.25)] backdrop-blur transition hover:bg-white/20"
+                  aria-label="Download enlarged image as JPEG"
+                  title="Download JPEG"
+                >
+                  <Download className="h-5 w-5" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(false)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-[0_14px_34px_rgba(0,0,0,0.25)] backdrop-blur transition hover:bg-white/20"
+                  aria-label="Close enlarged image"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             <div className="relative min-h-0 flex-1 overflow-hidden rounded-[2px] bg-black">
