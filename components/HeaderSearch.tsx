@@ -55,6 +55,12 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
       .slice(0, 6);
   }, [machines, query]);
 
+  function openMachineSuggestion(machine: MachineItem) {
+    router.push(buildMachineHref(machine));
+    setQuery("");
+    setIsOpen(false);
+  }
+
   function submitSearch() {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
@@ -75,7 +81,7 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
           submitSearch();
         }}
         suppressHydrationWarning
-        className="flex h-[40px] overflow-hidden rounded-[4px] border border-[#1a4a7a] bg-white shadow-[inset_0_1px_2px_rgba(15,23,42,0.05)]"
+        className="flex h-[34px] overflow-hidden rounded-[4px] border border-[#1a4a7a] bg-white shadow-[inset_0_1px_2px_rgba(15,23,42,0.05)]"
       >
         <input
           suppressHydrationWarning
@@ -93,13 +99,13 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
             window.setTimeout(() => setIsOpen(false), 120);
           }}
           placeholder="Search Machinery..."
-          className="h-full flex-1 border-0 px-14 text-[0.95rem] font-semibold text-slate-700 outline-none placeholder:text-slate-400"
+          className="h-full flex-1 border-0 px-12 text-[0.88rem] font-semibold text-slate-700 outline-none placeholder:text-slate-400"
         />
         <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <button
           type="submit"
           suppressHydrationWarning
-          className="inline-flex w-[46px] items-center justify-center bg-[#0f4f89] text-white transition hover:bg-[#0c4475]"
+          className="inline-flex w-[42px] items-center justify-center bg-[#0f4f89] text-white transition hover:bg-[#0c4475]"
           aria-label="Search machinery"
         >
           <Search className="h-5 w-5" />
@@ -112,8 +118,12 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
             <Link
               key={machine.id}
               href={buildMachineHref(machine)}
-              onClick={() => {
-                setIsOpen(false);
+              onMouseDown={(event) => {
+                event.preventDefault();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                openMachineSuggestion(machine);
               }}
               className="flex w-full flex-col items-start gap-1 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-sky-50"
             >

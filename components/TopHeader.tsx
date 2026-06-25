@@ -122,6 +122,13 @@ export default function TopHeader({
       .slice(0, 6);
   }, [compactSearchQuery, machines]);
 
+  function openCompactMachineSuggestion(machine: MachineItem) {
+    router.push(buildMachineHref(machine));
+    setIsCompactSearchOpen(false);
+    setCompactSearchQuery("");
+    setIsCompactSuggestionsOpen(false);
+  }
+
   function submitCompactSearch() {
     const trimmedQuery = compactSearchQuery.trim();
     if (!trimmedQuery) {
@@ -139,10 +146,10 @@ export default function TopHeader({
       className="border-b border-slate-200 bg-[#fff7e6] text-slate-800"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="grid w-full grid-cols-1 gap-0 px-2 py-1 text-[0.74rem] sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
+      <div className="grid w-full grid-cols-1 gap-0 px-1.5 py-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
         <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible 2xl:contents">
           <Link href="/" className="flex-none transition hover:opacity-95">
-            <div className="relative h-[60px] w-[80px] overflow-hidden sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] 2xl:h-[108px] 2xl:w-[150px]">
+            <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] 2xl:h-[108px] 2xl:w-[150px]">
               <Image src={logoSrc} alt={logoAlt} fill sizes="120px" className="object-contain" />
             </div>
           </Link>
@@ -150,7 +157,7 @@ export default function TopHeader({
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
-              className="absolute right-0 top-1 inline-flex h-10 w-10 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm 2xl:hidden"
+              className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 2xl:hidden"
               aria-label="Open menu"
               aria-expanded={isMobileMenuOpen}
             >
@@ -159,14 +166,23 @@ export default function TopHeader({
               <span className="h-0.5 w-5 rounded-full bg-current" />
             </button>
             <div
-              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-12 text-left leading-[1.01] text-[#163d6b] lg:leading-[1.03] 2xl:justify-start 2xl:pr-4"
+              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] lg:leading-[1.03] 2xl:justify-start 2xl:pr-4"
               style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
             >
-              <span className="block max-w-full whitespace-normal text-[1.02rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.18rem] sm:text-[1.42rem] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
+              <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
+                NOVATECH MACHINERY
+              </span>
+              <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
+                CORPORATION
+              </span>
+              <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
+                (OPC) PRIVATE LIMITED
+              </span>
+              <span className="hidden max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] sm:block md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
                 NOVATECH MACHINERY CORPORATION
               </span>
-              <div className="mt-0 flex max-w-full flex-col gap-1">
-                <span className="block max-w-full whitespace-normal text-[1.02rem] font-black uppercase tracking-[0.02em] min-[390px]:text-[1.18rem] sm:text-[1.42rem] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
+              <div className="mt-0 hidden max-w-full flex-col gap-1 sm:flex">
+                <span className="block max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
                   (OPC) PRIVATE LIMITED
                 </span>
               </div>
@@ -259,7 +275,7 @@ export default function TopHeader({
 
         </div>
 
-        <div className="border-t border-slate-200 px-2 pb-1 pt-1 2xl:hidden">
+        <div className="border-t border-slate-200 px-1 pb-0.5 pt-0.5 min-[414px]:px-2 min-[414px]:pb-1 min-[414px]:pt-1 2xl:hidden">
           {isCompactSearchOpen ? (
             <div className="relative">
               <form
@@ -318,10 +334,12 @@ export default function TopHeader({
                     <Link
                       key={machine.id}
                       href={buildMachineHref(machine)}
-                      onClick={() => {
-                        setIsCompactSearchOpen(false);
-                        setCompactSearchQuery("");
-                        setIsCompactSuggestionsOpen(false);
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                      }}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        openCompactMachineSuggestion(machine);
                       }}
                       className="flex w-full flex-col items-start gap-1 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-sky-50"
                     >
@@ -337,21 +355,21 @@ export default function TopHeader({
               ) : null}
             </div>
           ) : (
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_32px] items-center gap-2">
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_30px] items-center gap-1 min-[414px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_32px] min-[414px]:gap-2">
               <a
                 href={`tel:${cleanPhoneNumber(phonePrimary)}`}
-                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.76rem] sm:text-[0.84rem]"
+                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.68rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.72rem] min-[414px]:text-[0.76rem] sm:text-[0.84rem]"
               >
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
+                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 min-[414px]:h-7 min-[414px]:w-7">
                   <PhoneIcon />
                 </span>
                 <span className="truncate">{phonePrimary}</span>
               </a>
               <a
                 href={`tel:${cleanPhoneNumber(phoneSecondary)}`}
-                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.76rem] sm:text-[0.84rem]"
+                className="min-w-0 inline-flex items-center gap-1 whitespace-nowrap text-[0.68rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[0.72rem] min-[414px]:text-[0.76rem] sm:text-[0.84rem]"
               >
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
+                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 min-[414px]:h-7 min-[414px]:w-7">
                   <WhatsAppIcon />
                 </span>
                 <span className="truncate">{phoneSecondary}</span>
@@ -359,7 +377,7 @@ export default function TopHeader({
               <button
                 type="button"
                 onClick={() => setIsCompactSearchOpen(true)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-sky-200 bg-sky-50 text-[#145b93] transition hover:border-sky-300 hover:bg-sky-100"
+                className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center border border-sky-200 bg-sky-50 text-[#145b93] transition hover:border-sky-300 hover:bg-sky-100 min-[414px]:h-8 min-[414px]:w-8"
                 aria-label="Open machine search"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">

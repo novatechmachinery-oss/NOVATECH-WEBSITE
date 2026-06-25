@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import type { DragEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
@@ -11,6 +12,7 @@ import {
   EyeOff,
   FolderTree,
   Globe,
+  GripVertical,
   ImagePlus,
   KeyRound,
   LayoutDashboard,
@@ -599,6 +601,8 @@ export default function AdminPanel() {
   const [machineModalOpen, setMachineModalOpen] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [machineForm, setMachineForm] = useState<MachineFormState>(defaultMachineForm);
+  const [draggingImageIndex, setDraggingImageIndex] = useState<number | null>(null);
+  const [dragOverImageIndex, setDragOverImageIndex] = useState<number | null>(null);
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(defaultCategoryForm);
   const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
   const [editingSubcategoryName, setEditingSubcategoryName] = useState("");
@@ -1885,6 +1889,56 @@ export default function AdminPanel() {
       updated.unshift(selected);
       return { ...current, images: updated };
     });
+  }
+
+  function moveMachineImage(fromIndex: number, toIndex: number) {
+    setMachineForm((current) => {
+      if (
+        fromIndex === toIndex ||
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= current.images.length ||
+        toIndex >= current.images.length
+      ) {
+        return current;
+      }
+
+      const updated = [...current.images];
+      const [selected] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, selected);
+      return { ...current, images: updated };
+    });
+  }
+
+  function handleMachineImageDragStart(event: DragEvent<HTMLDivElement>, index: number) {
+    setDraggingImageIndex(index);
+    setDragOverImageIndex(index);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(index));
+  }
+
+  function handleMachineImageDragOver(event: DragEvent<HTMLDivElement>, index: number) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverImageIndex(index);
+  }
+
+  function handleMachineImageDrop(event: DragEvent<HTMLDivElement>, index: number) {
+    event.preventDefault();
+    const transferredIndex = Number(event.dataTransfer.getData("text/plain"));
+    const fromIndex = draggingImageIndex ?? transferredIndex;
+
+    if (Number.isInteger(fromIndex)) {
+      moveMachineImage(fromIndex, index);
+    }
+
+    setDraggingImageIndex(null);
+    setDragOverImageIndex(null);
+  }
+
+  function clearMachineImageDragState() {
+    setDraggingImageIndex(null);
+    setDragOverImageIndex(null);
   }
 
   const sidebarItems = [
@@ -3848,14 +3902,25 @@ export default function AdminPanel() {
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {machineForm.images.map((image, index) => (
-                    <div key={`${image.slice(0, 20)}-${index}`} className="overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white">
+                    <div
+                      key={`${image.slice(0, 20)}-${index}`}
+                      draggable
+                      onDragStart={(event) => handleMachineImageDragStart(event, index)}
+                      onDragOver={(event) => handleMachineImageDragOver(event, index)}
+                      onDrop={(event) => handleMachineImageDrop(event, index)}
+                      onDragEnd={clearMachineImageDragState}
+                      className={`overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white transition ${draggingImageIndex === index ? "scale-[0.98] opacity-60 ring-2 ring-sky-400" : ""} ${dragOverImageIndex === index && draggingImageIndex !== index ? "ring-2 ring-sky-500 ring-offset-2" : ""}`}
+                    >
                       <div className="aspect-[5/4] bg-slate-100">
                         <Image src={image} alt={`Machine ${index + 1}`} width={560} height={448} unoptimized className="h-full w-full object-cover" />
                       </div>
                       <div className="space-y-2 px-3 py-3">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-[11px] font-black uppercase tracking-[0.16em] ${index === 0 ? "text-sky-700" : "text-slate-400"}`}>{index === 0 ? "Main Image" : `Image ${index + 1}`}</span>
-                          <button type="button" onClick={() => setMachineForm((current) => ({ ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) }))} className="text-rose-600">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex min-w-0 items-center gap-2">
+                            <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-slate-400" aria-hidden="true" />
+                            <span className={`truncate text-[11px] font-black uppercase tracking-[0.16em] ${index === 0 ? "text-sky-700" : "text-slate-400"}`}>{index === 0 ? "Main Image" : `Image ${index + 1}`}</span>
+                          </span>
+                          <button type="button" aria-label={`Remove image ${index + 1}`} onClick={() => setMachineForm((current) => ({ ...current, images: current.images.filter((_, imageIndex) => imageIndex !== index) }))} className="shrink-0 text-rose-600">
                             <X className="h-4 w-4" />
                           </button>
                         </div>

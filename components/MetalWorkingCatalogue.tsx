@@ -1024,6 +1024,7 @@ export default function MetalWorkingCatalogue({
     ? [
         { label: "Brand", value: selectedMachine.manufacturer || "-" },
         { label: "Model", value: selectedMachine.model || "-" },
+        { label: "Machine Type", value: selectedMachine.machineType === "cnc" ? "CNC" : "Conventional" },
         { label: "Condition", value: selectedMachine.condition || "-" },
       ]
     : [];
@@ -1606,14 +1607,14 @@ export default function MetalWorkingCatalogue({
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="grid min-w-0 grid-cols-1 gap-1.5 min-[520px]:grid-cols-3 sm:gap-2">
+                    <div className="grid min-w-0 grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 min-[720px]:grid-cols-4 sm:gap-2">
                       {machineSpecifications.length > 0 ? machineSpecifications.map((spec, index) => (
                         <div
                           key={`${spec.label}-${index}`}
-                          className="min-w-0 flex-1 border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-3 sm:py-2"
+                          className="min-w-0 border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-2.5 sm:py-2"
                         >
-                          <span className="block min-w-0 break-words text-[0.62rem] font-semibold uppercase leading-4 tracking-[0.06em] text-slate-500 sm:text-[0.78rem] sm:leading-5">{spec.label}</span>
-                          <span className="mt-0.5 block min-w-0 break-words text-[0.78rem] font-semibold leading-4 text-slate-950 sm:text-[0.95rem] sm:leading-5">{spec.value}</span>
+                          <span className="block min-w-0 break-words text-[0.62rem] font-semibold uppercase leading-4 tracking-[0.06em] text-slate-500 sm:text-[0.72rem] sm:leading-5 lg:text-[0.78rem]">{spec.label}</span>
+                          <span className="mt-0.5 block min-w-0 break-words text-[0.78rem] font-semibold leading-4 text-slate-950 sm:text-[0.86rem] sm:leading-5 lg:text-[0.95rem]">{spec.value}</span>
                         </div>
                       )) : (
                         <p className="px-2 py-2 text-sm text-slate-500">Please contact Novatech for machine details.</p>

@@ -51,12 +51,12 @@ export default function CategoryCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.01),rgba(15,23,42,0.06))]" />
         </div>
 
-        <div className="flex flex-1 items-center justify-between gap-3 bg-[#16548b] px-2.5 py-0 sm:px-3.5 lg:px-5">
-          <h3 className="mr-auto flex max-w-[60%] items-center whitespace-nowrap text-[1rem] font-black uppercase leading-none text-white sm:text-[1.1rem] lg:text-[1.22rem]">
+        <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#16548b] px-2.5 py-2 sm:px-3.5 sm:py-2.5 lg:px-5">
+          <h3 className="min-w-0 text-balance text-[0.96rem] font-black uppercase leading-[1.05] text-white sm:text-[1.06rem] lg:text-[1.12rem] xl:text-[1.18rem] 2xl:text-[1.22rem]">
             {title}
           </h3>
 
-          <span className="ml-3 inline-flex h-6 shrink-0 self-center items-center justify-center rounded-[0.45rem] border border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-2 text-[0.6rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_8px_18px_rgba(8,47,73,0.18)] transition duration-300 group-hover:bg-[#f7fbff] sm:h-7 sm:px-2.5 sm:text-[0.66rem] lg:h-8 lg:px-3 lg:text-[0.7rem]">
+          <span className="inline-flex h-8 min-w-[7.35rem] shrink-0 items-center justify-center rounded-[0.45rem] border border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-2.5 text-center text-[0.58rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_8px_18px_rgba(8,47,73,0.18)] transition duration-300 group-hover:bg-[#f7fbff] sm:min-w-[7.6rem] sm:px-3 sm:text-[0.64rem] lg:min-w-[6.9rem] lg:text-[0.64rem] xl:min-w-[7.4rem] xl:text-[0.68rem]">
             {ctaLabel}
           </span>
         </div>
