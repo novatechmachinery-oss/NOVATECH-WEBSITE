@@ -61,11 +61,11 @@ function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }
       </div>
 
       <div className="border-t border-slate-200 p-2.5 text-center sm:p-3.5">
-        <p className="text-[0.66rem] font-black uppercase tracking-[0.12em] text-[#145b93] sm:text-[0.72rem]">
+        <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-[#145b93] [overflow-wrap:anywhere] sm:text-[0.72rem] sm:tracking-[0.12em]">
           {m.machineType.toUpperCase()}
           {m.subcategory ? ` - ${m.subcategory.toUpperCase()}` : ` - ${m.category.toUpperCase()}`}
         </p>
-        <h2 className="mt-1.5 line-clamp-2 min-h-[2.35rem] text-[0.9rem] font-black uppercase leading-[1.18] text-slate-950 sm:min-h-[2.7rem] sm:text-[1rem] sm:leading-[1.28]">
+        <h2 className="mt-1.5 min-h-[2.35rem] text-[0.9rem] font-black uppercase leading-[1.18] text-slate-950 [overflow-wrap:anywhere] sm:line-clamp-2 sm:min-h-[2.7rem] sm:text-[1rem] sm:leading-[1.28]">
           {m.title}
         </h2>
         {m.location ? (
@@ -1029,40 +1029,36 @@ export default function MetalWorkingCatalogue({
       ]
     : [];
 
-  const similarMachines = useMemo(() => {
-    if (!selectedMachine) {
-      return [];
-    }
+  const similarMachines = selectedMachine
+    ? machineInventory
+        .filter((machine) => machine.id !== selectedMachine.id)
+        .map((machine) => {
+          let score = 0;
 
-    const rankedMachines = machineInventory
-      .filter((machine) => machine.id !== selectedMachine.id)
-      .map((machine) => {
-        let score = 0;
+          if (machine.category === selectedMachine.category) {
+            score += 3;
+          }
 
-        if (machine.category === selectedMachine.category) {
-          score += 3;
-        }
+          if (selectedMachine.subcategory && machine.subcategory === selectedMachine.subcategory) {
+            score += 4;
+          }
 
-        if (selectedMachine.subcategory && machine.subcategory === selectedMachine.subcategory) {
-          score += 4;
-        }
+          if (machine.machineType === selectedMachine.machineType) {
+            score += 2;
+          }
 
-        if (machine.machineType === selectedMachine.machineType) {
-          score += 2;
-        }
+          return { machine, score };
+        })
+        .sort((left, right) => {
+          if (right.score !== left.score) {
+            return right.score - left.score;
+          }
 
-        return { machine, score };
-      })
-      .sort((left, right) => {
-        if (right.score !== left.score) {
-          return right.score - left.score;
-        }
-
-        return left.machine.title.localeCompare(right.machine.title);
-      });
-
-    return rankedMachines.slice(0, 4).map((item) => item.machine);
-  }, [machineInventory, selectedMachine]);
+          return left.machine.title.localeCompare(right.machine.title);
+        })
+        .slice(0, 4)
+        .map((item) => item.machine)
+    : [];
 
   const activeGalleryImage =
     machineDetailGallery[activeImageIndex] ?? machineDetailGallery[0] ?? null;
@@ -1199,7 +1195,7 @@ export default function MetalWorkingCatalogue({
         </h1>
 
         <div className="sticky top-0 z-30 -mx-3 mt-3 border-y border-slate-200 bg-slate-50/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 lg:hidden">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <button suppressHydrationWarning
               type="button"
               onClick={() => setIsMobileSidebarOpen((current) => !current)}
@@ -1221,28 +1217,12 @@ export default function MetalWorkingCatalogue({
               <button suppressHydrationWarning
                 type="button"
                 onClick={handleAllMachinesClick}
-                className="min-h-10 shrink-0 border border-slate-200 bg-white px-3 text-xs font-black uppercase tracking-[0.08em] text-slate-600 transition hover:border-[#145b93] hover:text-[#145b93] max-[389px]:w-full"
+                className="inline-flex min-h-10 shrink-0 items-center border border-red-600 bg-red-600 px-3 text-xs font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(220,38,38,0.18)] transition hover:border-red-700 hover:bg-red-700"
               >
                 Clear all
               </button>
             ) : null}
           </div>
-
-          {activeFilters.length > 0 ? (
-            <div className="mt-2 flex min-w-0 flex-wrap gap-2 pb-0.5">
-              {activeFilters.map((filter) => (
-                <button suppressHydrationWarning
-                  key={filter}
-                  type="button"
-                  onClick={() => clearCategoryFilter(filter)}
-                  className="inline-flex min-h-9 shrink-0 items-center gap-2 border border-sky-200 bg-white px-3 text-sm font-semibold text-[#145b93] shadow-[0_8px_18px_rgba(20,91,147,0.06)] transition hover:border-[#145b93]"
-                >
-                  <span>{filter}</span>
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <div className="hidden lg:block">
@@ -1250,27 +1230,27 @@ export default function MetalWorkingCatalogue({
             {activeFilters.length > 0 ? (
               <div className="mt-4 flex flex-col gap-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <div className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 px-4 py-3 text-[0.95rem] font-bold uppercase tracking-[0.08em] text-[#145b93]">
-                    <span>{activeFilters.length} Filters Active</span>
-                    <button suppressHydrationWarning
-                      type="button"
-                      onClick={handleAllMachinesClick}
-                      className="normal-case tracking-normal text-slate-500 transition hover:text-[#145b93]"
-                    >
-                      Clear all
-                    </button>
-                  </div>
+                  <button suppressHydrationWarning
+                    type="button"
+                    onClick={() => setIsMobileSidebarOpen((current) => !current)}
+                    className="inline-flex min-h-10 w-[max(230px,19%)] shrink-0 items-center justify-center gap-2 border border-[#145b93] bg-white px-5 text-sm font-black uppercase tracking-[0.08em] text-[#145b93] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-sky-50"
+                    aria-expanded={isMobileSidebarOpen}
+                    aria-label={isMobileSidebarOpen ? "Close filters" : "Open filters"}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    <span>Filters</span>
+                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#145b93] px-1.5 text-[0.68rem] leading-none text-white">
+                      {activeFilters.length}
+                    </span>
+                  </button>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-slate-500">
-                      Filters:
-                    </span>
                     {activeFilters.map((filter) => (
                       <button suppressHydrationWarning
                         key={filter}
                         type="button"
                         onClick={() => clearCategoryFilter(filter)}
-                        className="inline-flex items-center gap-2 border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-[#145b93] transition hover:border-[#145b93]"
+                        className="inline-flex min-h-10 items-center gap-2 border border-sky-200 bg-sky-50 px-4 text-sm font-semibold text-[#145b93] transition hover:border-[#145b93]"
                       >
                         <span>{filter}</span>
                         <span className="text-base leading-none">×</span>
@@ -1279,7 +1259,7 @@ export default function MetalWorkingCatalogue({
                     <button suppressHydrationWarning
                       type="button"
                       onClick={handleAllMachinesClick}
-                      className="text-sm font-medium text-slate-500 transition hover:text-[#145b93]"
+                      className="inline-flex min-h-10 items-center border border-red-600 bg-red-600 px-4 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(220,38,38,0.18)] transition hover:border-red-700 hover:bg-red-700"
                     >
                       Clear all
                     </button>
@@ -1311,7 +1291,7 @@ export default function MetalWorkingCatalogue({
         <aside
           className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
             isMobileSidebarOpen
-              ? "max-h-[70vh] border border-slate-200 p-3 opacity-100"
+              ? "flex max-h-[calc(100dvh-8rem)] flex-col border border-slate-200 p-3 opacity-100"
               : "max-h-0 border border-transparent p-0 opacity-0"
           }`}
         >
@@ -1330,7 +1310,7 @@ export default function MetalWorkingCatalogue({
             </div>
           </div>
 
-          <div className="mt-3 max-h-[500px] min-h-0 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:flex-1 lg:pb-4">
+          <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:pb-4">
             {filteredSidebarCategories.map((cat) => {
               const isOpen = openCategories[cat.name];
               const hasChildren = !!cat.sub?.length;
@@ -1341,7 +1321,7 @@ export default function MetalWorkingCatalogue({
               return (
                 <div
                   key={cat.name}
-                  className="overflow-hidden rounded-[2px] border border-slate-200 bg-white transition"
+                  className="overflow-hidden rounded-[2px] border border-[#020c1b] bg-white transition"
                 >
                   <button suppressHydrationWarning
                     onClick={() => handleCategoryClick(cat.name, hasChildren)}
@@ -1378,7 +1358,7 @@ export default function MetalWorkingCatalogue({
 
                   <div
                     className={`overflow-hidden transition-all duration-300 ${
-                      isOpen ? "max-h-[520px] border-t border-slate-200 px-3 py-2" : "max-h-0"
+                      isOpen ? "max-h-[520px] border-t border-[#020c1b] px-3 py-2" : "max-h-0"
                     }`}
                   >
                     <div className="bg-white">
@@ -1665,9 +1645,13 @@ export default function MetalWorkingCatalogue({
                       Related machines from the same category for quick comparison.
                     </p>
                   </div>
-                  <p className="text-lg font-black text-[#145b93] sm:text-xl">
+                  <button suppressHydrationWarning
+                    type="button"
+                    onClick={handleBackToResults}
+                    className="inline-flex items-center justify-center text-lg font-black text-[#145b93] transition hover:text-[#0f4c7c] sm:text-xl"
+                  >
                     &larr; More options
-                  </p>
+                  </button>
                 </div>
 
                 <div className="mt-4 grid gap-3 min-[520px]:grid-cols-2 xl:grid-cols-4">
@@ -1694,13 +1678,13 @@ export default function MetalWorkingCatalogue({
           <div>
             <div ref={resultsTopRef} />
             <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="grid w-full min-w-0 grid-cols-1 gap-1.5 min-[560px]:grid-cols-3 sm:gap-2">
+              <div className="grid w-full min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
               {toolbarButtons.map((btn) => (
                 <button suppressHydrationWarning
                   key={btn.value}
                   type="button"
                   onClick={() => handleMachineModeChange(btn.value as MachineMode)}
-                  className={`flex h-12 min-w-0 items-center justify-center rounded-[2px] border px-2 py-1.5 text-center text-[0.88rem] font-black leading-tight transition sm:px-4 sm:text-[1rem] ${
+                  className={`flex min-h-12 min-w-0 items-center justify-center rounded-[2px] border px-1.5 py-1.5 text-center text-[0.72rem] font-black leading-tight transition min-[390px]:text-[0.78rem] sm:px-4 sm:text-[1rem] ${
                     machineMode === btn.value
                       ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
                         : "border-slate-300 bg-white text-slate-950 hover:border-sky-300 hover:text-slate-950"
@@ -1773,8 +1757,8 @@ export default function MetalWorkingCatalogue({
             </div>
 
             {totalPages > 1 ? (
-              <div className="mt-8 flex justify-center px-2">
-                <div className="flex max-w-full flex-nowrap items-center justify-start gap-1.5 overflow-x-auto rounded-full border border-slate-200 bg-white/90 p-1.5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] ring-1 ring-white/70 backdrop-blur [scrollbar-width:none] sm:gap-2 sm:p-2 md:justify-center [&::-webkit-scrollbar]:hidden">
+              <div className="mt-8 flex justify-center px-0 sm:px-2">
+                <div className="flex max-w-full flex-wrap items-center justify-center gap-1 overflow-visible rounded-[1rem] border border-slate-200 bg-white/90 p-1.5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] ring-1 ring-white/70 backdrop-blur sm:flex-nowrap sm:gap-2 sm:overflow-x-auto sm:rounded-full sm:p-2 sm:[scrollbar-width:none] md:justify-center sm:[&::-webkit-scrollbar]:hidden">
                   <button suppressHydrationWarning
                     type="button"
                     onClick={() => {
@@ -1782,7 +1766,7 @@ export default function MetalWorkingCatalogue({
                       scrollToResultsTop();
                     }}
                     disabled={currentPage === 1}
-                    className="inline-flex h-9 min-w-9 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 text-[0.72rem] font-black uppercase tracking-[0.08em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:px-3 sm:text-xs"
+                    className="inline-flex h-8 min-w-8 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 text-[0.68rem] font-black uppercase tracking-[0.06em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:min-w-9 sm:px-3 sm:text-xs sm:tracking-[0.08em]"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     <span className="hidden sm:inline">Prev</span>
@@ -1798,7 +1782,11 @@ export default function MetalWorkingCatalogue({
                           scrollToResultsTop();
                         }}
                         aria-current={currentPage === item ? "page" : undefined}
-                        className={`inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border px-2 text-sm font-black transition sm:h-10 sm:min-w-10 sm:px-3 ${
+                        className={`inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full border px-1.5 text-sm font-black transition sm:h-10 sm:min-w-10 sm:px-3 ${
+                          item !== 1 && item !== totalPages && Math.abs(item - currentPage) > 1
+                            ? "max-[389px]:hidden"
+                            : ""
+                        } ${
                           currentPage === item
                             ? "border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_52%,#0d4b80_100%)] text-white shadow-[0_10px_24px_rgba(20,91,147,0.26)]"
                             : "border-slate-200 bg-white text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93]"
@@ -1809,7 +1797,7 @@ export default function MetalWorkingCatalogue({
                     ) : (
                       <span
                         key={item}
-                        className="inline-flex h-9 min-w-7 shrink-0 items-center justify-center rounded-full text-sm font-black tracking-[0.1em] text-slate-400 sm:h-10"
+                        className="inline-flex h-8 min-w-5 shrink-0 items-center justify-center rounded-full text-sm font-black tracking-[0.1em] text-slate-400 sm:h-10 sm:min-w-7"
                         aria-hidden="true"
                       >
                         ...
@@ -1824,7 +1812,7 @@ export default function MetalWorkingCatalogue({
                       scrollToResultsTop();
                     }}
                     disabled={currentPage === totalPages}
-                    className="inline-flex h-9 min-w-9 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 text-[0.72rem] font-black uppercase tracking-[0.08em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:px-3 sm:text-xs"
+                    className="inline-flex h-8 min-w-8 shrink-0 items-center justify-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 text-[0.68rem] font-black uppercase tracking-[0.06em] text-slate-700 transition hover:border-[#145b93] hover:bg-sky-50 hover:text-[#145b93] disabled:pointer-events-none disabled:opacity-40 sm:h-10 sm:min-w-9 sm:px-3 sm:text-xs sm:tracking-[0.08em]"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="h-4 w-4" />

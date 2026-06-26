@@ -36,7 +36,7 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
 
   return (
     <div
-      className="border-b border-[#8f0f0f] bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] text-white shadow-[0_12px_24px_rgba(64,5,5,0.18)] lg:h-[50px]"
+      className="hidden border-b border-[#8f0f0f] bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] text-white shadow-[0_12px_24px_rgba(64,5,5,0.18)] lg:block lg:h-[50px]"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
       <div className="w-full px-0">

@@ -92,6 +92,26 @@ a[class*="inline-flex"][class*="rounded"] {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
+@keyframes mobile-menu-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(72px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.mobile-menu-slide-in {
+  animation: mobile-menu-slide-in 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-slide-in {
+    animation: none;
+  }
+}
 @keyframes wave-slide {
   0% {
     transform: translateX(-45%) skewX(-15deg);

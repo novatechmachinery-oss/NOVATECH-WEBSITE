@@ -28,6 +28,14 @@ let supabaseCatalogCache: { catalog: AdminCatalogSnapshot; expiresAt: number } |
 let supabaseCatalogFailureUntil = 0;
 type CatalogReadMode = "fresh" | "cached";
 
+function isDynamicServerUsageError(error: unknown) {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      (error as { digest?: unknown }).digest === "DYNAMIC_SERVER_USAGE",
+  );
+}
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -237,7 +245,9 @@ async function readSupabaseCatalogUncached(readMode: CatalogReadMode) {
 
     return catalog;
   } catch (error) {
-    console.error("Failed to read admin catalog from Supabase.", error);
+    if (!isDynamicServerUsageError(error)) {
+      console.error("Failed to read admin catalog from Supabase.", error);
+    }
     supabaseCatalogFailureUntil = Date.now() + supabaseCatalogFailureCooldownMs;
     return null;
   }

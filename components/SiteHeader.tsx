@@ -16,6 +16,7 @@ export default async function SiteHeader() {
         logoSrc={settings.branding.logoSrc}
         logoAlt={settings.branding.logoAlt}
         machines={machines}
+        categoryLinks={settings.navigation.categoryLinks}
       />
       <Navbar machines={machines} />
       <HomeCategoryNav types={settings.navigation.categoryLinks} />

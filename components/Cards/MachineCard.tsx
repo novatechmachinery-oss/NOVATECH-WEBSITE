@@ -11,7 +11,7 @@ const highlights = ["200+ Machine Types", "Quick Response"];
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hidden h-3.5 w-3.5 shrink-0 sm:block sm:h-4 sm:w-4">
       <circle cx="11" cy="11" r="6.5" />
       <path d="m16 16 4.5 4.5" />
     </svg>
@@ -20,7 +20,7 @@ function SearchIcon() {
 
 function ClockIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hidden h-3.5 w-3.5 shrink-0 sm:block sm:h-4 sm:w-4">
       <circle cx="12" cy="12" r="8" />
       <path d="M12 8v4l3 2" />
     </svg>
@@ -29,7 +29,7 @@ function ClockIcon() {
 
 function ShieldIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="hidden h-3.5 w-3.5 shrink-0 sm:block sm:h-4 sm:w-4">
       <path d="M12 21s7-3.5 7-10V5l-7-3-7 3v6c0 6.5 7 10 7 10Z" />
     </svg>
   );
@@ -62,11 +62,11 @@ export default function MachineCard({
                   {description}
                 </p>
 
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-[#145b93]/85 sm:gap-x-5">
+                <div className="mt-4 grid w-full max-w-[560px] grid-cols-3 items-stretch gap-2 text-[0.56rem] font-bold uppercase tracking-[0.12em] text-[#145b93]/85 min-[390px]:text-[0.6rem] sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-5 sm:gap-y-2.5 sm:text-[0.66rem] sm:tracking-[0.16em]">
                   {highlights.map((item, index) => {
                     const Icon = highlightIcons[index];
                     return (
-                      <span key={item} className="inline-flex items-center gap-2 border border-sky-100 bg-white px-3 py-1.5 shadow-[0_8px_18px_rgba(20,91,147,0.08)]">
+                      <span key={item} className="inline-flex min-h-8 min-w-0 items-center justify-center gap-1.5 border border-sky-100 bg-white px-1.5 py-1.5 text-center shadow-[0_8px_18px_rgba(20,91,147,0.08)] sm:gap-2 sm:px-3">
                         <Icon />
                         {item}
                       </span>
@@ -74,7 +74,7 @@ export default function MachineCard({
                   })}
                   <Link
                     href={primaryHref}
-                    className="inline-flex min-h-[38px] items-center justify-center border border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_55%,#0f4c7c_100%)] px-5 py-1.5 text-center text-[0.66rem] font-extrabold uppercase tracking-[0.16em] text-white shadow-[0_12px_24px_rgba(20,91,147,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_30px_rgba(20,91,147,0.28)]"
+                    className="inline-flex min-h-8 min-w-0 items-center justify-center border border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_55%,#0f4c7c_100%)] px-1.5 py-1.5 text-center text-[0.56rem] font-extrabold uppercase tracking-[0.12em] text-white shadow-[0_12px_24px_rgba(20,91,147,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_30px_rgba(20,91,147,0.28)] min-[390px]:text-[0.6rem] sm:min-h-[38px] sm:px-5 sm:text-[0.66rem] sm:tracking-[0.16em]"
                   >
                     {primaryLabel}
                   </Link>

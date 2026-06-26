@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronDown, ChevronRight, Factory, Grid2X2, Home, Info, PhoneCall, Pill, Settings, Shirt, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import NewsletterSignup from "./NewsletterSignup";
@@ -15,14 +16,25 @@ type TopHeaderProps = {
   logoSrc?: string;
   logoAlt?: string;
   machines?: MachineItem[];
+  categoryLinks?: Array<{
+    id?: string;
+    label: string;
+    href: string;
+  }>;
 };
 
 const mobileNavItems = [
-  { label: "HOME", href: "/" },
-  { label: "USED MACHINERY", href: "/used-machinery" },
-  { label: "CATEGORIES", href: "/categories" },
-  { label: "ABOUT US", href: "/about" },
-  { label: "CONTACT US", href: "/contact" },
+  { label: "CATEGORIES", href: "/categories", icon: Grid2X2 },
+  { label: "ABOUT US", href: "/about", icon: Info },
+  { label: "CONTACT US", href: "/contact", icon: PhoneCall },
+];
+
+const defaultCategoryLinks = [
+  { label: "Metal Working Machinery", href: "/metal-working-machinery" },
+  { label: "Pharmaceutical Machinery", href: "/pharmaceutical-machinery" },
+  { label: "Plastic Machinery", href: "/plastic-machinery" },
+  { label: "Textile Machinery", href: "/textile-machinery" },
+  { label: "Carbide Scrap", href: "/categories" },
 ];
 
 function cleanPhoneNumber(phoneNumber: string) {
@@ -91,12 +103,33 @@ export default function TopHeader({
   logoSrc = "/images/MAIN%20LOGO.png",
   logoAlt = "Novatech logo",
   machines = [],
+  categoryLinks = defaultCategoryLinks,
 }: TopHeaderProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMachineryOpen, setIsMobileMachineryOpen] = useState(false);
   const [isCompactSearchOpen, setIsCompactSearchOpen] = useState(false);
   const [compactSearchQuery, setCompactSearchQuery] = useState("");
   const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
+
+  const resolvedCategoryLinks = useMemo(
+    () =>
+      categoryLinks.some((item) => ["other", "carbide scrap"].includes(item.label.trim().toLowerCase()))
+        ? categoryLinks
+        : [...categoryLinks, { label: "Carbide Scrap", href: "/categories" }],
+    [categoryLinks]
+  );
+
+  const mobileMachineryLinks = resolvedCategoryLinks;
+
+  const machineryIconMap = {
+    "metal working machinery": Settings,
+    "pharmaceutical machinery": Pill,
+    "plastic machinery": Factory,
+    "textile machinery": Shirt,
+    other: Settings,
+    "carbide scrap": Settings,
+  } as const;
 
   const compactSearchSuggestions = useMemo(() => {
     const normalizedQuery = compactSearchQuery.trim().toLowerCase();
@@ -158,12 +191,18 @@ export default function TopHeader({
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
               className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 2xl:hidden"
-              aria-label="Open menu"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
             >
-              <span className="h-0.5 w-5 rounded-full bg-current" />
-              <span className="h-0.5 w-5 rounded-full bg-current" />
-              <span className="h-0.5 w-5 rounded-full bg-current" />
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5" strokeWidth={2.4} />
+              ) : (
+                <>
+                  <span className="h-0.5 w-5 rounded-full bg-current" />
+                  <span className="h-0.5 w-5 rounded-full bg-current" />
+                  <span className="h-0.5 w-5 rounded-full bg-current" />
+                </>
+              )}
             </button>
             <div
               className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] lg:leading-[1.03] 2xl:justify-start 2xl:pr-4"
@@ -191,21 +230,83 @@ export default function TopHeader({
         </div>
 
         {isMobileMenuOpen ? (
-          <div className="mt-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.12)] 2xl:hidden">
-            <div className="space-y-2">
-              {mobileNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block bg-[linear-gradient(135deg,#145b93_0%,#2f80c6_100%)] px-4 py-3 text-center text-[0.82rem] font-black uppercase tracking-[0.06em] text-white shadow-[0_10px_24px_rgba(20,91,147,0.18)]"
+          <div className="mobile-menu-slide-in mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-[0_18px_40px_rgba(15,23,42,0.12)] 2xl:hidden">
+            <div className="divide-y divide-slate-200">
+              <Link
+                href="/"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsMobileMachineryOpen(false);
+                }}
+                className="flex min-h-[56px] items-center gap-4 bg-white px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+              >
+                <Home className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                <span className="min-w-0 flex-1">HOME</span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+              </Link>
+
+              <div className="bg-white">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMachineryOpen((current) => !current)}
+                  className="flex min-h-[56px] w-full items-center gap-4 bg-white px-4 text-left text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+                  aria-expanded={isMobileMachineryOpen}
+                  aria-controls="mobile-machinery-links"
                 >
-                  {item.label}
-                </Link>
-              ))}
+                  <Settings className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                  <span className="min-w-0 flex-1 text-[0.82rem]">USED MACHINERY</span>
+                  {isMobileMachineryOpen ? (
+                    <ChevronDown className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                  )}
+                </button>
+                {isMobileMachineryOpen ? (
+                  <div id="mobile-machinery-links" className="space-y-1 border-t border-slate-200 bg-slate-50 p-2">
+                    {mobileMachineryLinks.map((item) => {
+                      const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
+
+                      return (
+                        <Link
+                          key={`${item.label}-${item.href}`}
+                          href={item.href}
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setIsMobileMachineryOpen(false);
+                          }}
+                          className="flex min-h-[42px] items-center justify-center gap-2 bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] px-3 text-center text-[0.72rem] font-black uppercase tracking-[0.01em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.82)] transition hover:bg-[#c31212] min-[414px]:min-h-[46px] min-[414px]:text-[0.78rem]"
+                        >
+                          <Icon className="h-4 w-4 shrink-0 min-[414px]:h-5 min-[414px]:w-5" />
+                          <span className="text-balance leading-none">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+
+              {mobileNavItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsMobileMachineryOpen(false);
+                    }}
+                    className="flex min-h-[56px] items-center gap-4 bg-white px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+                  >
+                    <Icon className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                    <span className="min-w-0 flex-1">{item.label}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                  </Link>
+                );
+              })}
             </div>
 
-            <div className="mt-4 space-y-3 border-t border-slate-200 pt-4">
+            <div className="space-y-3 border-t border-slate-200 p-3">
               <a
                 href={getEmailComposeHref(emailAddress)}
                 target="_blank"
