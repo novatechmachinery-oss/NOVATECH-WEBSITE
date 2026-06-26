@@ -12,7 +12,6 @@ import type { MachineItem } from "@/lib/machines";
 type TopHeaderProps = {
   phonePrimary?: string;
   phoneSecondary?: string;
-  emailAddress?: string;
   logoSrc?: string;
   logoAlt?: string;
   machines?: MachineItem[];
@@ -45,10 +44,6 @@ function getWhatsAppHref(phoneNumber: string) {
   return `https://wa.me/${phoneNumber.replace(/\D/g, "")}`;
 }
 
-function getEmailComposeHref(emailAddress: string) {
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailAddress)}`;
-}
-
 function buildMachineHref(machine: MachineItem) {
   const params = new URLSearchParams();
 
@@ -73,21 +68,6 @@ function PhoneIcon() {
   );
 }
 
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-      <rect x="3.5" y="6" width="17" height="12" rx="1.5" fill="currentColor" opacity="0.12" />
-      <path
-        d="M4.75 7.25h14.5c.69 0 1.25.56 1.25 1.25v7c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-7c0-.69.56-1.25 1.25-1.25Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path d="m4.5 8 7.5 5.3L19.5 8" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="m4.8 16.4 5.4-4.3M19.2 16.4l-5.4-4.3" stroke="currentColor" strokeWidth="1.35" opacity="0.72" />
-    </svg>
-  );
-}
-
 function WhatsAppIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
@@ -99,7 +79,6 @@ function WhatsAppIcon() {
 export default function TopHeader({
   phonePrimary = "+91 9646255755",
   phoneSecondary = "+91 9646255855",
-  emailAddress = "info@novatechmachinery.com",
   logoSrc = "/images/MAIN%20LOGO.png",
   logoAlt = "Novatech logo",
   machines = [],
@@ -119,8 +98,6 @@ export default function TopHeader({
         : [...categoryLinks, { label: "Carbide Scrap", href: "/categories" }],
     [categoryLinks]
   );
-
-  const mobileMachineryLinks = resolvedCategoryLinks;
 
   const machineryIconMap = {
     "metal working machinery": Settings,
@@ -230,7 +207,7 @@ export default function TopHeader({
         </div>
 
         {isMobileMenuOpen ? (
-          <div className="mobile-menu-slide-in mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-[0_18px_40px_rgba(15,23,42,0.12)] 2xl:hidden">
+          <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-[0_18px_40px_rgba(15,23,42,0.12)] 2xl:hidden">
             <div className="divide-y divide-slate-200">
               <Link
                 href="/"
@@ -238,32 +215,32 @@ export default function TopHeader({
                   setIsMobileMenuOpen(false);
                   setIsMobileMachineryOpen(false);
                 }}
-                className="flex min-h-[56px] items-center gap-4 bg-white px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+                className="flex min-h-[56px] items-center gap-4 bg-[linear-gradient(180deg,#0c3156_0%,#082744_100%)] px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-white transition hover:bg-[#0f3a64]"
               >
-                <Home className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                <Home className="h-5 w-5 shrink-0 text-white" strokeWidth={2.2} />
                 <span className="min-w-0 flex-1">HOME</span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                <ChevronRight className="h-4 w-4 shrink-0 text-white" strokeWidth={2.4} />
               </Link>
 
               <div className="bg-white">
                 <button
                   type="button"
                   onClick={() => setIsMobileMachineryOpen((current) => !current)}
-                  className="flex min-h-[56px] w-full items-center gap-4 bg-white px-4 text-left text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+                  className="flex min-h-[56px] w-full items-center gap-4 bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] px-4 text-left text-[0.82rem] font-black uppercase tracking-[0.01em] text-white transition hover:bg-[#c31212]"
                   aria-expanded={isMobileMachineryOpen}
                   aria-controls="mobile-machinery-links"
                 >
-                  <Settings className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                  <Settings className="h-5 w-5 shrink-0 text-white" strokeWidth={2.2} />
                   <span className="min-w-0 flex-1 text-[0.82rem]">USED MACHINERY</span>
                   {isMobileMachineryOpen ? (
-                    <ChevronDown className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                    <ChevronDown className="h-4 w-4 shrink-0 text-white" strokeWidth={2.4} />
                   ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-white" strokeWidth={2.4} />
                   )}
                 </button>
                 {isMobileMachineryOpen ? (
                   <div id="mobile-machinery-links" className="space-y-1 border-t border-slate-200 bg-slate-50 p-2">
-                    {mobileMachineryLinks.map((item) => {
+                    {resolvedCategoryLinks.map((item) => {
                       const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
 
                       return (
@@ -296,28 +273,17 @@ export default function TopHeader({
                       setIsMobileMenuOpen(false);
                       setIsMobileMachineryOpen(false);
                     }}
-                    className="flex min-h-[56px] items-center gap-4 bg-white px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-slate-950 transition hover:bg-slate-50"
+                    className="flex min-h-[56px] items-center gap-4 bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] px-4 text-[0.82rem] font-black uppercase tracking-[0.01em] text-white transition hover:bg-[#c31212]"
                   >
-                    <Icon className="h-5 w-5 shrink-0 text-[#1475cc]" strokeWidth={2.2} />
+                    <Icon className="h-5 w-5 shrink-0 text-white" strokeWidth={2.2} />
                     <span className="min-w-0 flex-1">{item.label}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-800" strokeWidth={2.4} />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-white" strokeWidth={2.4} />
                   </Link>
                 );
               })}
             </div>
 
             <div className="space-y-3 border-t border-slate-200 p-3">
-              <a
-                href={getEmailComposeHref(emailAddress)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-10 items-center gap-3 border border-slate-200 bg-slate-50 px-3 text-[0.9rem] font-black text-slate-900"
-              >
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
-                  <MailIcon />
-                </span>
-                <span className="break-all">{emailAddress}</span>
-              </a>
               <NewsletterSignup variant="mobile-full" />
             </div>
           </div>
@@ -360,18 +326,6 @@ export default function TopHeader({
                 {phoneSecondary}
               </a>
             </div>
-
-            <a
-              href={getEmailComposeHref(emailAddress)}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-w-0 shrink-0 items-center justify-center gap-1 overflow-hidden whitespace-nowrap text-[0.96rem] font-black tracking-[0.01em] text-slate-950 transition hover:text-sky-700 min-[390px]:text-[1rem] sm:text-[1.06rem] md:text-[1.1rem] lg:text-[1.12rem] 2xl:justify-end"
-            >
-              <span className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600">
-                <MailIcon />
-              </span>
-              <span className="whitespace-nowrap">{emailAddress}</span>
-            </a>
           </div>
 
         </div>

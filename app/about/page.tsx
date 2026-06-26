@@ -120,7 +120,7 @@ export default async function AboutPage() {
           />
 
           <div className="relative mx-auto max-w-[1740px] px-4 pb-28 pt-14 text-center sm:px-6 lg:px-8 lg:pb-32 lg:pt-18">
-            <span className="inline-flex items-center rounded-full border border-white/16 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.24em] text-sky-50">
+            <span className="inline-flex items-center border border-white/16 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.24em] text-sky-50">
               About Us
             </span>
             <h1 className="mx-auto mt-5 max-w-5xl text-[2.5rem] font-black leading-[1.02] tracking-tight sm:text-[3.4rem] lg:text-[4.2rem]">
@@ -144,10 +144,10 @@ export default async function AboutPage() {
               return (
                 <div
                   key={item.title}
-                  className="relative overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
+                  className="relative overflow-hidden border border-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
                 >
-                  <div className="absolute right-0 top-0 h-20 w-20 rounded-bl-[2.4rem] bg-slate-100/80" />
-                  <span className="relative inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                  <div className="absolute right-0 top-0 h-20 w-20-[2.4rem] bg-slate-100/80" />
+                  <span className="relative inline-flex h-12 w-12 items-center justify-center bg-sky-50 text-sky-700">
                     <Icon className="h-5 w-5" />
                   </span>
                   <p className="relative mt-5 text-[1.9rem] font-black leading-none text-slate-900">
@@ -163,12 +163,12 @@ export default async function AboutPage() {
         </section>
 
         <section className="px-4 pb-8 pt-8 sm:px-6 lg:px-8 lg:pt-10">
-          <div className="mx-auto max-w-[1740px] rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
+          <div className="mx-auto max-w-[1740px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
             <div className="grid lg:grid-cols-[120px_minmax(0,1fr)]">
               <div className="hidden border-r border-slate-200 bg-[linear-gradient(180deg,#f7fbff_0%,#edf4fb_100%)] lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-8">
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-300" />
+                <span className="h-2.5 w-2.5 bg-sky-300" />
                 <span className="h-16 w-px bg-slate-200" />
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-400" />
+                <span className="h-2.5 w-2.5 bg-sky-400" />
               </div>
 
               <div className="p-6 sm:p-8 lg:p-10">
@@ -192,7 +192,7 @@ export default async function AboutPage() {
           <div className="mx-auto grid max-w-[1740px] gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
             <div>
               <div className="mb-4 flex items-start gap-3">
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-700 text-white">
+                <span className="inline-flex h-12 w-12 items-center justify-center bg-sky-700 text-white">
                   <Shield className="h-5 w-5" />
                 </span>
                 <div>
@@ -208,10 +208,10 @@ export default async function AboutPage() {
                   return (
                     <div
                       key={item.title}
-                      className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+                      className="border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sky-700">
+                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center bg-slate-100 text-sky-700">
                           <Icon className="h-4.5 w-4.5" />
                         </span>
                         <div>
@@ -225,7 +225,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            <aside className="rounded-[1.55rem] bg-[linear-gradient(180deg,#265f92_0%,#2a5f90_100%)] p-5 text-white shadow-[0_20px_42px_rgba(20,91,147,0.18)]">
+            <aside className="bg-[linear-gradient(180deg,#265f92_0%,#2a5f90_100%)] p-5 text-white shadow-[0_20px_42px_rgba(20,91,147,0.18)]">
               <div>
                 <p className="text-[0.76rem] font-black uppercase tracking-[0.22em] text-sky-100">
                   Our Machine Range
@@ -265,7 +265,7 @@ export default async function AboutPage() {
 
                 <Link
                   href="/contact"
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-sky-800 transition hover:bg-sky-50"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-white px-4 py-3 text-sm font-black text-sky-800 transition hover:bg-sky-50"
                 >
                   Get in Touch
                 </Link>

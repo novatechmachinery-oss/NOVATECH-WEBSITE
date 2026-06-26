@@ -207,7 +207,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   function fieldClasses(field: ContactFormField) {
     const hasError = Boolean(errors[field]);
 
-    return `w-full rounded-2xl border bg-white/96 py-3.5 pl-11 pr-4 text-sm text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition placeholder:text-slate-400 ${
+    return `w-full border bg-white/96 py-3.5 pl-11 pr-4 text-sm text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition placeholder:text-slate-400 ${
       hasError
         ? "border-rose-300 ring-2 ring-rose-100"
         : "border-slate-200 focus:border-[#e4414c] focus:ring-2 focus:ring-rose-100"
@@ -218,9 +218,9 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
     <main className="overflow-hidden bg-[linear-gradient(180deg,#eaf3fb_0%,#f8fafc_26%,#ffffff_100%)]">
       <section className="relative isolate overflow-hidden bg-[linear-gradient(135deg,#0c3f68_0%,#145b93_42%,#0b67a3_100%)] text-white">
         <div className="absolute inset-0 opacity-[0.16]">
-          <div className="absolute left-[-10%] top-10 h-56 w-56 rounded-full bg-white blur-3xl" />
-          <div className="absolute right-[-8%] top-24 h-64 w-64 rounded-full bg-sky-300 blur-3xl" />
-          <div className="absolute bottom-[-30%] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-300 blur-3xl" />
+          <div className="absolute left-[-10%] top-10 h-56 w-56 bg-white blur-3xl" />
+          <div className="absolute right-[-8%] top-24 h-64 w-64 bg-sky-300 blur-3xl" />
+          <div className="absolute bottom-[-30%] left-1/2 h-72 w-72 -translate-x-1/2 bg-cyan-300 blur-3xl" />
         </div>
 
         <div
@@ -233,7 +233,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
 
         <div className="relative mx-auto max-w-[1460px] px-4 pb-24 pt-12 sm:px-6 lg:px-8 lg:pb-28 lg:pt-14">
           <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.22em] text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+            <span className="inline-flex items-center border border-white/20 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.22em] text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
               Contact Us
             </span>
             <h1 className="mt-5 text-[2.2rem] font-black tracking-tight text-white sm:text-[2.8rem] lg:text-[3.3rem]">
@@ -251,7 +251,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
       <section className="relative z-10 -mt-14 pb-14 sm:-mt-18 lg:pb-20">
         <div className="mx-auto max-w-[1720px] px-3 sm:px-4 lg:px-5">
           <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,70%)_minmax(320px,30%)] xl:gap-10">
-            <div className="overflow-hidden rounded-[1rem] border border-slate-200 bg-white shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
+            <div className="overflow-hidden border border-slate-200 bg-white shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
               <div className="relative h-[320px] w-full sm:h-[420px] lg:h-[760px]">
                 <iframe
                   title="Novatech Machinery office map"
@@ -268,7 +268,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   href={contactLinks.mapsOpenUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-900 transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
                 >
                   <MapPin className="h-4 w-4" />
                   View on Map
@@ -278,10 +278,10 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
             </div>
 
            
-              <div className="h-full rounded-[1rem] border border-slate-100 bg-white p-5 shadow-[0_18px_36px_rgba(15,23,42,0.06)] sm:p-6">
-                <div className="rounded-[1.5rem] bg-[linear-gradient(135deg,#fff5f5_0%,#ffffff_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
+              <div className="h-full border border-slate-100 bg-white p-5 shadow-[0_18px_36px_rgba(15,23,42,0.06)] sm:p-6">
+                <div className="bg-[linear-gradient(135deg,#fff5f5_0%,#ffffff_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] text-white shadow-[0_14px_30px_rgba(220,38,38,0.24)]">
+                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] text-white shadow-[0_14px_30px_rgba(220,38,38,0.24)]">
                       <Send className="h-5 w-5" />
                     </span>
                     <div>
@@ -302,7 +302,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                 <form className="mt-4 space-y-4" noValidate onSubmit={handleSubmit}>
                   {submitState.kind !== "idle" ? (
                     <div
-                      className={`rounded-[1.25rem] border px-4 py-3 text-sm leading-7 ${
+                      className={`border px-4 py-3 text-sm leading-7 ${
                         submitState.kind === "success"
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                           : "border-rose-200 bg-rose-50 text-rose-700"
@@ -475,7 +475,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] px-6 py-3.5 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[0_16px_34px_rgba(220,38,38,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(220,38,38,0.3)] disabled:cursor-not-allowed disabled:opacity-70"
+                    className="inline-flex w-full items-center justify-center gap-2 bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] px-6 py-3.5 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[0_16px_34px_rgba(220,38,38,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(220,38,38,0.3)] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Send className="h-4 w-4" />
                     {isSubmitting ? "Sending Enquiry..." : "Send Enquiry"}
@@ -498,10 +498,10 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   rel={item.href.startsWith("http") ? "noreferrer" : undefined}
                   aria-label={`${item.label}: ${item.title}`}
                   title={item.title}
-                  className="group rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_22px_42px_rgba(20,91,147,0.12)]"
+                  className="group border border-slate-200 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_22px_42px_rgba(20,91,147,0.12)]"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex min-h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl bg-sky-50 text-sky-700">
+                    <span className="inline-flex min-h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 bg-sky-50 text-sky-700">
                       {Icons ? (
                         Icons.map((InlineIcon, iconIndex) => (
                           <InlineIcon
