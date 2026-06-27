@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import HeroSlider from "../components/HeroSlider";
 
@@ -55,9 +56,12 @@ export default async function Home() {
         <section className="mx-[-0.75rem] bg-white py-4 sm:mx-[-1.25rem] sm:py-5 lg:mx-[-1.5rem] lg:py-6 xl:mx-[-2rem]">
           <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 xl:px-8">
             <div className="mb-3.5 text-center sm:mb-4 lg:mb-5">
-              <h2 className="inline-flex items-center justify-center rounded-[0.35rem] bg-[#16548b] px-6 py-1.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(20,91,147,0.2)] sm:px-7 sm:py-2 sm:text-[1.58rem] lg:px-8 lg:py-2 lg:text-[1.9rem]">
+              <Link
+                href="/metal-working-machinery"
+                className="inline-flex items-center justify-center rounded-[0.35rem] bg-[#16548b] px-6 py-1.5 text-[1.36rem] font-medium tracking-[0.01em] text-white shadow-[0_12px_28px_rgba(20,91,147,0.2)] transition hover:brightness-105 sm:px-7 sm:py-2 sm:text-[1.58rem] lg:px-8 lg:py-2 lg:text-[1.9rem]"
+              >
                 <span>Explore Our Machines</span>
-              </h2>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">

@@ -9,7 +9,7 @@ const NewsletterModal = dynamic(() => import("./NewsletterModal"), {
 });
 
 type NewsletterSignupProps = {
-  variant: "desktop" | "mobile-icon" | "mobile-full";
+  variant: "desktop" | "mobile-icon" | "mobile-full" | "mobile-inline";
 };
 
 function BellIcon() {
@@ -59,10 +59,27 @@ export default function NewsletterSignup({ variant }: NewsletterSignupProps) {
           type="button"
           onClick={() => setIsModalOpen(true)}
           suppressHydrationWarning
-          className="inline-flex h-10 w-full items-center justify-center gap-2 border border-[#B82100]/20 bg-[#B82100] px-4 text-[0.84rem] font-black uppercase tracking-[0.03em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2"
+          className="inline-flex h-9 w-full items-center justify-center gap-2 border border-[#B82100]/20 bg-[#B82100] px-3 text-[0.78rem] font-black uppercase tracking-[0.03em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2"
         >
           <NewsletterIcon />
           <span className="min-w-0 whitespace-nowrap">Subscribe to Newsletter</span>
+        </button>
+        {isModalOpen ? <NewsletterModal onClose={() => setIsModalOpen(false)} /> : null}
+      </>
+    );
+  }
+
+  if (variant === "mobile-inline") {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          suppressHydrationWarning
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 border border-[#0f4f89] bg-[linear-gradient(135deg,#145b93_0%,#2f80c6_100%)] px-3 py-2 text-center text-[0.72rem] font-black uppercase tracking-[0.03em] text-white shadow-[0_8px_18px_rgba(20,91,147,0.18)] transition hover:brightness-105 min-[390px]:text-[0.78rem]"
+        >
+          <NewsletterIcon />
+          Newsletter
         </button>
         {isModalOpen ? <NewsletterModal onClose={() => setIsModalOpen(false)} /> : null}
       </>

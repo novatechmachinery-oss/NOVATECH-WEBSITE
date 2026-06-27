@@ -8,30 +8,44 @@ type HeaderVisibilityProps = {
 
 export default function HeaderVisibility({ children }: HeaderVisibilityProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [isAwayFromTop, setIsAwayFromTop] = useState(false);
-  const timerRef = useRef<number | null>(null);
+  const lastScrollYRef = useRef(0);
+  const toggleAnchorYRef = useRef(0);
 
   useEffect(() => {
     function handleScroll() {
-      const shouldStick = window.scrollY > 40;
+      const currentScrollY = window.scrollY;
 
-      if (!shouldStick) {
-        if (timerRef.current) {
-          window.clearTimeout(timerRef.current);
-        }
-        setIsAwayFromTop(false);
+      if (currentScrollY <= 40) {
         setIsVisible(true);
+        lastScrollYRef.current = currentScrollY;
+        toggleAnchorYRef.current = currentScrollY;
         return;
       }
 
-      if (!isAwayFromTop) {
-        setIsAwayFromTop(true);
-        setIsVisible(false);
+      const delta = currentScrollY - lastScrollYRef.current;
 
-        timerRef.current = window.setTimeout(() => {
+      if (delta < 0) {
+        if (!isVisible && toggleAnchorYRef.current - currentScrollY >= 18) {
           setIsVisible(true);
-        }, 1000);
+          toggleAnchorYRef.current = currentScrollY;
+        }
+      } else if (delta > 0) {
+        if (isVisible && currentScrollY - toggleAnchorYRef.current >= 32) {
+          setIsVisible(false);
+          toggleAnchorYRef.current = currentScrollY;
+        }
       }
+
+      if ((isVisible && delta < 0) || (!isVisible && delta > 0)) {
+        toggleAnchorYRef.current = currentScrollY;
+      }
+
+      if (!isVisible && delta < 0 && currentScrollY <= 120) {
+        setIsVisible(true);
+        toggleAnchorYRef.current = currentScrollY;
+      }
+
+      lastScrollYRef.current = currentScrollY;
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -39,11 +53,8 @@ export default function HeaderVisibility({ children }: HeaderVisibilityProps) {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
     };
-  }, [isAwayFromTop]);
+  }, [isVisible]);
 
   return (
     <header
