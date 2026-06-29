@@ -119,17 +119,17 @@ export default async function AboutPage() {
             }}
           />
 
-          <div className="relative mx-auto max-w-[1740px] px-4 pb-28 pt-14 text-center sm:px-6 lg:px-8 lg:pb-32 lg:pt-18">
-            <span className="inline-flex items-center border border-white/16 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.24em] text-sky-50">
+          <div className="relative mx-auto max-w-[1740px] px-3 pb-16 pt-9 text-center sm:px-6 sm:pb-24 sm:pt-12 lg:px-8 lg:pb-32 lg:pt-18">
+            <span className="inline-flex items-center border border-white/16 bg-white/10 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.2em] text-sky-50 sm:px-4 sm:py-1.5 sm:text-[0.72rem] sm:tracking-[0.24em]">
               About Us
             </span>
-            <h1 className="mx-auto mt-5 max-w-5xl text-[2.5rem] font-black leading-[1.02] tracking-tight sm:text-[3.4rem] lg:text-[4.2rem]">
+            <h1 className="mx-auto mt-4 max-w-5xl text-[2rem] font-black leading-[1.04] tracking-tight sm:mt-5 sm:text-[3.4rem] lg:text-[4.2rem]">
               Powering Industries with World-Class Machinery
             </h1>
-            <p className="mt-5 text-[1.05rem] font-bold text-sky-50/95">
+            <p className="mt-4 text-[0.95rem] font-bold leading-7 text-sky-50/95 sm:mt-5 sm:text-[1.05rem]">
               Novatech Machinery Corporation (OPC) Private Limited
             </p>
-            <p className="mx-auto mt-3 max-w-4xl text-[1rem] leading-8 text-sky-50/88 sm:text-[1.05rem]">
+            <p className="mx-auto mt-2.5 max-w-4xl text-[0.9rem] leading-7 text-sky-50/88 sm:mt-3 sm:text-[1.05rem] sm:leading-8">
               Your trusted partner for used and new metal working and industrial
               machinery sourced globally, tested rigorously, and delivered reliably.
             </p>

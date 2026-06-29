@@ -263,15 +263,15 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
           }}
         />
 
-        <div className="relative mx-auto max-w-[1460px] px-4 pb-24 pt-12 sm:px-6 lg:px-8 lg:pb-28 lg:pt-14">
+        <div className="relative mx-auto max-w-[1460px] px-3 pb-14 pt-9 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8 lg:pb-28 lg:pt-14">
           <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex items-center border border-white/20 bg-white/10 px-4 py-1.5 text-[0.72rem] font-black uppercase tracking-[0.22em] text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+            <span className="inline-flex items-center border border-white/20 bg-white/10 px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.2em] text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] sm:px-4 sm:py-1.5 sm:text-[0.72rem] sm:tracking-[0.22em]">
               Contact Us
             </span>
-            <h1 className="mt-5 text-[2.2rem] font-black tracking-tight text-white sm:text-[2.8rem] lg:text-[3.3rem]">
+            <h1 className="mt-4 text-[1.95rem] font-black leading-[1.08] tracking-tight text-white sm:mt-5 sm:text-[2.8rem] lg:text-[3.3rem]">
               Get in Touch With Novatech
             </h1>
-            <p className="mx-auto mt-4 max-w-3xl text-[1rem] leading-8 text-sky-50/92 sm:text-[1.05rem]">
+            <p className="mx-auto mt-3 max-w-3xl text-[0.92rem] leading-7 text-sky-50/92 sm:mt-4 sm:text-[1.05rem] sm:leading-8">
               Share your machinery requirement and our team will help you source the
               right used or new industrial machine with fast, practical guidance.
             </p>
@@ -280,7 +280,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
         </div>
       </section>
 
-      <section className="relative z-10 -mt-14 pb-14 sm:-mt-18 lg:pb-20">
+      <section className="relative z-10 -mt-10 pb-12 sm:-mt-18 sm:pb-14 lg:pb-20">
         <div className="mx-auto max-w-[1720px] px-3 sm:px-4 lg:px-5">
           <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,70%)_minmax(320px,30%)] xl:gap-10">
             <div className="overflow-hidden border border-slate-200 bg-white shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
