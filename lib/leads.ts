@@ -5,11 +5,11 @@ import { supabaseRest } from "@/lib/supabase";
 
 function buildLeadPayload(values: ContactFormValues) {
   return {
-    name: [values.firstName, values.lastName].filter(Boolean).join(" "),
+    name: values.fullName,
     email: values.email,
     phone: values.phone,
     machine_interested: values.machineInterest,
-    message: values.message,
+    message: `Country: ${values.country}` + "\n\n" + values.message,
     lead_source: "website",
   };
 }

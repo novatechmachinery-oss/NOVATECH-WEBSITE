@@ -3,10 +3,11 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 import {
+  clearAdminAuthCookies,
+  clearLegacyAdminCookie,
   isAdminConfigured,
   isAllowedAdminEmail,
   verifyAdminPassword,
-  LEGACY_COOKIE_NAME,
 } from "@/lib/admin-auth";
 import { getSupabaseConfig } from "@/lib/supabase";
 
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
 
   // Step 1: Try signing in directly first.
   // IMPORTANT: We do NOT update the password on every login because updateUserById()
-  // invalidates ALL existing sessions for that user — meaning any other logged-in
+  // invalidates ALL existing sessions for that user â€” meaning any other logged-in
   // admin would be immediately kicked out. We only sync the password when sign-in
   // fails (i.e. the Supabase password is out of sync with .env).
   const plainClient = createClient(url, anonKey, {
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (existingUser) {
-      // Sync password — only happens when .env password changed or first deploy
+      // Sync password â€” only happens when .env password changed or first deploy
       await adminClient.auth.admin.updateUserById(existingUser.id, {
         password: submittedPassword,
       });
@@ -119,13 +120,13 @@ export async function POST(request: NextRequest) {
   // This guarantees the setAll callback fires and writes the auth cookies to the response.
   const response = NextResponse.json({ message: "Login successful." });
 
-  // Clear legacy cookie
-  response.cookies.set(LEGACY_COOKIE_NAME, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  clearAdminAuthCookies(request, response);
+  clearLegacyAdminCookie(response);
 
   const ssrClient = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
-        return request.cookies.getAll();
+        return [];
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {

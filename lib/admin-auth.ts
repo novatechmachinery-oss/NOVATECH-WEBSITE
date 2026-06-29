@@ -100,6 +100,23 @@ function getSupabaseAuthCookieValue(cookies: ReturnType<NextRequest["cookies"]["
   return null;
 }
 
+export function getSafeSupabaseRequestCookies(cookies: ReturnType<NextRequest["cookies"]["getAll"]>) {
+  const authCookieValue = getSupabaseAuthCookieValue(cookies);
+
+  if (!authCookieValue) {
+    return cookies;
+  }
+
+  try {
+    parseJsonCookie(authCookieValue);
+    return cookies;
+  } catch {
+    return cookies.filter(
+      (cookie) => !(cookie.name.startsWith(SUPABASE_COOKIE_PREFIX) && cookie.name.includes(AUTH_COOKIE_MARKER)),
+    );
+  }
+}
+
 function getSessionAccessToken(session: unknown) {
   if (!session) {
     return null;
@@ -186,7 +203,7 @@ export function createAdminSupabaseClient(request: NextRequest, response: NextRe
     cookieOptions: COOKIE_OPTIONS,
     cookies: {
       getAll() {
-        return request.cookies.getAll();
+        return getSafeSupabaseRequestCookies(request.cookies.getAll());
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {

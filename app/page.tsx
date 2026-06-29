@@ -81,7 +81,10 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-[-0.75rem] mb-2 mt-2 sm:mx-[-1.25rem] sm:mb-3 sm:mt-3 lg:mx-[-1.5rem] xl:mx-[-2rem]">
+        <section
+          id="special-deals"
+          className="mx-[-0.75rem] mb-2 mt-2 scroll-mt-32 sm:mx-[-1.25rem] sm:mb-3 sm:mt-3 lg:mx-[-1.5rem] xl:mx-[-2rem]"
+        >
           <div className="border-y border-slate-200 bg-white">
             <div className="mx-auto flex max-w-[1660px] justify-center px-3 py-3 sm:px-4 sm:py-3.5 lg:px-6 lg:py-4">
               <div className="relative overflow-visible py-0 text-center">

@@ -91,11 +91,11 @@ async function writeLeadsFile(leads: LeadRecord[]) {
 function buildLeadRecord(values: ContactFormValues): LeadRecord {
   return {
     id: createId(),
-    name: [values.firstName, values.lastName].filter(Boolean).join(" "),
+    name: values.fullName,
     email: values.email,
     phone: values.phone,
     machineInterested: values.machineInterest,
-    message: values.message,
+    message: `Country: ${values.country}` + "\n\n" + values.message,
     source: "website",
     createdAt: new Date().toISOString(),
   };

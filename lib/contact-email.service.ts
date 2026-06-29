@@ -69,9 +69,10 @@ function createMailToken(prefix: string) {
 }
 
 function buildEmailContent(values: ContactFormValues) {
-  const name = [values.firstName, values.lastName].filter(Boolean).join(" ");
+  const name = values.fullName;
   const rows = [
     ["Name", name],
+    ["Country", values.country],
     ["Phone", values.phone],
     ["Email", values.email],
     ["Machine of Interest", values.machineInterest],

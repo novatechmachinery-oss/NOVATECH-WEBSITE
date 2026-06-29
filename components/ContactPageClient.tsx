@@ -3,7 +3,9 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowUpRight,
+  ChevronDown,
   FileText,
+  Globe,
   Mail,
   MapPin,
   Phone,
@@ -21,6 +23,7 @@ import {
   type ContactFormValues,
   validateContactForm,
 } from "@/lib/contactForm";
+import { countries } from "@/lib/countries";
 import type { SiteSettings } from "@/lib/site-settings.types";
 import { WHATSAPP_HREF } from "@/lib/whatsapp";
 
@@ -95,6 +98,11 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ kind: "idle", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
+  const normalizedCountryQuery = formValues.country.trim().toLowerCase();
+  const filteredCountries = normalizedCountryQuery
+    ? countries.filter((country) => country.toLowerCase().includes(normalizedCountryQuery))
+    : countries;
 
   function setFieldError(field: ContactFormField, nextValues: ContactFormValues) {
     const nextErrors = validateContactForm(normalizeContactForm(nextValues));
@@ -135,6 +143,29 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
       [field]: true,
     }));
     setFieldError(field, nextValues);
+
+    if (field === "country") {
+      setIsCountryMenuOpen(false);
+    }
+  }
+
+  function selectCountry(country: string) {
+    const nextValues = normalizeContactForm({
+      ...formValues,
+      country,
+    });
+
+    setFormValues(nextValues);
+    setTouchedFields((current) => ({
+      ...current,
+      country: true,
+    }));
+    setFieldError("country", nextValues);
+    setIsCountryMenuOpen(false);
+
+    if (submitState.kind !== "idle") {
+      setSubmitState({ kind: "idle", message: "" });
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -186,6 +217,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
       }
 
       setFormValues(initialContactFormValues);
+      setIsCountryMenuOpen(false);
       setTouchedFields({});
       setErrors({});
       setSubmitState({
@@ -314,53 +346,118 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="firstName" className="mb-2 block text-sm font-bold text-slate-800">
-                        First Name *
+                      <label htmlFor="fullName" className="mb-2 block text-sm font-bold text-slate-800">
+                        Full Name *
                       </label>
                       <div className="relative">
                         <User className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
                         <input
-                          id="firstName"
-                          name="firstName"
+                          id="fullName"
+                          name="fullName"
                           type="text"
-                          value={formValues.firstName}
+                          value={formValues.fullName}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Enter your first name"
-                          className={fieldClasses("firstName")}
-                          aria-invalid={Boolean(errors.firstName)}
-                          aria-describedby={errors.firstName ? "firstName-error" : undefined}
+                          placeholder="Enter your full name"
+                          className={fieldClasses("fullName")}
+                          aria-invalid={Boolean(errors.fullName)}
+                          aria-describedby={errors.fullName ? "fullName-error" : undefined}
+                          autoComplete="name"
                         />
                       </div>
-                      {errors.firstName ? (
-                        <p id="firstName-error" className="mt-2 text-xs font-semibold text-rose-600">
-                          {errors.firstName}
+                      {errors.fullName ? (
+                        <p id="fullName-error" className="mt-2 text-xs font-semibold text-rose-600">
+                          {errors.fullName}
                         </p>
                       ) : null}
                     </div>
 
                     <div>
-                      <label htmlFor="lastName" className="mb-2 block text-sm font-bold text-slate-800">
-                        Last Name <span className="font-medium text-slate-500">(Optional)</span>
+                      <label htmlFor="country" className="mb-2 block text-sm font-bold text-slate-800">
+                        Country *
                       </label>
                       <div className="relative">
-                        <User className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
+                        <Globe className="pointer-events-none absolute left-4 top-1/2 z-[1] h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
                         <input
-                          id="lastName"
-                          name="lastName"
+                          id="country"
+                          name="country"
                           type="text"
-                          value={formValues.lastName}
-                          onChange={handleChange}
+                          value={formValues.country}
+                          onChange={(event) => {
+                            handleChange(event);
+                            setIsCountryMenuOpen(true);
+                          }}
+                          onFocus={() => setIsCountryMenuOpen(true)}
                           onBlur={handleBlur}
-                          placeholder="Enter your last name"
-                          className={fieldClasses("lastName")}
-                          aria-invalid={Boolean(errors.lastName)}
-                          aria-describedby={errors.lastName ? "lastName-error" : undefined}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                              setIsCountryMenuOpen(false);
+                            }
+                          }}
+                          placeholder="Search and select your country"
+                          className={`${fieldClasses("country")} pr-12`}
+                          aria-invalid={Boolean(errors.country)}
+                          aria-describedby={errors.country ? "country-error" : undefined}
+                          autoComplete="country-name"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setIsCountryMenuOpen((current) => !current)}
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-slate-600"
+                          aria-label="Toggle country options"
+                          aria-expanded={isCountryMenuOpen}
+                          aria-controls="country-options"
+                        >
+                          <ChevronDown className={`h-4 w-4 transition-transform ${isCountryMenuOpen ? "rotate-180" : ""}`} />
+                        </button>
+
+                        {isCountryMenuOpen ? (
+                          <div
+                            id="country-options"
+                            className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 overflow-hidden border border-slate-200 bg-white shadow-[0_22px_48px_rgba(15,23,42,0.12)]"
+                          >
+                            <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-slate-500">
+                              <span>Search Results</span>
+                              <span>{filteredCountries.length}</span>
+                            </div>
+                            <div className="max-h-60 overflow-y-auto overscroll-contain py-1">
+                              {filteredCountries.length ? (
+                                filteredCountries.map((country) => {
+                                  const isSelected = formValues.country === country;
+
+                                  return (
+                                    <button
+                                      key={country}
+                                      type="button"
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onClick={() => selectCountry(country)}
+                                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition ${
+                                        isSelected
+                                          ? "bg-sky-50 font-bold text-sky-800"
+                                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                                      }`}
+                                    >
+                                      <span>{country}</span>
+                                      {isSelected ? (
+                                        <span className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-sky-700">
+                                          Selected
+                                        </span>
+                                      ) : null}
+                                    </button>
+                                  );
+                                })
+                              ) : (
+                                <p className="px-3 py-3 text-sm text-slate-500">
+                                  No matching country found. Please refine your search.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
-                      {errors.lastName ? (
-                        <p id="lastName-error" className="mt-2 text-xs font-semibold text-rose-600">
-                          {errors.lastName}
+                      {errors.country ? (
+                        <p id="country-error" className="mt-2 text-xs font-semibold text-rose-600">
+                          {errors.country}
                         </p>
                       ) : null}
                     </div>

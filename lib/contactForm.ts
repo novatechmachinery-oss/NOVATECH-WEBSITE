@@ -1,6 +1,6 @@
 export const contactFormFields = [
-  "firstName",
-  "lastName",
+  "fullName",
+  "country",
   "email",
   "phone",
   "machineInterest",
@@ -14,8 +14,8 @@ export type ContactFormValues = Record<ContactFormField, string>;
 export type ContactFormErrors = Partial<Record<ContactFormField, string>>;
 
 export const initialContactFormValues: ContactFormValues = {
-  firstName: "",
-  lastName: "",
+  fullName: "",
+  country: "",
   email: "",
   phone: "",
   machineInterest: "",
@@ -23,7 +23,8 @@ export const initialContactFormValues: ContactFormValues = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NAME_PATTERN = /^[A-Za-z][A-Za-z\s'.-]{1,39}$/;
+const NAME_PATTERN = /^[A-Za-z][A-Za-z\s'.-]{1,59}$/;
+const COUNTRY_PATTERN = /^[A-Za-z][A-Za-z\s'.()-]{1,59}$/;
 
 function toText(value: unknown) {
   return typeof value === "string" ? value : "";
@@ -45,8 +46,8 @@ export function normalizeContactForm(
   input: Partial<Record<ContactFormField, unknown>>,
 ): ContactFormValues {
   return {
-    firstName: normalizeInline(toText(input.firstName)),
-    lastName: normalizeInline(toText(input.lastName)),
+    fullName: normalizeInline(toText(input.fullName)),
+    country: normalizeInline(toText(input.country)),
     email: normalizeInline(toText(input.email)).toLowerCase(),
     phone: normalizeInline(toText(input.phone)),
     machineInterest: normalizeInline(toText(input.machineInterest)),
@@ -58,14 +59,16 @@ export function validateContactForm(values: ContactFormValues) {
   const errors: ContactFormErrors = {};
   const phoneDigits = values.phone.replace(/\D/g, "");
 
-  if (!values.firstName) {
-    errors.firstName = "First name is required.";
-  } else if (!NAME_PATTERN.test(values.firstName)) {
-    errors.firstName = "Please enter a valid first name.";
+  if (!values.fullName) {
+    errors.fullName = "Full name is required.";
+  } else if (!NAME_PATTERN.test(values.fullName)) {
+    errors.fullName = "Please enter a valid full name.";
   }
 
-  if (values.lastName && !NAME_PATTERN.test(values.lastName)) {
-    errors.lastName = "Please enter a valid last name.";
+  if (!values.country) {
+    errors.country = "Country is required.";
+  } else if (!COUNTRY_PATTERN.test(values.country)) {
+    errors.country = "Please select a valid country.";
   }
 
   if (!values.email) {

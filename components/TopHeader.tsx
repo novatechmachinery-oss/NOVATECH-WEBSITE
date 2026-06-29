@@ -31,6 +31,8 @@ const defaultCategoryLinks = [
   { label: "Carbide Scrap", href: "/categories" },
 ];
 
+const specialDealsMenuLink = { label: "Special Deals", href: "/#special-deals" };
+
 function cleanPhoneNumber(phoneNumber: string) {
   return phoneNumber.replace(/\s+/g, "");
 }
@@ -89,10 +91,26 @@ export default function TopHeader({
   const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
 
   const resolvedCategoryLinks = useMemo(
-    () =>
-      categoryLinks.some((item) => ["other", "carbide scrap"].includes(item.label.trim().toLowerCase()))
-        ? categoryLinks
-        : [...categoryLinks, { label: "Carbide Scrap", href: "/categories" }],
+    () => {
+      const normalizedCategoryLinks = categoryLinks.map((item) =>
+        item.label.trim().toLowerCase() === "special deals"
+          ? { ...item, href: specialDealsMenuLink.href }
+          : item
+      );
+
+      const hasOtherOrCarbide = normalizedCategoryLinks.some((item) =>
+        ["other", "carbide scrap"].includes(item.label.trim().toLowerCase())
+      );
+      const hasSpecialDeals = normalizedCategoryLinks.some(
+        (item) => item.label.trim().toLowerCase() === "special deals"
+      );
+
+      return [
+        ...normalizedCategoryLinks,
+        ...(hasSpecialDeals ? [] : [specialDealsMenuLink]),
+        ...(hasOtherOrCarbide ? [] : [{ label: "Carbide Scrap", href: "/categories" }]),
+      ];
+    },
     [categoryLinks]
   );
 
@@ -101,6 +119,7 @@ export default function TopHeader({
     "pharmaceutical machinery": Pill,
     "plastic machinery": Factory,
     "textile machinery": Shirt,
+    "special deals": Settings,
     other: Settings,
     "carbide scrap": Settings,
   } as const;
@@ -504,14 +523,14 @@ export default function TopHeader({
 
             {isInlineMachineryOpen ? (
               <div id="mobile-machinery-links-inline" className="mt-2 grid grid-cols-1 gap-1 min-[414px]:gap-2">
-                {resolvedCategoryLinks.map((item, index) => {
+                {resolvedCategoryLinks.map((item) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
-                  const isLastItem = index === resolvedCategoryLinks.length - 1;
+                  const isMoreSectionStart = item.label.trim().toLowerCase() === "special deals";
 
                   return (
                     <div key={`inline-${item.label}-${item.href}`} className="space-y-1 min-[414px]:space-y-2">
-                      {isLastItem ? (
-                        <p className="px-1 text-[0.58rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                      {isMoreSectionStart ? (
+                        <p className="px-1 text-center text-[0.58rem] font-black uppercase tracking-[0.16em] text-slate-500">
                           More
                         </p>
                       ) : null}

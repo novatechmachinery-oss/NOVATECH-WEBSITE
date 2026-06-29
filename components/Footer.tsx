@@ -79,7 +79,7 @@ export default async function Footer() {
                   Novatech Machinery Corporation
                 </span>
                 <span className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-white sm:text-[0.74rem] xl:text-[0.86rem]">
-                  OPC Pvt. Ltd.
+                  OPC Private Limited
                 </span>
               </div>
             </div>

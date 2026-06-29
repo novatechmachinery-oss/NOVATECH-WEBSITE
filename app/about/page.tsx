@@ -144,18 +144,23 @@ export default async function AboutPage() {
               return (
                 <div
                   key={item.title}
-                  className="relative overflow-hidden border border-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
+                  className="relative overflow-hidden border border-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.08)] sm:p-6"
                 >
-                  <div className="absolute right-0 top-0 h-20 w-20-[2.4rem] bg-slate-100/80" />
-                  <span className="relative inline-flex h-12 w-12 items-center justify-center bg-sky-50 text-sky-700">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <p className="relative mt-5 text-[1.9rem] font-black leading-none text-slate-900">
-                    {item.title}
-                  </p>
-                  <p className="relative mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    {item.label}
-                  </p>
+                  <div className="absolute right-0 top-0 h-20 w-20 bg-slate-100/80" />
+                  <div className="relative flex h-full items-start gap-4 sm:gap-5">
+                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center bg-sky-50 text-sky-700 sm:h-14 sm:w-14">
+                      <Icon className="h-5 w-5" />
+                    </span>
+
+                    <div className="min-w-0 self-center">
+                      <p className="text-[1.9rem] font-black leading-none text-slate-900">
+                        {item.title}
+                      </p>
+                      <p className="mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                        {item.label}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               );
             })}
