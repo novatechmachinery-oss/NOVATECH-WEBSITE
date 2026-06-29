@@ -182,7 +182,7 @@ export default async function CategoriesPage() {
             ) : null}
 
             <div className="px-5 py-4 sm:px-7 lg:px-9 lg:py-5">
-              <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid items-start gap-3 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
               {activeCategories.map((category) => {
                 const hiddenCount = Math.max(category.subcategories.length - 4, 0);
 
@@ -192,42 +192,42 @@ export default async function CategoriesPage() {
                     href={category.href}
                     className="group block cursor-pointer overflow-hidden border border-[#16548b] bg-white shadow-[0_16px_34px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#16548b] hover:shadow-[0_26px_48px_rgba(20,91,147,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
                   >
-                    <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-4.5 pb-3.5 pt-3.5 text-white">
+                    <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-3 py-2.5 text-white md:px-4.5 md:pb-3.5 md:pt-3.5">
                       <div className="absolute right-0 top-0 h-24 w-24 bg-white/15 blur-2xl transition duration-300 group-hover:scale-110" />
                       <div className="absolute bottom-0 left-0 h-20 w-20 bg-cyan-100/15 blur-2xl transition duration-300 group-hover:scale-110" />
-                      <div className="relative flex items-start justify-between gap-4">
-                        <div className="flex min-w-0 items-start gap-3">
-                          <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center border border-white/18 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+                      <div className="relative flex items-center justify-between gap-2 md:items-start md:gap-4">
+                        <div className="flex min-w-0 items-center gap-2.5 md:items-start md:gap-3">
+                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-white/18 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] md:mt-0.5 md:h-9 md:w-9">
                             <category.Icon className="h-4.5 w-4.5" />
                           </span>
-                          <h2 className="pr-2 text-[1.12rem] font-bold leading-6 text-white sm:text-[1.2rem]">
+                          <h2 className="text-[1rem] font-bold leading-5 text-white sm:text-[1.2rem] sm:leading-6 md:pr-2">
                             {category.name}
                           </h2>
                         </div>
-                        <span className="shrink-0 bg-white px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#145b93] shadow-[0_8px_20px_rgba(15,23,42,0.16)]">
+                        <span className="shrink-0 bg-white px-2 py-1 text-[0.65rem] font-bold uppercase tracking-[0.04em] text-[#145b93] md:px-3 md:text-[0.72rem] md:tracking-[0.08em] shadow-[0_8px_20px_rgba(15,23,42,0.16)]">
                           {category.countLabel}
                         </span>
                       </div>
                     </div>
 
-                    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-4.5 pb-4 pt-3">
-                      <div className="bg-white p-3">
-                        <div className="flex flex-wrap gap-2.5">
+                    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-3 py-2.5 md:px-4.5 md:pb-4 md:pt-3">
+                      <div className="bg-white md:p-3">
+                        <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-2.5">
                           {category.subcategories.slice(0, 4).map((subcategory) => (
                             <span
                               key={subcategory}
-                              className="bg-white px-3 py-1.5 text-[0.82rem] font-semibold text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.16)]"
+                              className="flex min-h-8 items-center justify-center border border-sky-200 bg-white px-2 py-1 text-center text-[0.72rem] font-semibold leading-4 text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.12)] md:min-h-0 md:justify-start md:border-0 md:px-3 md:py-1.5 md:text-left md:text-[0.82rem] md:shadow-[0_4px_14px_rgba(21,84,139,0.16)]"
                             >
                               {subcategory}
                             </span>
                           ))}
                           {hiddenCount > 0 ? (
-                            <span className="bg-slate-900 px-3 py-1.5 text-[0.76rem] font-semibold text-white">
+                            <span className="col-span-2 px-0.5 pt-0.5 text-[0.74rem] font-semibold text-[#16548b] md:bg-slate-900 md:px-3 md:py-1.5 md:text-[0.76rem] md:text-white">
                               +{hiddenCount} more
                             </span>
                           ) : null}
                           {category.subcategories.length === 0 ? (
-                            <span className="bg-white px-3 py-1.5 text-[0.82rem] font-semibold text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.16)]">
+                            <span className="col-span-2 flex min-h-9 items-center justify-center border border-sky-200 bg-white px-3 py-1.5 text-center text-[0.78rem] font-semibold text-[#16548b] shadow-[0_4px_14px_rgba(21,84,139,0.12)] md:min-h-0 md:justify-start md:border-0 md:text-left md:text-[0.82rem] md:shadow-[0_4px_14px_rgba(21,84,139,0.16)]">
                               Explore available machines
                             </span>
                           ) : null}
