@@ -13,6 +13,7 @@ import {
   Download,
   Maximize2,
   MessageCircle,
+  PanelLeftOpen,
   Phone,
   Search,
   SlidersHorizontal,
@@ -1194,37 +1195,6 @@ export default function MetalWorkingCatalogue({
           {pageHeading}
         </h1>
 
-        <div className="sticky top-0 z-30 -mx-3 mt-3 border-y border-slate-200 bg-slate-50/95 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4 lg:hidden">
-          <div className="flex min-w-0 items-center gap-2">
-            <button suppressHydrationWarning
-              type="button"
-              onClick={() => setIsMobileSidebarOpen((current) => !current)}
-              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 border border-[#145b93] bg-white px-3 text-sm font-black uppercase tracking-[0.08em] text-[#145b93] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-sky-50"
-              aria-expanded={isMobileSidebarOpen}
-              aria-label={isMobileSidebarOpen ? "Close filters" : "Open filters"}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span>Filters</span>
-              {activeFilters.length > 0 ? (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#145b93] px-1.5 text-[0.68rem] leading-none text-white">
-                  {activeFilters.length}
-                </span>
-              ) : null}
-              <ChevronDown className={`h-4 w-4 transition ${isMobileSidebarOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            {activeFilters.length > 0 ? (
-              <button suppressHydrationWarning
-                type="button"
-                onClick={handleAllMachinesClick}
-                className="inline-flex min-h-10 shrink-0 items-center border border-red-600 bg-red-600 px-3 text-xs font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(220,38,38,0.18)] transition hover:border-red-700 hover:bg-red-700"
-              >
-                Clear all
-              </button>
-            ) : null}
-          </div>
-        </div>
-
         <div className="hidden lg:block">
           <div className="min-w-0">
             {activeFilters.length > 0 ? (
@@ -1273,27 +1243,118 @@ export default function MetalWorkingCatalogue({
       </div>
       ) : null}
 
-      <div className={selectedMachine ? "mt-1 min-w-0" : "mt-3 grid min-w-0 gap-3 lg:grid-cols-[minmax(230px,19%)_minmax(0,1fr)] lg:gap-4"}>
-        {!selectedMachine ? (
-        <div className="hidden">
-          <button suppressHydrationWarning
-            type="button"
-            onClick={() => setIsMobileSidebarOpen((current) => !current)}
-            className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#145b93] bg-white text-[#145b93] shadow-[0_10px_24px_rgba(15,23,42,0.08)]"
-            aria-label={isMobileSidebarOpen ? "Close category sidebar" : "Open category sidebar"}
+      {/* ── Mobile half-screen drawer ── */}
+      {!selectedMachine ? (
+        <>
+          {/* Backdrop overlay */}
+          <div
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className={`fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden ${
+              isMobileSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            }`}
+            aria-hidden="true"
+          />
+          {/* Half-screen drawer panel */}
+          <aside
+            className={`fixed inset-y-0 left-0 z-50 flex w-[50vw] min-w-[260px] max-w-[340px] flex-col bg-white shadow-[4px_0_32px_rgba(15,23,42,0.18)] transition-transform duration-300 ease-out lg:hidden ${
+              isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+            aria-label="Category sidebar"
           >
-            {isMobileSidebarOpen ? <X className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-          </button>
-        </div>
-        ) : null}
+            <div className="flex items-center justify-between bg-gradient-to-r from-[#145b93] to-[#2f7fc7] px-4 py-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-white/80" />
+                <span className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-white">Categories</span>
+                {activeFilters.length > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/25 px-1.5 text-[0.65rem] leading-none text-white">
+                    {activeFilters.length}
+                  </span>
+                ) : null}
+              </div>
+              <button suppressHydrationWarning type="button" onClick={() => setIsMobileSidebarOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/30 active:scale-90"
+                aria-label="Close sidebar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="border-b border-slate-100 px-3 py-3">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <input suppressHydrationWarning value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)}
+                  placeholder="Search categories..."
+                  className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-[0.8rem] outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
+                />
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 py-3">
+              {filteredSidebarCategories.map((cat) => {
+                const isOpen = openCategories[cat.name];
+                const hasChildren = !!cat.sub?.length;
+                const isCategoryActive = selectedCategory === cat.name && !selectedSubcategory;
+                const categoryCount = categoryCounts[cat.name] ?? 0;
+                return (
+                  <div key={cat.name} className="overflow-hidden rounded-md border border-slate-200 bg-white">
+                    <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
+                      className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition ${
+                        isCategoryActive || isOpen
+                          ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
+                          : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
+                      }`}
+                    >
+                      <span className="min-w-0 text-[0.82rem] font-semibold leading-5">{cat.name}</span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <span className={`text-[0.72rem] font-semibold ${isCategoryActive || isOpen ? "text-white/85" : "text-slate-400"}`}>{categoryCount}</span>
+                        {hasChildren && <ChevronDown className={`h-4 w-4 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] border-t border-slate-200 px-2 py-1.5" : "max-h-0"}`}>
+                      <div className="space-y-0.5">
+                        {cat.sub?.map((sub) => {
+                          const isSubActive = selectedSubcategory === sub;
+                          return (
+                            <button suppressHydrationWarning key={sub}
+                              onClick={() => { toggleSubcategory(sub); setIsMobileSidebarOpen(false); }}
+                              className={`flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[0.78rem] transition ${
+                                isSubActive ? "bg-sky-50 font-semibold text-[#145b93]" : "text-slate-600 hover:bg-slate-50 hover:text-[#145b93]"
+                              }`}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className={`h-2 w-2 shrink-0 rounded-full ${isSubActive ? "bg-[#145b93]" : "bg-slate-300"}`} />
+                                <span>{sub}</span>
+                              </span>
+                              <span className={`text-[0.7rem] ${isSubActive ? "text-[#145b93]" : "text-slate-400"}`}>
+                                {machineInventory.filter((machine) => machine.category === cat.name && machine.subcategory === sub).length}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {activeFilters.length > 0 ? (
+              <div className="border-t border-slate-200 p-3">
+                <button suppressHydrationWarning type="button"
+                  onClick={() => { handleAllMachinesClick(); setIsMobileSidebarOpen(false); }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-500 py-2.5 text-[0.78rem] font-black uppercase tracking-[0.08em] text-white transition hover:bg-red-600 active:scale-[0.98]"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Clear all filters
+                </button>
+              </div>
+            ) : null}
+          </aside>
+        </>
+      ) : null}
 
+      <div className={selectedMachine ? "mt-1 min-w-0" : "mt-3 grid min-w-0 gap-3 lg:grid-cols-[minmax(230px,19%)_minmax(0,1fr)] lg:gap-4"}>
+        {/* ── Desktop sticky sidebar ── */}
         {!selectedMachine ? (
         <aside
-          className={`overflow-hidden bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:p-3 lg:opacity-100 ${
-            isMobileSidebarOpen
-              ? "flex max-h-[calc(100dvh-8rem)] flex-col border border-slate-200 p-3 opacity-100"
-              : "max-h-0 border border-transparent p-0 opacity-0"
-          }`}
+          className="hidden lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:bg-white lg:p-3 lg:shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
         >
           <div className="border-b border-slate-200 px-2 pb-3">
             <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#145b93]">
@@ -1309,7 +1370,6 @@ export default function MetalWorkingCatalogue({
               />
             </div>
           </div>
-
           <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:pb-4">
             {filteredSidebarCategories.map((cat) => {
               const isOpen = openCategories[cat.name];
@@ -1317,80 +1377,41 @@ export default function MetalWorkingCatalogue({
               const isCategoryActive = selectedCategory === cat.name && !selectedSubcategory;
               const isParentHighlighted = selectedCategory === cat.name;
               const categoryCount = categoryCounts[cat.name] ?? 0;
-
               return (
-                <div
-                  key={cat.name}
-                  className="overflow-hidden rounded-[2px] border border-[#020c1b] bg-white transition"
-                >
-                  <button suppressHydrationWarning
-                    onClick={() => handleCategoryClick(cat.name, hasChildren)}
+                <div key={cat.name} className="overflow-hidden rounded-[2px] border border-[#020c1b] bg-white transition">
+                  <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
                     className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition ${
-                      isCategoryActive
+                      isCategoryActive || isOpen
                         ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                        : isOpen
-                          ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                          : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
+                        : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-3">
                       <span className="text-[0.92rem] leading-5">{cat.name}</span>
                     </span>
-
                     <span className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-semibold ${
-                          isCategoryActive || isOpen ? "text-white/85" : "text-slate-400"
-                        }`}
-                      >
-                        {categoryCount}
-                      </span>
-
-                      {hasChildren && (
-                        <ChevronDown
-                          className={`h-4.5 w-4.5 shrink-0 transition ${
-                            isOpen ? "rotate-180" : ""
-                          } ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`}
-                        />
-                      )}
+                      <span className={`text-xs font-semibold ${isCategoryActive || isOpen ? "text-white/85" : "text-slate-400"}`}>{categoryCount}</span>
+                      {hasChildren && <ChevronDown className={`h-4.5 w-4.5 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
                     </span>
                   </button>
-
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ${
-                      isOpen ? "max-h-[520px] border-t border-[#020c1b] px-3 py-2" : "max-h-0"
-                    }`}
-                  >
+                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[520px] border-t border-[#020c1b] px-3 py-2" : "max-h-0"}`}>
                     <div className="bg-white">
                       {cat.sub?.map((sub) => {
                         const isSubActive = selectedSubcategory === sub;
-
                         return (
-                          <button suppressHydrationWarning
-                            key={sub}
-                            onClick={() => toggleSubcategory(sub)}
+                          <button suppressHydrationWarning key={sub} onClick={() => toggleSubcategory(sub)}
                             className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition ${
-                              isSubActive
-                                ? "bg-sky-50 font-semibold text-[#145b93]"
-                                : isParentHighlighted
-                                  ? "text-slate-700 hover:bg-slate-50 hover:text-[#145b93]"
-                                  : "text-slate-600 hover:bg-slate-50 hover:text-[#145b93]"
+                              isSubActive ? "bg-sky-50 font-semibold text-[#145b93]"
+                                : isParentHighlighted ? "text-slate-700 hover:bg-slate-50 hover:text-[#145b93]"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-[#145b93]"
                             }`}
                           >
                             <span className="flex items-center gap-3">
-                              <span
-                                className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                                  isSubActive ? "bg-[#145b93]" : "bg-slate-300"
-                                }`}
-                              />
+                              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${isSubActive ? "bg-[#145b93]" : "bg-slate-300"}`} />
                               <span>{sub}</span>
                             </span>
                             <span className={`text-xs ${isSubActive ? "text-[#145b93]" : "text-slate-400"}`}>
-                              {
-                                machineInventory.filter(
-                                  (machine) => machine.category === cat.name && machine.subcategory === sub
-                                ).length
-                              }
+                              {machineInventory.filter((machine) => machine.category === cat.name && machine.subcategory === sub).length}
                             </span>
                           </button>
                         );
@@ -1696,9 +1717,32 @@ export default function MetalWorkingCatalogue({
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:ml-auto lg:justify-end">
-                <p className="text-sm font-medium text-slate-600 sm:order-1 lg:text-right">
-                  <span className="font-semibold text-slate-900">{filteredMachines.length}</span> results
-                </p>
+                {/* Results count + mobile category icon */}
+                <div className="flex items-center gap-2 sm:order-1">
+                  {/* Mobile-only category sidebar icon */}
+                  <button suppressHydrationWarning
+                    type="button"
+                    onClick={() => setIsMobileSidebarOpen((current) => !current)}
+                    aria-expanded={isMobileSidebarOpen}
+                    aria-label="Open category sidebar"
+                    className="group relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#145b93]/20 bg-white shadow-[0_2px_10px_rgba(20,91,147,0.10)] transition-all duration-200 hover:border-[#145b93] hover:bg-[#145b93] hover:shadow-[0_4px_16px_rgba(20,91,147,0.28)] active:scale-90 lg:hidden"
+                  >
+                    <PanelLeftOpen className="h-6 w-6 text-[#145b93] transition-colors duration-200 group-hover:text-white" />
+                  </button>
+                  <p className="text-sm font-medium text-slate-600 lg:text-right">
+                    <span className="font-semibold text-slate-900">{filteredMachines.length}</span> results
+                  </p>
+                  {activeFilters.length > 0 ? (
+                    <button suppressHydrationWarning
+                      type="button"
+                      onClick={handleAllMachinesClick}
+                      className="inline-flex h-6 items-center gap-1 rounded-full bg-red-500 px-2 text-[0.65rem] font-black uppercase tracking-[0.06em] text-white transition hover:bg-red-600 active:scale-95 lg:hidden"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                      Clear
+                    </button>
+                  ) : null}
+                </div>
                 <div className="relative w-full sm:order-2 sm:w-[290px]">
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input suppressHydrationWarning
