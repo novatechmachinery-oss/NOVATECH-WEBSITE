@@ -1223,7 +1223,7 @@ export default function MetalWorkingCatalogue({
                         className="inline-flex min-h-10 items-center gap-2 border border-sky-200 bg-sky-50 px-4 text-sm font-semibold text-[#145b93] transition hover:border-[#145b93]"
                       >
                         <span>{filter}</span>
-                        <span className="text-base leading-none">×</span>
+                        <span className="text-base leading-none">Ãƒâ€”</span>
                       </button>
                     ))}
                     <button suppressHydrationWarning
@@ -1243,7 +1243,7 @@ export default function MetalWorkingCatalogue({
       </div>
       ) : null}
 
-      {/* ── Mobile half-screen drawer ── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Mobile half-screen drawer Ã¢â€â‚¬Ã¢â€â‚¬ */}
       {!selectedMachine ? (
         <>
           {/* Backdrop overlay */}
@@ -1283,7 +1283,7 @@ export default function MetalWorkingCatalogue({
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <input suppressHydrationWarning value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)}
                   placeholder="Search categories..."
-                  className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-[0.8rem] outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
+                  className="w-full rounded-full border border-[#0b2b49] bg-slate-50 py-2 pl-9 pr-3 text-[0.8rem] outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
                 />
               </div>
             </div>
@@ -1294,7 +1294,7 @@ export default function MetalWorkingCatalogue({
                 const isCategoryActive = selectedCategory === cat.name && !selectedSubcategory;
                 const categoryCount = categoryCounts[cat.name] ?? 0;
                 return (
-                  <div key={cat.name} className="overflow-hidden rounded-md border border-slate-200 bg-white">
+                  <div key={cat.name} className="overflow-hidden rounded-md border border-[#0b2b49] bg-white">
                     <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
                       className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition ${
                         isCategoryActive || isOpen
@@ -1308,7 +1308,7 @@ export default function MetalWorkingCatalogue({
                         {hasChildren && <ChevronDown className={`h-4 w-4 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
                       </span>
                     </button>
-                    <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] border-t border-slate-200 px-2 py-1.5" : "max-h-0"}`}>
+                    <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] border-t border-[#0b2b49] px-2 py-1.5" : "max-h-0"}`}>
                       <div className="space-y-0.5">
                         {cat.sub?.map((sub) => {
                           const isSubActive = selectedSubcategory === sub;
@@ -1351,10 +1351,10 @@ export default function MetalWorkingCatalogue({
       ) : null}
 
       <div className={selectedMachine ? "mt-1 min-w-0" : "mt-3 grid min-w-0 gap-3 lg:grid-cols-[minmax(230px,19%)_minmax(0,1fr)] lg:gap-4"}>
-        {/* ── Desktop sticky sidebar ── */}
+        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Desktop sticky sidebar Ã¢â€â‚¬Ã¢â€â‚¬ */}
         {!selectedMachine ? (
         <aside
-          className="hidden lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:bg-white lg:p-3 lg:shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+          className="hidden lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-[#0b2b49] lg:bg-white lg:p-3 lg:shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
         >
           <div className="border-b border-slate-200 px-2 pb-3">
             <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#145b93]">
@@ -1366,7 +1366,7 @@ export default function MetalWorkingCatalogue({
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
                 placeholder="Search categories..."
-                className="w-full rounded-[2px] border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
+                className="w-full rounded-[2px] border border-[#0b2b49] bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
               />
             </div>
           </div>
@@ -1378,7 +1378,7 @@ export default function MetalWorkingCatalogue({
               const isParentHighlighted = selectedCategory === cat.name;
               const categoryCount = categoryCounts[cat.name] ?? 0;
               return (
-                <div key={cat.name} className="overflow-hidden rounded-[2px] border border-[#020c1b] bg-white transition">
+                <div key={cat.name} className="overflow-hidden rounded-[2px] border border-[#0b2b49] bg-white transition">
                   <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
                     className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition ${
                       isCategoryActive || isOpen
@@ -1394,7 +1394,7 @@ export default function MetalWorkingCatalogue({
                       {hasChildren && <ChevronDown className={`h-4.5 w-4.5 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
                     </span>
                   </button>
-                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[520px] border-t border-[#020c1b] px-3 py-2" : "max-h-0"}`}>
+                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[520px] border-t border-[#0b2b49] px-3 py-2" : "max-h-0"}`}>
                     <div className="bg-white">
                       {cat.sub?.map((sub) => {
                         const isSubActive = selectedSubcategory === sub;
