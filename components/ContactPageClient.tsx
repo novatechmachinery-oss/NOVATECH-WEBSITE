@@ -242,7 +242,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
     return `w-full border bg-white/96 py-3.5 pl-11 pr-4 text-sm text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition placeholder:text-slate-400 ${
       hasError
         ? "border-rose-300 ring-2 ring-rose-100"
-        : "border-slate-200 focus:border-[#e4414c] focus:ring-2 focus:ring-rose-100"
+        : "border-slate-200 focus:border-[#E32636] focus:ring-2 focus:ring-rose-100"
     }`;
   }
 
@@ -313,7 +313,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
               <div className="h-full border border-slate-100 bg-white p-5 shadow-[0_18px_36px_rgba(15,23,42,0.06)] sm:p-6">
                 <div className="bg-[linear-gradient(135deg,#fff5f5_0%,#ffffff_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] text-white shadow-[0_14px_30px_rgba(220,38,38,0.24)]">
+                    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center bg-[#E32636] text-white shadow-[0_14px_30px_rgba(227,38,54,0.24)]">
                       <Send className="h-5 w-5" />
                     </span>
                     <div>
@@ -572,7 +572,7 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex w-full items-center justify-center gap-2 bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_48%,#b91c1c_100%)] px-6 py-3.5 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[0_16px_34px_rgba(220,38,38,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(220,38,38,0.3)] disabled:cursor-not-allowed disabled:opacity-70"
+                    className="inline-flex w-full items-center justify-center gap-2 bg-[#E32636] px-6 py-3.5 text-sm font-black uppercase tracking-[0.12em] text-white shadow-[0_16px_34px_rgba(227,38,54,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(227,38,54,0.3)] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Send className="h-4 w-4" />
                     {isSubmitting ? "Sending Enquiry..." : "Send Enquiry"}

@@ -5,11 +5,11 @@
   --foreground: #0f172a;
   --font-sans: "Arial Black", Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
-  --accent: #e4414c;
-  --accent-strong: #e83b46;
-  --accent-soft: #f8e5e6;
-  --accent-soft-border: #ebc7ca;
-  --accent-shadow: rgba(183, 75, 82, 0.22);
+  --accent: #E32636;
+  --accent-strong: #C91F30;
+  --accent-soft: #FBE4E7;
+  --accent-soft-border: #EFB9C0;
+  --accent-shadow: rgba(227, 38, 54, 0.22);
 }
 
 @theme inline {
@@ -771,13 +771,13 @@ a[class*="inline-flex"][class*="rounded"] {
 @keyframes special-deals-scroll-arrive {
   0% {
     transform: translateY(-92px) scaleX(0.82) scaleY(0.94);
-    background: #e4414c;
+    background: #E32636;
     color: #ffffff;
-    border-color: #e4414c;
+    border-color: #E32636;
     box-shadow:
-      0 30px 64px rgba(228, 65, 76, 0.34),
-      0 0 0 10px rgba(228, 65, 76, 0.1),
-      0 0 40px rgba(228, 65, 76, 0.28);
+      0 30px 64px rgba(227, 38, 54, 0.34),
+      0 0 0 10px rgba(227, 38, 54, 0.1),
+      0 0 40px rgba(227, 38, 54, 0.28);
   }
   28% {
     transform: translateY(-58px) scaleX(1.42) scaleY(1.08);
@@ -867,9 +867,25 @@ a[class*="inline-flex"][class*="rounded"] {
   z-index: 1;
 }
 
+@keyframes mobile-special-deals-lift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  42%,
+  58% {
+    transform: translateY(-8px);
+  }
+}
+
+.mobile-special-deals-lift {
+  animation: mobile-special-deals-lift 2.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .special-deals-heading-link,
-  .special-deals-heading-link::after {
+  .special-deals-heading-link::after,
+  .mobile-special-deals-lift {
     animation: none;
   }
 }
@@ -913,7 +929,7 @@ a[class*="inline-flex"][class*="rounded"] {
 .special-deals-confetti-1 {
   top: 10px;
   left: 8%;
-  background: #ef4444;
+  background: #E32636;
   animation-delay: -0.2s;
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { isReactCompilerRequired } from "next/dist/build/swc";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -172,7 +173,7 @@ export default function NewsletterModal({ onClose }: NewsletterModalProps) {
           {newsletterStep === "options" ? (
             <>
               <div className="pr-8">
-                <p className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-[#e4414c]">
+                <p className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-[#E32636]">
                   Subscribe
                 </p>
                 <h2 id="newsletter-modal-title" className="mt-3 text-[1.18rem] font-black leading-tight text-slate-950 sm:text-[1.55rem] lg:text-[2rem]">

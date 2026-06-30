@@ -192,19 +192,19 @@ export default async function CategoriesPage() {
                     href={category.href}
                     className="group block cursor-pointer overflow-hidden border border-[#16548b] bg-white shadow-[0_16px_34px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#16548b] hover:shadow-[0_26px_48px_rgba(20,91,147,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
                   >
-                    <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-3 py-2.5 text-white md:px-4.5 md:pb-3.5 md:pt-3.5">
+                    <div className="relative overflow-hidden border-b border-sky-200 bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] px-3 py-2.5 text-white md:px-4.5 md:py-2.5">
                       <div className="absolute right-0 top-0 h-24 w-24 bg-white/15 blur-2xl transition duration-300 group-hover:scale-110" />
                       <div className="absolute bottom-0 left-0 h-20 w-20 bg-cyan-100/15 blur-2xl transition duration-300 group-hover:scale-110" />
-                      <div className="relative flex items-center justify-between gap-2 md:items-start md:gap-4">
-                        <div className="flex min-w-0 items-center gap-2.5 md:items-start md:gap-3">
-                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-white/18 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] md:mt-0.5 md:h-9 md:w-9">
+                      <div className="relative flex items-center justify-between gap-2 md:gap-3">
+                        <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
+                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-white/18 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] md:h-8 md:w-8">
                             <category.Icon className="h-4.5 w-4.5" />
                           </span>
-                          <h2 className="text-[1rem] font-bold leading-5 text-white sm:text-[1.2rem] sm:leading-6 md:pr-2">
+                          <h2 className="text-[0.96rem] font-bold leading-[1.05] text-white sm:text-[1.08rem] sm:leading-5 md:pr-2 lg:text-[1.12rem]">
                             {category.name}
                           </h2>
                         </div>
-                        <span className="shrink-0 bg-white px-2 py-1 text-[0.65rem] font-bold uppercase tracking-[0.04em] text-[#145b93] md:px-3 md:text-[0.72rem] md:tracking-[0.08em] shadow-[0_8px_20px_rgba(15,23,42,0.16)]">
+                        <span className="shrink-0 bg-white px-2 py-1 text-[0.65rem] font-bold uppercase tracking-[0.04em] text-[#145b93] md:px-2.5 md:text-[0.68rem] md:tracking-[0.06em] shadow-[0_8px_20px_rgba(15,23,42,0.16)]">
                           {category.countLabel}
                         </span>
                       </div>

@@ -5,23 +5,100 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  BadgePercent,
+  Bolt,
+  Bot,
+  Boxes,
+  Cable,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   ChevronUp,
+  ChevronsDown,
+  CircleDashed,
   CircleDollarSign,
+  CircleDot,
+  CircleHelp,
+  Cog,
+  Construction,
+  CornerDownRight,
+  Cpu,
+  Cylinder,
+  Disc3,
   Download,
+  Drill,
+  Factory,
+  Fan,
+  Flame,
+  FlaskConical,
+  Hammer,
+  KeyRound,
+  Layers3,
   Maximize2,
   MessageCircle,
+  Minus,
+  MoveHorizontal,
+  PackageOpen,
   PanelLeftOpen,
+  PanelsTopLeft,
   Phone,
+  Pill,
+  RotateCw,
+  Ruler,
+  Scale,
+  ScanLine,
   Search,
+  Settings2,
+  Shapes,
+  Shirt,
   SlidersHorizontal,
+  Waves,
   X,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
 import { REQUEST_PRICE_WHATSAPP_HREF, WHATSAPP_HREF } from "@/lib/whatsapp";
 import { contactDetails } from "@/lib/contact-details";
+const sidebarCategoryIconMap: Record<string, LucideIcon> = {
+  "Bar Machinery": Minus,
+  "Bending Machines": CornerDownRight,
+  "Bolt & Fasteners Machines": Bolt,
+  "Broaching Machinery & Keyseaters": KeyRound,
+  "CNC Machines": Cpu,
+  "Drilling Machinery": Drill,
+  "EDM Machines": Zap,
+  "Forging & Foundry Machinery": Hammer,
+  "Gear Machinery": Cog,
+  Grinders: Disc3,
+  "Honing Machines": CircleDot,
+  "Horizontal Boring Mills": MoveHorizontal,
+  "Industrial Plants": Factory,
+  "Inspection & Measuring Machines": Ruler,
+  "Laser Cutting Machines": ScanLine,
+  "Lathes & Turning Machines": RotateCw,
+  "Machining Centres": Boxes,
+  "Milling Machines": Settings2,
+  "Other Equipment": PackageOpen,
+  "Pharmaceutical Machinery": Pill,
+  "Plastic Machinery": FlaskConical,
+  "Power Plants & Turbines": Fan,
+  Presses: ChevronsDown,
+  Robots: Bot,
+  "Roll Formers & Rolling Mills": Waves,
+  Saws: Construction,
+  "Sheet Metal Machinery": PanelsTopLeft,
+  "Special Deals": BadgePercent,
+  "Textile Machinery": Shirt,
+  "Thread Milling": CircleDashed,
+  "Tube and Pipe Machinery": Cylinder,
+  Uncategorized: CircleHelp,
+  Various: Shapes,
+  "Veling Equipment": Scale,
+  "Vertical Turning Lathes": Layers3,
+  "Welding Equipment": Flame,
+  "Wire Machinery": Cable,
+};
 
 function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }) {
   const imageList = useMemo(
@@ -1223,13 +1300,13 @@ export default function MetalWorkingCatalogue({
                         className="inline-flex min-h-10 items-center gap-2 border border-sky-200 bg-sky-50 px-4 text-sm font-semibold text-[#145b93] transition hover:border-[#145b93]"
                       >
                         <span>{filter}</span>
-                        <span className="text-base leading-none">Ãƒâ€”</span>
+                        <X className="h-4 w-4" aria-hidden="true" />
                       </button>
                     ))}
                     <button suppressHydrationWarning
                       type="button"
                       onClick={handleAllMachinesClick}
-                      className="inline-flex min-h-10 items-center border border-red-600 bg-red-600 px-4 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(220,38,38,0.18)] transition hover:border-red-700 hover:bg-red-700"
+                      className="inline-flex min-h-10 items-center border border-[#E32636] bg-[#E32636] px-4 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_8px_18px_rgba(227,38,54,0.18)] transition hover:border-[#C91F30] hover:bg-[#C91F30]"
                     >
                       Clear all
                     </button>
@@ -1261,7 +1338,7 @@ export default function MetalWorkingCatalogue({
             }`}
             aria-label="Category sidebar"
           >
-            <div className="flex items-center justify-between bg-gradient-to-r from-[#145b93] to-[#2f7fc7] px-4 py-3">
+            <div className="flex items-center justify-between bg-[#E32636] px-4 py-3">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-white/80" />
                 <span className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-white">Categories</span>
@@ -1283,7 +1360,7 @@ export default function MetalWorkingCatalogue({
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <input suppressHydrationWarning value={categorySearch} onChange={(e) => setCategorySearch(e.target.value)}
                   placeholder="Search categories..."
-                  className="w-full rounded-full border border-[#0b2b49] bg-slate-50 py-2 pl-9 pr-3 text-[0.8rem] outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
+                  className="w-full rounded-full border border-[#E32636] bg-slate-50 py-2 pl-9 pr-3 text-[0.8rem] outline-none transition focus:border-[#E32636] focus:ring-2 focus:ring-rose-100"
                 />
               </div>
             </div>
@@ -1291,24 +1368,25 @@ export default function MetalWorkingCatalogue({
               {filteredSidebarCategories.map((cat) => {
                 const isOpen = openCategories[cat.name];
                 const hasChildren = !!cat.sub?.length;
-                const isCategoryActive = selectedCategory === cat.name && !selectedSubcategory;
+                const CategoryIcon = sidebarCategoryIconMap[cat.name] ?? Factory;
                 const categoryCount = categoryCounts[cat.name] ?? 0;
                 return (
-                  <div key={cat.name} className="overflow-hidden rounded-md border border-[#0b2b49] bg-white">
+                  <div key={cat.name} className="overflow-hidden rounded-md border border-[#E32636] bg-white">
                     <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
-                      className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition ${
-                        isCategoryActive || isOpen
-                          ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                          : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
-                      }`}
+                      className="flex w-full items-center justify-between gap-2 bg-[#E32636] px-3 py-2.5 text-left text-white shadow-[0_8px_18px_rgba(227,38,54,0.18)] transition hover:bg-[#C91F30]"
                     >
-                      <span className="min-w-0 text-[0.82rem] font-semibold leading-5">{cat.name}</span>
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-[#E32636] shadow-[0_4px_10px_rgba(120,15,28,0.16)]">
+                          <CategoryIcon className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 text-[0.82rem] font-bold leading-5">{cat.name}</span>
+                      </span>
                       <span className="flex shrink-0 items-center gap-1.5">
-                        <span className={`text-[0.72rem] font-semibold ${isCategoryActive || isOpen ? "text-white/85" : "text-slate-400"}`}>{categoryCount}</span>
-                        {hasChildren && <ChevronDown className={`h-4 w-4 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
+                        <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-white/15 px-1.5 py-1 text-[0.72rem] font-bold text-white">{categoryCount}</span>
+                        {hasChildren && <ChevronDown className={`h-4 w-4 shrink-0 transition ${isOpen ? "rotate-180" : ""} text-white`} />}
                       </span>
                     </button>
-                    <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] border-t border-[#0b2b49] px-2 py-1.5" : "max-h-0"}`}>
+                    <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-none border-t border-[#E32636] bg-white px-3 py-1.5" : "max-h-0"}`}>
                       <div className="space-y-0.5">
                         {cat.sub?.map((sub) => {
                           const isSubActive = selectedSubcategory === sub;
@@ -1316,14 +1394,14 @@ export default function MetalWorkingCatalogue({
                             <button suppressHydrationWarning key={sub}
                               onClick={() => { toggleSubcategory(sub); setIsMobileSidebarOpen(false); }}
                               className={`flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[0.78rem] transition ${
-                                isSubActive ? "bg-sky-50 font-semibold text-[#145b93]" : "text-slate-600 hover:bg-slate-50 hover:text-[#145b93]"
+                                isSubActive ? "bg-rose-50 font-semibold text-[#E32636]" : "bg-white text-slate-700 hover:bg-rose-50 hover:text-[#E32636]"
                               }`}
                             >
                               <span className="flex items-center gap-2">
-                                <span className={`h-2 w-2 shrink-0 rounded-full ${isSubActive ? "bg-[#145b93]" : "bg-slate-300"}`} />
+                                <span className={`h-2 w-2 shrink-0 rounded-full bg-[#E32636]`} />
                                 <span>{sub}</span>
                               </span>
-                              <span className={`text-[0.7rem] ${isSubActive ? "text-[#145b93]" : "text-slate-400"}`}>
+                              <span className={`text-[0.7rem] ${isSubActive ? "text-[#E32636]" : "text-[#E32636]/80"}`}>
                                 {machineInventory.filter((machine) => machine.category === cat.name && machine.subcategory === sub).length}
                               </span>
                             </button>
@@ -1339,7 +1417,7 @@ export default function MetalWorkingCatalogue({
               <div className="border-t border-slate-200 p-3">
                 <button suppressHydrationWarning type="button"
                   onClick={() => { handleAllMachinesClick(); setIsMobileSidebarOpen(false); }}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-500 py-2.5 text-[0.78rem] font-black uppercase tracking-[0.08em] text-white transition hover:bg-red-600 active:scale-[0.98]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#E32636] py-2.5 text-[0.78rem] font-black uppercase tracking-[0.08em] text-white transition hover:bg-[#C91F30] active:scale-[0.98]"
                 >
                   <X className="h-3.5 w-3.5" />
                   Clear all filters
@@ -1354,63 +1432,68 @@ export default function MetalWorkingCatalogue({
         {/* Ã¢â€â‚¬Ã¢â€â‚¬ Desktop sticky sidebar Ã¢â€â‚¬Ã¢â€â‚¬ */}
         {!selectedMachine ? (
         <aside
-          className="hidden lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-[#0b2b49] lg:bg-white lg:p-3 lg:shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+          className="hidden lg:sticky lg:top-2 lg:flex lg:h-[calc(100vh-1rem)] lg:max-h-[calc(100vh-1rem)] lg:flex-col lg:self-start lg:overflow-hidden lg:border lg:border-slate-200 lg:bg-white lg:shadow-[0_16px_36px_rgba(15,23,42,0.1)]"
         >
-          <div className="border-b border-slate-200 px-2 pb-3">
-            <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#145b93]">
-              Category
-            </p>
-            <div className="relative mt-3">
+          <div className="flex items-center gap-2 bg-[#E32636] px-4 py-3 text-white">
+            <SlidersHorizontal className="h-4 w-4" />
+            <span className="text-[0.76rem] font-black uppercase tracking-[0.14em]">Categories</span>
+            {activeFilters.length > 0 ? (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-[0.66rem] font-bold">
+                {activeFilters.length}
+              </span>
+            ) : null}
+          </div>
+          <div className="border-b border-slate-100 px-3 py-3">
+            <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input suppressHydrationWarning
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
                 placeholder="Search categories..."
-                className="w-full rounded-[2px] border border-[#0b2b49] bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
+                className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[#145b93] focus:ring-2 focus:ring-sky-100"
               />
             </div>
           </div>
-          <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 pb-2 lg:max-h-none lg:pb-4">
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-3 lg:max-h-none">
             {filteredSidebarCategories.map((cat) => {
               const isOpen = openCategories[cat.name];
               const hasChildren = !!cat.sub?.length;
               const isCategoryActive = selectedCategory === cat.name && !selectedSubcategory;
-              const isParentHighlighted = selectedCategory === cat.name;
+              const CategoryIcon = sidebarCategoryIconMap[cat.name] ?? CircleHelp;
               const categoryCount = categoryCounts[cat.name] ?? 0;
               return (
-                <div key={cat.name} className="overflow-hidden rounded-[2px] border border-[#0b2b49] bg-white transition">
+                <div key={cat.name} className={`overflow-hidden rounded-md border bg-white shadow-[0_5px_14px_rgba(15,23,42,0.05)] transition ${isCategoryActive || isOpen ? "border-sky-200" : "border-slate-200"}`}>
                   <button suppressHydrationWarning onClick={() => handleCategoryClick(cat.name, hasChildren)}
                     className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition ${
                       isCategoryActive || isOpen
-                        ? "bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_45%,#0d4b80_100%)] text-white"
-                        : "text-slate-800 hover:bg-slate-50 hover:text-[#145b93]"
+                        ? "border-l-4 border-[#145b93] bg-sky-50 text-[#145b93]"
+                        : "border-l-4 border-transparent bg-white text-slate-800 hover:bg-slate-50"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-3">
-                      <span className="text-[0.92rem] leading-5">{cat.name}</span>
+                      <CategoryIcon className={`h-5 w-5 shrink-0 ${isCategoryActive || isOpen ? "text-[#145b93]" : "text-slate-600"}`} />
+                      <span className="text-[0.9rem] font-semibold leading-5">{cat.name}</span>
                     </span>
                     <span className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold ${isCategoryActive || isOpen ? "text-white/85" : "text-slate-400"}`}>{categoryCount}</span>
-                      {hasChildren && <ChevronDown className={`h-4.5 w-4.5 shrink-0 transition ${isOpen ? "rotate-180" : ""} ${isCategoryActive || isOpen ? "text-white" : "text-slate-500"}`} />}
+                      <span className={`inline-flex min-w-7 items-center justify-center rounded-md px-2 py-1 text-xs font-bold ${isCategoryActive || isOpen ? "bg-sky-100 text-[#145b93]" : "bg-slate-100 text-slate-500"}`}>{categoryCount}</span>
+                      {hasChildren && <ChevronDown className={`h-4.5 w-4.5 shrink-0 transition ${isOpen ? "rotate-180 text-[#145b93]" : "text-slate-500"}`} />}
                     </span>
                   </button>
-                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[520px] border-t border-[#0b2b49] px-3 py-2" : "max-h-0"}`}>
-                    <div className="bg-white">
+                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-none border-l-4 border-t border-[#145b93] border-t-sky-100 bg-sky-50/60 px-4 py-2" : "max-h-0"}`}>
+                    <div className="space-y-1 bg-transparent">
                       {cat.sub?.map((sub) => {
                         const isSubActive = selectedSubcategory === sub;
                         return (
                           <button suppressHydrationWarning key={sub} onClick={() => toggleSubcategory(sub)}
                             className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition ${
-                              isSubActive ? "bg-sky-50 font-semibold text-[#145b93]"
-                                : isParentHighlighted ? "text-slate-700 hover:bg-slate-50 hover:text-[#145b93]"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-[#145b93]"
+                              isSubActive ? "bg-white font-semibold text-[#145b93]" : "bg-transparent text-slate-700 hover:bg-white hover:text-[#145b93]"
                             }`}
                           >
                             <span className="flex items-center gap-3">
-                              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${isSubActive ? "bg-[#145b93]" : "bg-slate-300"}`} />
+                              <span className="h-2 w-2 shrink-0 rounded-full bg-[#145b93]" />
                               <span>{sub}</span>
                             </span>
-                            <span className={`text-xs ${isSubActive ? "text-[#145b93]" : "text-slate-400"}`}>
+                            <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-sky-100 px-1.5 py-1 text-xs font-semibold text-slate-600">
                               {machineInventory.filter((machine) => machine.category === cat.name && machine.subcategory === sub).length}
                             </span>
                           </button>
@@ -1736,7 +1819,7 @@ export default function MetalWorkingCatalogue({
                     <button suppressHydrationWarning
                       type="button"
                       onClick={handleAllMachinesClick}
-                      className="inline-flex h-6 items-center gap-1 rounded-full bg-red-500 px-2 text-[0.65rem] font-black uppercase tracking-[0.06em] text-white transition hover:bg-red-600 active:scale-95 lg:hidden"
+                      className="inline-flex h-6 items-center gap-1 rounded-full bg-[#E32636] px-2 text-[0.65rem] font-black uppercase tracking-[0.06em] text-white transition hover:bg-[#C91F30] active:scale-95 lg:hidden"
                     >
                       <X className="h-2.5 w-2.5" />
                       Clear

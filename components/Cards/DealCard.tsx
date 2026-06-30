@@ -143,7 +143,7 @@ export default function DealCard({
               {detailsPreview.length > 0 ? detailsPreview.join(" | ") : "Manufacturer | Model"}
             </span>
           </div>
-          <span className="mt-2 inline-flex w-[70%] self-center items-center justify-center rounded-[0.5rem] bg-[#16548b] px-4 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-white sm:mt-2.5 sm:px-5 sm:text-[0.78rem] sm:tracking-[0.08em]">
+          <span className="mt-2 inline-flex w-auto min-w-[11rem] max-w-full self-center items-center justify-center rounded-[0.5rem] bg-[#16548b] px-5 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_6px_14px_rgba(20,91,147,0.16)] sm:mt-2.5 sm:text-[0.78rem] sm:tracking-[0.08em]">
             View More Details
           </span>
         </div>

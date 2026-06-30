@@ -85,7 +85,6 @@ export default function TopHeader({
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setIsDrawerMachineryOpen] = useState(false);
-  const [isInlineMachineryOpen, setIsInlineMachineryOpen] = useState(false);
   const [isCompactSearchOpen, setIsCompactSearchOpen] = useState(false);
   const [compactSearchQuery, setCompactSearchQuery] = useState("");
   const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
@@ -157,7 +156,6 @@ export default function TopHeader({
     document.body.style.overflow = "hidden";
     setIsCompactSearchOpen(false);
     setIsCompactSuggestionsOpen(false);
-    setIsInlineMachineryOpen(false);
 
     return () => {
       document.body.style.overflow = "";
@@ -204,7 +202,6 @@ export default function TopHeader({
               onClick={() => {
                 setIsMobileMenuOpen((current) => !current);
                 setIsDrawerMachineryOpen(false);
-                setIsInlineMachineryOpen(false);
               }}
               className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 2xl:hidden"
               aria-label="Open menu"
@@ -371,7 +368,7 @@ export default function TopHeader({
         {!isMobileMenuOpen ? (
           <div className="border-t border-slate-200 bg-[#fff7e6] px-0 pb-0 pt-0 min-[414px]:px-0 min-[414px]:pb-0 min-[414px]:pt-0 2xl:hidden">
           {isCompactSearchOpen ? (
-            <div className="relative">
+            <div className="relative z-[100]">
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
@@ -423,7 +420,7 @@ export default function TopHeader({
               </form>
 
               {isCompactSuggestionsOpen && compactSearchSuggestions.length > 0 ? (
-                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-40 overflow-hidden border border-slate-200 bg-white shadow-[0_16px_34px_rgba(15,23,42,0.16)]">
+                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-[110] overflow-hidden border border-slate-200 bg-white shadow-[0_16px_34px_rgba(15,23,42,0.16)]">
                   {compactSearchSuggestions.map((machine) => (
                     <Link
                       key={machine.id}
@@ -487,7 +484,6 @@ export default function TopHeader({
               <Link
                 href="/"
                 onClick={() => {
-                  setIsInlineMachineryOpen(false);
                   setIsMobileMenuOpen(false);
                 }}
                 className={mobileQuickLinkClass}
@@ -495,24 +491,14 @@ export default function TopHeader({
                 <span className="truncate">HOME</span>
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setIsInlineMachineryOpen((current) => !current)}
-                className={`${mobileQuickLinkClass} gap-1 min-[414px]:gap-1.5`}
-                aria-expanded={isInlineMachineryOpen}
-                aria-controls="mobile-machinery-links-inline"
-              >
+              <div className={mobileQuickLinkClass + " gap-1 min-[414px]:gap-1.5"}>
                 <span className="truncate">USED MACHINERY</span>
-                <ChevronDown
-                  className={`h-3.5 w-3.5 shrink-0 transition ${isInlineMachineryOpen ? "rotate-180" : ""}`}
-                  strokeWidth={2.4}
-                />
-              </button>
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
+              </div>
 
               <Link
                 href="/categories"
                 onClick={() => {
-                  setIsInlineMachineryOpen(false);
                   setIsMobileMenuOpen(false);
                 }}
                 className={mobileQuickLinkClass}
@@ -521,26 +507,21 @@ export default function TopHeader({
               </Link>
             </div>
 
-            {isInlineMachineryOpen ? (
-              <div id="mobile-machinery-links-inline" className="mt-2 grid grid-cols-1 gap-1 min-[414px]:gap-2">
+            <div id="mobile-machinery-links-inline" className="mt-2 grid grid-cols-1 gap-1 min-[414px]:gap-2">
                 {resolvedCategoryLinks.map((item) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
-                  const isMoreSectionStart = item.label.trim().toLowerCase() === "special deals";
+                  const isSpecialDeals = item.label.trim().toLowerCase() === "special deals";
 
                   return (
-                    <div key={`inline-${item.label}-${item.href}`} className="space-y-1 min-[414px]:space-y-2">
-                      {isMoreSectionStart ? (
-                        <p className="px-1 text-center text-[0.58rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                          More
-                        </p>
-                      ) : null}
+                    <div key={`inline-${item.label}-${item.href}`} className={`relative space-y-1 min-[414px]:space-y-2 ${isSpecialDeals ? "mobile-special-deals-lift z-[60]" : "z-0"}`}>
                       <Link
                         href={item.href}
                         onClick={() => {
-                          setIsInlineMachineryOpen(false);
                           setIsMobileMenuOpen(false);
                         }}
-                        className="flex min-h-[38px] items-center justify-center gap-2 bg-[linear-gradient(180deg,#cf1616_0%,#bb0f0f_100%)] px-3 text-center text-[0.68rem] font-black uppercase tracking-[0.02em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)] min-[414px]:min-h-[42px] min-[414px]:text-[0.76rem]"
+                        className={`flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-3 text-center text-[0.68rem] font-black uppercase tracking-[0.02em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] transition-[filter] duration-300 hover:brightness-105 focus-visible:brightness-105 min-[414px]:min-h-[42px] min-[414px]:text-[0.76rem] ${
+                          isSpecialDeals ? "special-deals-heading-link relative z-[60] overflow-hidden" : ""
+                        }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="text-balance leading-none">{item.label}</span>
@@ -548,8 +529,7 @@ export default function TopHeader({
                     </div>
                   );
                 })}
-              </div>
-            ) : null}
+            </div>
           </div>
           </div>
         ) : null}

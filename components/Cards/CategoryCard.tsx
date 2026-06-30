@@ -38,7 +38,7 @@ export default function CategoryCard({
     >
       <div className="absolute inset-x-0 top-0 h-px bg-[#e4edf5]" />
 
-      <div className="relative flex min-h-[165px] flex-col sm:min-h-[186px] lg:min-h-[213px]">
+      <div className="relative flex min-h-[153px] flex-col sm:min-h-[178px] lg:min-h-[204px]">
         <div className="relative h-[117px] overflow-hidden bg-white sm:h-[134px] lg:h-[156px]">
           <Image
             src={imageSrc}
@@ -51,12 +51,12 @@ export default function CategoryCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.01),rgba(15,23,42,0.06))]" />
         </div>
 
-        <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#16548b] px-2.5 py-2 sm:px-3.5 sm:py-2.5 lg:px-5">
-          <h3 className="min-w-0 text-balance text-[0.96rem] font-black uppercase leading-[1.05] text-white sm:text-[1.06rem] lg:text-[1.12rem] xl:text-[1.18rem] 2xl:text-[1.22rem]">
+        <div className="grid flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 bg-[#16548b] px-2.5 py-1.5 sm:px-3.5 sm:py-2 lg:px-5">
+          <h3 className="min-w-0 text-balance text-[0.88rem] font-black uppercase leading-none text-white sm:text-[0.98rem] lg:text-[1.04rem] xl:text-[1.08rem] 2xl:text-[1.12rem]">
             {title}
           </h3>
 
-          <span className="inline-flex h-8 min-w-[7.35rem] shrink-0 items-center justify-center rounded-[0.45rem] border border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-2.5 text-center text-[0.58rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_8px_18px_rgba(8,47,73,0.18)] transition duration-300 group-hover:bg-[#f7fbff] sm:min-w-[7.6rem] sm:px-3 sm:text-[0.64rem] lg:min-w-[6.9rem] lg:text-[0.64rem] xl:min-w-[7.4rem] xl:text-[0.68rem]">
+          <span className="inline-flex h-7 min-w-[7.35rem] shrink-0 items-center justify-center rounded-[0.45rem] border border-white/90 bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-2.5 text-center text-[0.58rem] font-black uppercase tracking-[0.1em] text-[#16548b] shadow-[0_8px_18px_rgba(8,47,73,0.18)] transition duration-300 group-hover:bg-[#f7fbff] sm:h-8 sm:min-w-[7.6rem] sm:px-3 sm:text-[0.64rem] lg:min-w-[6.9rem] lg:text-[0.64rem] xl:min-w-[7.4rem] xl:text-[0.68rem]">
             {ctaLabel}
           </span>
         </div>
