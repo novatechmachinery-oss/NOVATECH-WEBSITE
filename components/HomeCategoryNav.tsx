@@ -25,6 +25,20 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
   const resolvedTypes = types.some((item) => ["other", "carbide scrap"].includes(item.label.trim().toLowerCase()))
     ? types
     : [...types, { label: "Carbide Scrap", href: "/categories" }];
+  const carbideScrapType = resolvedTypes.find(
+    (item) => item.label.trim().toLowerCase() === "carbide scrap"
+  );
+  const desktopTypes = carbideScrapType
+    ? resolvedTypes.flatMap((item) => {
+        const normalizedLabel = item.label.trim().toLowerCase();
+
+        if (normalizedLabel === "metal working machinery") {
+          return [item, carbideScrapType];
+        }
+
+        return normalizedLabel === "carbide scrap" ? [] : [item];
+      })
+    : resolvedTypes;
   const iconMap = {
     "metal working machinery": Settings,
     "pharmaceutical machinery": Pill,
@@ -41,7 +55,7 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
     >
       <div className="w-full px-0">
         <div className="flex flex-wrap gap-px bg-white/45 lg:h-[50px] lg:flex-nowrap">
-          {resolvedTypes.map((item, index) => {
+          {desktopTypes.map((item, index) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
             const Icon = iconMap[item.label.trim().toLowerCase() as keyof typeof iconMap] ?? Settings;
             return (

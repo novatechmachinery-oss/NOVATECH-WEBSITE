@@ -867,25 +867,20 @@ a[class*="inline-flex"][class*="rounded"] {
   z-index: 1;
 }
 
-@keyframes mobile-special-deals-lift {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  42%,
-  58% {
-    transform: translateY(-8px);
-  }
-}
-
-.mobile-special-deals-lift {
-  animation: mobile-special-deals-lift 2.8s ease-in-out infinite;
+.mobile-special-deals-flash::after {
+  content: "";
+  position: absolute;
+  inset: -35% auto -35% 0;
+  width: 36%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: special-deals-heading-sheen 2.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .special-deals-heading-link,
   .special-deals-heading-link::after,
-  .mobile-special-deals-lift {
+  .mobile-special-deals-flash::after {
     animation: none;
   }
 }

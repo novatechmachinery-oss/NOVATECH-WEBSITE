@@ -44,7 +44,7 @@ export default function Navbar({ machines }: NavbarProps) {
 
   return (
     <nav
-      className="border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)]"
+      className="hidden border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)] xl:block"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
       <div className="mx-auto hidden h-[50px] w-full max-w-[1600px] items-center justify-between gap-5 px-4 xl:flex xl:px-8">

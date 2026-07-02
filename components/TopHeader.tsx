@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Factory, Info, Mail, PhoneCall, Pill, Settings, Shirt, X } from "lucide-react";
+import { Boxes, ChevronDown, ChevronRight, Factory, Info, Mail, PhoneCall, Pill, Settings, Shirt, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import NewsletterSignup from "./NewsletterSignup";
@@ -32,6 +32,12 @@ const defaultCategoryLinks = [
 ];
 
 const specialDealsMenuLink = { label: "Special Deals", href: "/#special-deals" };
+
+const drawerCategoryLabels = new Set([
+  "pharmaceutical machinery",
+  "plastic machinery",
+  "textile machinery",
+]);
 
 function cleanPhoneNumber(phoneNumber: string) {
   return phoneNumber.replace(/\s+/g, "");
@@ -84,7 +90,7 @@ export default function TopHeader({
 }: TopHeaderProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [, setIsDrawerMachineryOpen] = useState(false);
+  const [isDrawerMachineryOpen, setIsDrawerMachineryOpen] = useState(false);
   const [isCompactSearchOpen, setIsCompactSearchOpen] = useState(false);
   const [compactSearchQuery, setCompactSearchQuery] = useState("");
   const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
@@ -122,6 +128,13 @@ export default function TopHeader({
     other: Settings,
     "carbide scrap": Settings,
   } as const;
+
+  const drawerCategoryLinks = resolvedCategoryLinks.filter((item) =>
+    drawerCategoryLabels.has(item.label.trim().toLowerCase())
+  );
+  const inlineCategoryLinks = resolvedCategoryLinks.filter(
+    (item) => !drawerCategoryLabels.has(item.label.trim().toLowerCase())
+  );
 
   const compactSearchSuggestions = useMemo(() => {
     const normalizedQuery = compactSearchQuery.trim().toLowerCase();
@@ -182,14 +195,14 @@ export default function TopHeader({
   }
 
   const mobileQuickLinkClass =
-    "inline-flex min-h-[32px] items-center justify-center px-2 text-center text-[0.66rem] font-black uppercase tracking-[0.02em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] min-[390px]:min-h-[34px] min-[390px]:text-[0.66rem] min-[414px]:min-h-[37px] min-[414px]:text-[0.66rem] bg-[linear-gradient(180deg,#145b93_0%,#0f4f89_100%)]";
+    "inline-flex min-h-[38px] items-center justify-center px-1 text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-white min-[390px]:text-[0.76rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.8rem] bg-[linear-gradient(180deg,#145b93_0%,#0f4f89_100%)]";
 
   return (
     <div
-      className="border-b border-slate-200 bg-[#fff7e6] text-slate-800"
+      className="border-b-0 border-slate-200 bg-[#fff7e6] text-slate-800 2xl:border-b"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="grid w-full grid-cols-1 gap-0 px-1.5 py-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
+      <div className="grid w-full grid-cols-1 gap-0 px-1.5 pb-0 pt-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:pb-0 min-[414px]:pt-1 sm:px-3 sm:pb-0 sm:pt-1.5 md:px-4 md:pb-0 md:pt-2 lg:px-5 lg:pb-0 lg:pt-2 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
         <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible 2xl:contents">
           <Link href="/" className="flex-none transition hover:opacity-95">
             <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] 2xl:h-[108px] 2xl:w-[150px]">
@@ -318,6 +331,51 @@ export default function TopHeader({
                     <span className="min-w-0 flex-1">About Us</span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-white" strokeWidth={2.4} />
                   </Link>
+
+                  <div className="overflow-hidden rounded-xl border border-[#E32636] bg-white shadow-[0_8px_22px_rgba(227,38,54,0.08)]">
+                    <button
+                      type="button"
+                      onClick={() => setIsDrawerMachineryOpen((current) => !current)}
+                      className="flex min-h-[48px] w-full items-center gap-3 px-4 text-left text-[0.78rem] font-black uppercase tracking-[0.03em] text-[#d51f31] transition-colors hover:bg-red-50"
+                      aria-expanded={isDrawerMachineryOpen}
+                      aria-controls="drawer-upcoming-categories"
+                    >
+                      <span className="-ml-2 mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[#E32636]">
+                        <Boxes className="h-4.5 w-4.5" strokeWidth={2.2} />
+                      </span>
+                      <span className="min-w-0 flex-1">Upcoming Categories</span>
+                      <ChevronRight
+                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isDrawerMachineryOpen ? "rotate-90" : ""}`}
+                        strokeWidth={2.4}
+                      />
+                    </button>
+
+                    {isDrawerMachineryOpen ? (
+                      <div id="drawer-upcoming-categories" className="grid gap-2 border-t border-red-100 bg-red-50/60 p-2">
+                        {drawerCategoryLinks.map((item) => {
+                          const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
+
+                          return (
+                            <Link
+                              key={`drawer-${item.label}-${item.href}`}
+                              href={item.href}
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsDrawerMachineryOpen(false);
+                              }}
+                              className="group flex min-h-[56px] items-center gap-3 rounded-xl border border-red-100 bg-white px-3 text-[0.72rem] font-black text-slate-900 shadow-[0_4px_12px_rgba(15,23,42,0.04)] transition hover:border-red-200 hover:bg-red-50"
+                            >
+                              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-[#E32636] transition group-hover:bg-red-200">
+                                <Icon className="h-5 w-5" strokeWidth={2.1} />
+                              </span>
+                              <span className="min-w-0 flex-1">{item.label}</span>
+                              <ChevronRight className="h-4 w-4 shrink-0 text-[#E32636] transition-transform group-hover:translate-x-0.5" strokeWidth={2.4} />
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -480,7 +538,7 @@ export default function TopHeader({
           )}
 
           <div className="mt-0">
-            <div className="grid grid-cols-[0.82fr_1.56fr_1.02fr] gap-1 min-[414px]:grid-cols-[0.84fr_1.6fr_1fr] min-[414px]:gap-2">
+            <div className="grid grid-cols-[0.82fr_1.56fr_1.02fr] gap-px bg-white min-[414px]:grid-cols-[0.84fr_1.6fr_1fr]">
               <Link
                 href="/"
                 onClick={() => {
@@ -491,7 +549,7 @@ export default function TopHeader({
                 <span className="truncate">HOME</span>
               </Link>
 
-              <div className={mobileQuickLinkClass + " gap-1 min-[414px]:gap-1.5"}>
+              <div className={mobileQuickLinkClass + " gap-1"}>
                 <span className="truncate">USED MACHINERY</span>
                 <ChevronDown className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
               </div>
@@ -507,20 +565,22 @@ export default function TopHeader({
               </Link>
             </div>
 
-            <div id="mobile-machinery-links-inline" className="mt-2 grid grid-cols-1 gap-1 min-[414px]:gap-2">
-                {resolvedCategoryLinks.map((item) => {
+            <div id="mobile-machinery-links-inline" className="mt-px grid grid-cols-1 gap-0 bg-white">
+                {inlineCategoryLinks.map((item, index) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
                   const isSpecialDeals = item.label.trim().toLowerCase() === "special deals";
 
                   return (
-                    <div key={`inline-${item.label}-${item.href}`} className={`relative space-y-1 min-[414px]:space-y-2 ${isSpecialDeals ? "mobile-special-deals-lift z-[60]" : "z-0"}`}>
+                    <div key={`inline-${item.label}-${item.href}`} className={index === 0 ? "" : "border-t border-white"}>
                       <Link
                         href={item.href}
                         onClick={() => {
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-3 text-center text-[0.68rem] font-black uppercase tracking-[0.02em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)] transition-[filter] duration-300 hover:brightness-105 focus-visible:brightness-105 min-[414px]:min-h-[42px] min-[414px]:text-[0.76rem] ${
-                          isSpecialDeals ? "special-deals-heading-link relative z-[60] overflow-hidden" : ""
+                        className={`flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-3 text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-white min-[390px]:text-[0.76rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.8rem] ${
+                          isSpecialDeals
+                            ? "mobile-special-deals-flash relative overflow-hidden"
+                            : "transition-[filter] duration-300 hover:brightness-105 focus-visible:brightness-105"
                         }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
