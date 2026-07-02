@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Boxes, ChevronDown, ChevronRight, Factory, Info, Mail, PhoneCall, Pill, Settings, Shirt, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import NewsletterSignup from "./NewsletterSignup";
 import type { MachineItem } from "@/lib/machines";
@@ -89,11 +89,13 @@ export default function TopHeader({
   categoryLinks = defaultCategoryLinks,
 }: TopHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDrawerMachineryOpen, setIsDrawerMachineryOpen] = useState(false);
   const [isCompactSearchOpen, setIsCompactSearchOpen] = useState(false);
   const [compactSearchQuery, setCompactSearchQuery] = useState("");
   const [isCompactSuggestionsOpen, setIsCompactSuggestionsOpen] = useState(false);
+  const [activeMobileCategoryHref, setActiveMobileCategoryHref] = useState<string | null>(null);
 
   const resolvedCategoryLinks = useMemo(
     () => {
@@ -569,22 +571,46 @@ export default function TopHeader({
                 {inlineCategoryLinks.map((item, index) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
                   const isSpecialDeals = item.label.trim().toLowerCase() === "special deals";
+                  const isPathActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  const isActive = activeMobileCategoryHref
+                    ? activeMobileCategoryHref === item.href
+                    : isPathActive;
 
                   return (
                     <div key={`inline-${item.label}-${item.href}`} className={index === 0 ? "" : "border-t border-white"}>
                       <Link
                         href={item.href}
+                        aria-current={isActive ? "page" : undefined}
                         onClick={() => {
+                          setActiveMobileCategoryHref(item.href);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-3 text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-white min-[390px]:text-[0.76rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.8rem] ${
+                        className={`relative flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-11 text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-white min-[390px]:text-[0.76rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.8rem] ${
+                          isActive ? "bg-[#c91f30] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.82)]" : ""
+                        } ${
                           isSpecialDeals
-                            ? "mobile-special-deals-flash relative overflow-hidden"
+                            ? "mobile-special-deals-flash overflow-hidden"
                             : "transition-[filter] duration-300 hover:brightness-105 focus-visible:brightness-105"
                         }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="text-balance leading-none">{item.label}</span>
+                        {isActive ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center drop-shadow-[0_4px_7px_rgba(88,6,16,0.3)]"
+                          >
+                            <svg viewBox="0 0 32 32" fill="none" className="h-7 w-7 overflow-visible">
+                              <path
+                                d="M7 4.8c0-1.4 1.52-2.27 2.73-1.55l17.45 10.4a2.72 2.72 0 0 1 0 4.7L9.73 28.75C8.52 29.47 7 28.6 7 27.2V4.8Z"
+                                stroke="currentColor"
+                                strokeWidth="3.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
+                        ) : null}
                       </Link>
                     </div>
                   );

@@ -781,23 +781,23 @@ a[class*="inline-flex"][class*="rounded"] {
   }
   28% {
     transform: translateY(-58px) scaleX(1.42) scaleY(1.08);
-    background: #f59e0b;
+    background: #E32636;
     color: #ffffff;
-    border-color: #f59e0b;
+    border-color: #E32636;
     box-shadow:
-      0 38px 74px rgba(245, 158, 11, 0.32),
-      0 0 0 13px rgba(245, 158, 11, 0.1),
-      0 0 46px rgba(245, 158, 11, 0.28);
+      0 38px 74px rgba(227, 38, 54, 0.32),
+      0 0 0 13px rgba(227, 38, 54, 0.1),
+      0 0 46px rgba(227, 38, 54, 0.28);
   }
   58% {
     transform: translateY(-50px) scaleX(1.42) scaleY(1.08);
-    background: #f59e0b;
+    background: #E32636;
     color: #ffffff;
-    border-color: #f59e0b;
+    border-color: #E32636;
     box-shadow:
-      0 38px 74px rgba(245, 158, 11, 0.32),
-      0 0 0 13px rgba(245, 158, 11, 0.1),
-      0 0 46px rgba(245, 158, 11, 0.28);
+      0 38px 74px rgba(227, 38, 54, 0.32),
+      0 0 0 13px rgba(227, 38, 54, 0.1),
+      0 0 46px rgba(227, 38, 54, 0.28);
   }
   78% {
     transform: translateY(-18px) scaleX(1.16) scaleY(1.03);
@@ -811,12 +811,12 @@ a[class*="inline-flex"][class*="rounded"] {
   }
   92% {
     transform: translateY(5px) scaleX(0.98) scaleY(0.99);
-    background: #fff7ed;
+    background: #fff1f2;
     color: #16548b;
-    border-color: #f59e0b;
+    border-color: #E32636;
     box-shadow:
       0 14px 32px rgba(20, 91, 147, 0.16),
-      0 0 0 4px rgba(245, 158, 11, 0.08);
+      0 0 0 4px rgba(227, 38, 54, 0.08);
   }
   100% {
     transform: translateY(0) scaleX(1) scaleY(1);
