@@ -28,7 +28,7 @@ const defaultCategoryLinks = [
   { label: "Pharmaceutical Machinery", href: "/pharmaceutical-machinery" },
   { label: "Plastic Machinery", href: "/plastic-machinery" },
   { label: "Textile Machinery", href: "/textile-machinery" },
-  { label: "Carbide Scrap", href: "/categories" },
+  { label: "Carbide Scrap", href: "/carbide-scrap" },
 ];
 
 const specialDealsMenuLink = { label: "Special Deals", href: "/#special-deals" };
@@ -102,11 +102,13 @@ export default function TopHeader({
       const normalizedCategoryLinks = categoryLinks.map((item) =>
         item.label.trim().toLowerCase() === "special deals"
           ? { ...item, href: specialDealsMenuLink.href }
-          : item
+          : item.label.trim().toLowerCase() === "carbide scrap"
+            ? { ...item, href: "/carbide-scrap" }
+            : item
       );
 
-      const hasOtherOrCarbide = normalizedCategoryLinks.some((item) =>
-        ["other", "carbide scrap"].includes(item.label.trim().toLowerCase())
+      const hasCarbideScrap = normalizedCategoryLinks.some(
+        (item) => item.label.trim().toLowerCase() === "carbide scrap"
       );
       const hasSpecialDeals = normalizedCategoryLinks.some(
         (item) => item.label.trim().toLowerCase() === "special deals"
@@ -115,7 +117,7 @@ export default function TopHeader({
       return [
         ...normalizedCategoryLinks,
         ...(hasSpecialDeals ? [] : [specialDealsMenuLink]),
-        ...(hasOtherOrCarbide ? [] : [{ label: "Carbide Scrap", href: "/categories" }]),
+        ...(hasCarbideScrap ? [] : [{ label: "Carbide Scrap", href: "/carbide-scrap" }]),
       ];
     },
     [categoryLinks]

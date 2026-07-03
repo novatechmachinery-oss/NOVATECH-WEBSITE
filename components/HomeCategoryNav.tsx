@@ -17,14 +17,21 @@ const defaultTypes = [
   { label: "Pharmaceutical Machinery", href: "/pharmaceutical-machinery" },
   { label: "Plastic Machinery", href: "/plastic-machinery" },
   { label: "Textile Machinery", href: "/textile-machinery" },
-  { label: "Carbide Scrap", href: "/categories" },
+  { label: "Carbide Scrap", href: "/carbide-scrap" },
 ];
 
 export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNavProps) {
   const pathname = usePathname();
-  const resolvedTypes = types.some((item) => ["other", "carbide scrap"].includes(item.label.trim().toLowerCase()))
-    ? types
-    : [...types, { label: "Carbide Scrap", href: "/categories" }];
+  const normalizedTypes = types.map((item) =>
+    item.label.trim().toLowerCase() === "carbide scrap"
+      ? { ...item, href: "/carbide-scrap" }
+      : item
+  );
+  const resolvedTypes = normalizedTypes.some(
+    (item) => item.label.trim().toLowerCase() === "carbide scrap"
+  )
+    ? normalizedTypes
+    : [...normalizedTypes, { label: "Carbide Scrap", href: "/carbide-scrap" }];
   const carbideScrapType = resolvedTypes.find(
     (item) => item.label.trim().toLowerCase() === "carbide scrap"
   );
@@ -50,11 +57,11 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
 
   return (
     <div
-      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] lg:block lg:h-[50px]"
+      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] 2xl:block 2xl:h-[50px]"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
       <div className="w-full px-0">
-        <div className="flex flex-wrap gap-px bg-white/45 lg:h-[50px] lg:flex-nowrap">
+        <div className="flex flex-wrap gap-px bg-white/45 2xl:h-[50px] 2xl:flex-nowrap">
           {desktopTypes.map((item, index) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
             const Icon = iconMap[item.label.trim().toLowerCase() as keyof typeof iconMap] ?? Settings;

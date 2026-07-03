@@ -331,7 +331,12 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   </div>
                 </div>
 
-                <form className="mt-4 space-y-4" noValidate onSubmit={handleSubmit}>
+                <form
+                  id="enquiry-form"
+                  className="mt-4 scroll-mt-6 space-y-4"
+                  noValidate
+                  onSubmit={handleSubmit}
+                >
                   {submitState.kind !== "idle" ? (
                     <div
                       className={`border px-4 py-3 text-sm leading-7 ${
