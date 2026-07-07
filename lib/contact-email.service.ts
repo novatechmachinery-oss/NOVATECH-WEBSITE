@@ -73,6 +73,8 @@ function buildEmailContent(values: ContactFormValues) {
   const rows = [
     ["Name", name],
     ["Country", values.country],
+    ["Company Name", values.companyName || "-"],
+    ["Company Address", values.companyAddress || "-"],
     ["Phone", values.phone],
     ["Email", values.email],
     ["Machine of Interest", values.machineInterest],

@@ -1,6 +1,8 @@
 export const contactFormFields = [
   "fullName",
   "country",
+  "companyName",
+  "companyAddress",
   "email",
   "phone",
   "machineInterest",
@@ -16,6 +18,8 @@ export type ContactFormErrors = Partial<Record<ContactFormField, string>>;
 export const initialContactFormValues: ContactFormValues = {
   fullName: "",
   country: "",
+  companyName: "",
+  companyAddress: "",
   email: "",
   phone: "",
   machineInterest: "",
@@ -48,6 +52,8 @@ export function normalizeContactForm(
   return {
     fullName: normalizeInline(toText(input.fullName)),
     country: normalizeInline(toText(input.country)),
+    companyName: normalizeInline(toText(input.companyName)),
+    companyAddress: normalizeMultiline(toText(input.companyAddress)),
     email: normalizeInline(toText(input.email)).toLowerCase(),
     phone: normalizeInline(toText(input.phone)),
     machineInterest: normalizeInline(toText(input.machineInterest)),
@@ -69,6 +75,14 @@ export function validateContactForm(values: ContactFormValues) {
     errors.country = "Country is required.";
   } else if (!COUNTRY_PATTERN.test(values.country)) {
     errors.country = "Please select a valid country.";
+  }
+
+  if (values.companyName.length > 120) {
+    errors.companyName = "Company name should stay under 120 characters.";
+  }
+
+  if (values.companyAddress.length > 300) {
+    errors.companyAddress = "Company address should stay under 300 characters.";
   }
 
   if (!values.email) {

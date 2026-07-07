@@ -89,13 +89,19 @@ async function writeLeadsFile(leads: LeadRecord[]) {
 }
 
 function buildLeadRecord(values: ContactFormValues): LeadRecord {
+  const details = [
+    `Country: ${values.country}`,
+    values.companyName ? `Company Name: ${values.companyName}` : "",
+    values.companyAddress ? `Company Address: ${values.companyAddress}` : "",
+  ].filter(Boolean).join("\n");
+
   return {
     id: createId(),
     name: values.fullName,
     email: values.email,
     phone: values.phone,
     machineInterested: values.machineInterest,
-    message: `Country: ${values.country}` + "\n\n" + values.message,
+    message: `${details}\n\n${values.message}`,
     source: "website",
     createdAt: new Date().toISOString(),
   };

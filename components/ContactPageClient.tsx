@@ -3,6 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowUpRight,
+  Building2,
   ChevronDown,
   FileText,
   Globe,
@@ -282,9 +283,9 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
 
       <section className="relative z-10 -mt-10 pb-12 sm:-mt-18 sm:pb-14 lg:pb-20">
         <div className="mx-auto max-w-[1720px] px-3 sm:px-4 lg:px-5">
-          <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,70%)_minmax(320px,30%)] xl:gap-10">
+          <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,58%)_minmax(420px,42%)] xl:gap-10">
             <div className="overflow-hidden border border-slate-200 bg-white shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
-              <div className="relative h-[320px] w-full sm:h-[420px] lg:h-[760px]">
+              <div className="relative h-[320px] w-full sm:h-[420px] lg:h-[560px] xl:h-[760px]">
                 <iframe
                   title="Novatech Machinery office map"
                   src={contactLinks.mapsEmbedUrl}
@@ -522,6 +523,61 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                     </div>
                   </div>
 
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="companyName" className="mb-2 block text-sm font-bold text-slate-800">
+                        Company Name (Optional)
+                      </label>
+                      <div className="relative">
+                        <Building2 className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
+                        <input
+                          id="companyName"
+                          name="companyName"
+                          type="text"
+                          value={formValues.companyName}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Enter your company name"
+                          className={fieldClasses("companyName")}
+                          aria-invalid={Boolean(errors.companyName)}
+                          aria-describedby={errors.companyName ? "companyName-error" : undefined}
+                          autoComplete="organization"
+                        />
+                      </div>
+                      {errors.companyName ? (
+                        <p id="companyName-error" className="mt-2 text-xs font-semibold text-rose-600">
+                          {errors.companyName}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div>
+                      <label htmlFor="companyAddress" className="mb-2 block text-sm font-bold text-slate-800">
+                        Company Address (Optional)
+                      </label>
+                      <div className="relative">
+                        <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
+                        <input
+                          id="companyAddress"
+                          name="companyAddress"
+                          type="text"
+                          value={formValues.companyAddress}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Enter your company address"
+                          className={fieldClasses("companyAddress")}
+                          aria-invalid={Boolean(errors.companyAddress)}
+                          aria-describedby={errors.companyAddress ? "companyAddress-error" : undefined}
+                          autoComplete="street-address"
+                        />
+                      </div>
+                      {errors.companyAddress ? (
+                        <p id="companyAddress-error" className="mt-2 text-xs font-semibold text-rose-600">
+                          {errors.companyAddress}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
                   <div>
                     <label htmlFor="machineInterest" className="mb-2 block text-sm font-bold text-slate-800">
                       Machine of Interest *

@@ -4,12 +4,18 @@ import type { ContactFormValues } from "@/lib/contactForm";
 import { supabaseRest } from "@/lib/supabase";
 
 function buildLeadPayload(values: ContactFormValues) {
+  const details = [
+    `Country: ${values.country}`,
+    values.companyName ? `Company Name: ${values.companyName}` : "",
+    values.companyAddress ? `Company Address: ${values.companyAddress}` : "",
+  ].filter(Boolean).join("\n");
+
   return {
     name: values.fullName,
     email: values.email,
     phone: values.phone,
     machine_interested: values.machineInterest,
-    message: `Country: ${values.country}` + "\n\n" + values.message,
+    message: `${details}\n\n${values.message}`,
     lead_source: "website",
   };
 }
