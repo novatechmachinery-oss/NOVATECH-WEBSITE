@@ -5,6 +5,7 @@ import {
   validateContactForm,
 } from "@/lib/contactForm";
 import { sendContactEnquiryEmail } from "@/lib/contact-email.service";
+import { sendContactEnquiryToCrm } from "@/lib/crm-enquiry.service";
 import { saveLeadRecord } from "@/lib/leads.service";
 
 export const runtime = "nodejs";
@@ -35,12 +36,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    await saveLeadRecord(values);
+    const leadRecord = await saveLeadRecord(values);
 
     try {
       await sendContactEnquiryEmail(values);
     } catch (emailError) {
       console.error("Failed to send contact enquiry email.", emailError);
+    }
+
+    try {
+      await sendContactEnquiryToCrm(values, leadRecord);
+    } catch (crmError) {
+      console.error("Failed to sync contact enquiry to CRM.", crmError);
     }
 
     return NextResponse.json({
