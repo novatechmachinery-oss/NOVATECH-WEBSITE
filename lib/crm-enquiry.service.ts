@@ -21,17 +21,26 @@ function pickRuntimeNumber(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function inferMachineType(value: string) {
+  const normalized = value.toLowerCase();
+
+  if (normalized.includes("cnc")) {
+    return "CNC";
+  }
+
+  if (normalized.includes("conventional") || normalized.includes("convitional")) {
+    return "Conventional";
+  }
+
+  return "Pending";
+}
+
 function buildLocation(values: ContactFormValues) {
   return [values.country, values.companyAddress].filter(Boolean).join(" / ");
 }
 
 function buildDiscussion(values: ContactFormValues) {
-  const details = [
-    values.companyName ? `Company: ${values.companyName}` : "",
-    values.email ? `Email: ${values.email}` : "",
-  ].filter(Boolean);
-
-  return [...details, values.message].join("\n\n");
+  return values.message;
 }
 
 function buildCrmPayload(values: ContactFormValues, source?: CrmSyncSource) {
@@ -46,7 +55,7 @@ function buildCrmPayload(values: ContactFormValues, source?: CrmSyncSource) {
     company: values.companyName,
     location: buildLocation(values),
     machineName: values.machineInterest,
-    machineType: values.machineInterest,
+    machineType: inferMachineType(values.machineInterest),
     message: buildDiscussion(values),
     leadCategory: pickRuntimeValue(process.env.CRM_ENQUIRY_LEAD_CATEGORY) || DEFAULT_LEAD_CATEGORY,
     assignedTo,
