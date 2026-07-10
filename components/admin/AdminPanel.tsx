@@ -2172,7 +2172,7 @@ export default function AdminPanel() {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 overflow-x-hidden">
           {/* Top header bar */}
           <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-5">
             <div className="flex flex-wrap items-center gap-3">
@@ -2315,7 +2315,7 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="grid gap-6 xl:grid-cols-2">
-                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Website Messages</p>
@@ -2326,17 +2326,32 @@ export default function AdminPanel() {
                     <div className="mt-5 space-y-3">
                       {dashboard.recentLeads.slice(0, 5).length ? (
                         dashboard.recentLeads.slice(0, 5).map((lead) => (
-                          <div key={lead.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="font-semibold text-slate-900">{lead.name}</p>
-                                <p className="mt-1 text-sm text-slate-500">{lead.machineInterested}</p>
-                                <p className="mt-1 text-xs text-slate-400">{lead.email} • {lead.phone}</p>
-                                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
+                          <div key={lead.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-3.5 sm:px-4 sm:py-4">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 sm:gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2 sm:hidden mb-1">
+                                  <p className="font-semibold text-slate-900 break-words">{lead.name}</p>
+                                  <div className="flex shrink-0 items-center gap-1.5">
+                                    <p className="text-[11px] text-slate-400">{formatDate(lead.createdAt)}</p>
+                                    <button
+                                      type="button"
+                                      onClick={() => void removeLead(lead.id, lead.name)}
+                                      disabled={saving}
+                                      className="rounded-full border border-rose-200 p-1.5 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                      aria-label={`Delete lead from ${lead.name}`}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <p className="hidden sm:block font-semibold text-slate-900">{lead.name}</p>
+                                <p className="mt-0.5 sm:mt-1 text-sm text-slate-500 break-words">{lead.machineInterested}</p>
+                                <p className="mt-1 text-xs text-slate-400 break-all">{lead.email} • {lead.phone}</p>
+                                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500 break-words">
                                   {lead.message || "Website enquiry record"}
                                 </p>
                               </div>
-                              <div className="flex shrink-0 items-center gap-2">
+                              <div className="hidden sm:flex shrink-0 items-center gap-2">
                                 <p className="text-xs text-slate-400">{formatDate(lead.createdAt)}</p>
                                 <button
                                   type="button"
@@ -2359,7 +2374,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="rounded-[1.8rem] border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">New Machines</p>
@@ -2373,15 +2388,15 @@ export default function AdminPanel() {
                           const machineRow = machineRows.find((item) => item.id === machine.id);
 
                           return (
-                            <div key={machine.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                            <div key={machine.id} className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-3.5 sm:px-4 sm:py-4">
                               <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="font-semibold text-slate-900">{machine.name}</p>
-                                  <p className="mt-1 text-sm text-slate-500">
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-slate-900 break-words">{machine.name}</p>
+                                  <p className="mt-1 text-sm text-slate-500 break-words">
                                     {machineRow?.categoryLabel ?? "Unassigned"}
                                     {machineRow?.subcategoryLabel ? ` • ${machineRow.subcategoryLabel}` : ""}
                                   </p>
-                                  <p className="mt-1 text-xs text-slate-400">
+                                  <p className="mt-1 text-xs text-slate-400 break-words">
                                     {machine.brand || machine.model || formatStatusLabel(machine.stockStatus)}
                                   </p>
                                 </div>
@@ -2498,7 +2513,81 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
+                {/* Mobile view (< lg): Responsive stacked cards */}
+                <div className="lg:hidden space-y-3.5">
+                  {machineRows.map((machine) => (
+                    <div key={machine.id} className="rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="flex items-start gap-3.5">
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 border border-slate-100">
+                          {machine.images[0] ? (
+                            <Image
+                              src={machine.images[0]}
+                              alt={machine.name}
+                              width={64}
+                              height={64}
+                              unoptimized
+                              className="h-full w-full object-cover"
+                            />
+                          ) : null}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-bold text-slate-900 text-base break-words">{machine.name}</p>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openMachineModal(machine)}
+                                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void removeMachine(machine.id, machine.name)}
+                                className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 break-words">
+                            <span className="font-semibold text-slate-700">{machine.brand || "-"}</span>
+                            {machine.model ? ` • ${machine.model}` : ""}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold uppercase text-emerald-700">
+                              {machine.stockStatus.replaceAll("_", " ")}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 capitalize">
+                              {machine.machineType}
+                            </span>
+                            <span className="rounded-full bg-sky-50 border border-sky-100 px-2.5 py-1 text-[11px] font-semibold text-sky-800">
+                              {machine.categoryLabel}
+                              {machine.subcategoryLabel ? ` • ${machine.subcategoryLabel}` : ""}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {machineRows.length === 0 ? (
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-white p-8 text-center">
+                      <p className="font-semibold text-slate-900">
+                        {machineFiltersActive ? "No machines match these filters." : "No machines found."}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-500">
+                        {machineFiltersActive
+                          ? "Clear filters or widen the diameter and X travel ranges to see more machines."
+                          : "Add a machine to start building the inventory."}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Desktop view (>= lg): Full table */}
+                <div className="hidden lg:block overflow-x-auto rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
                   <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50 text-left text-sm text-slate-500">
                       <tr>
@@ -2587,7 +2676,67 @@ export default function AdminPanel() {
                   </button>
                 </div>
 
-                <div className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
+                {/* Mobile view (< md): Responsive stacked cards */}
+                <div className="md:hidden space-y-3">
+                  {categoryRows.map((category) => (
+                    <div key={category.id} className="rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <p className="font-bold text-slate-900 text-base break-words">{category.name}</p>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openCategoryModal(category)}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void removeCategory(category.id, category.name)}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="pt-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400 mb-2">
+                          Subcategories ({(childCategories.get(category.id) ?? []).length})
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(childCategories.get(category.id) ?? []).map((sub) => (
+                            <span
+                              key={sub.id}
+                              className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700"
+                            >
+                              {sub.name}
+                              <button
+                                type="button"
+                                onClick={() => openCategoryModal(sub)}
+                                className="rounded-full text-slate-500 transition hover:text-[#145b93]"
+                                aria-label={`Edit ${sub.name}`}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            </span>
+                          ))}
+                          {(childCategories.get(category.id) ?? []).length === 0 && (
+                            <span className="text-xs text-slate-400 italic">No subcategories</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {categoryRows.length === 0 ? (
+                    <div className="rounded-[1.4rem] border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+                      No categories found.
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Desktop view (>= md): Full table */}
+                <div className="hidden md:block overflow-x-auto rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
                   <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50 text-left text-sm text-slate-500">
                       <tr>
@@ -2680,13 +2829,28 @@ export default function AdminPanel() {
                     {dashboard.recentLeads.length ? (
                       <div className="mt-5 space-y-4">
                         {dashboard.recentLeads.map((lead) => (
-                          <div key={lead.id} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="min-w-0">
-                                <p className="text-lg font-black text-slate-900">{lead.name}</p>
-                                <p className="mt-1 text-sm text-slate-500">{lead.machineInterested || "General website enquiry"}</p>
+                          <div key={lead.id} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2 sm:hidden mb-1">
+                                  <p className="text-base font-black text-slate-900 break-words">{lead.name}</p>
+                                  <div className="flex shrink-0 items-center gap-1.5">
+                                    <p className="text-xs font-semibold text-slate-400">{formatDate(lead.createdAt)}</p>
+                                    <button
+                                      type="button"
+                                      onClick={() => void removeLead(lead.id, lead.name)}
+                                      disabled={saving}
+                                      className="rounded-full border border-rose-200 p-1.5 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                      aria-label={`Delete lead from ${lead.name}`}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <p className="hidden sm:block text-lg font-black text-slate-900">{lead.name}</p>
+                                <p className="mt-1 text-sm text-slate-500 break-words">{lead.machineInterested || "General website enquiry"}</p>
                               </div>
-                              <div className="flex shrink-0 items-center gap-2">
+                              <div className="hidden sm:flex shrink-0 items-center gap-2">
                                 <p className="text-xs font-semibold text-slate-400">{formatDate(lead.createdAt)}</p>
                                 <button
                                   type="button"
