@@ -64,28 +64,61 @@ function normalizeImages(images: unknown) {
     .filter(Boolean);
 }
 
+function stringifySpecValue(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : "";
+  if (typeof value === "boolean") return String(value);
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string") return item.trim();
+        if (typeof item === "number") return Number.isFinite(item) ? String(item) : "";
+        if (typeof item === "boolean") return String(item);
+        if (item && typeof item === "object") return JSON.stringify(item);
+        return "";
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  return "";
+}
+
+function normalizeSpecKey(parts: string[]) {
+  return parts
+    .map((part) => normalizeText(part).replace(/[_-]+/g, " ").replace(/\s+/g, " "))
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function flattenSpecEntries(value: unknown, pathParts: string[] = []): Array<[string, string]> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    const key = normalizeSpecKey(pathParts);
+    const normalizedValue = stringifySpecValue(value);
+    return key && normalizedValue ? [[key, normalizedValue]] : [];
+  }
+
+  return Object.entries(value as Record<string, unknown>).flatMap(([key, childValue]) => {
+    const nextPath = [...pathParts, key];
+
+    if (childValue && typeof childValue === "object" && !Array.isArray(childValue)) {
+      return flattenSpecEntries(childValue, nextPath);
+    }
+
+    const normalizedKey = normalizeSpecKey(nextPath);
+    const normalizedValue = stringifySpecValue(childValue);
+    return normalizedKey && normalizedValue ? [[normalizedKey, normalizedValue] as [string, string]] : [];
+  });
+}
+
 function normalizeSpecs(input: unknown) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     return {} as Record<string, string>;
   }
 
-  return Object.fromEntries(
-    Object.entries(input as Record<string, unknown>)
-      .map(([key, value]) => {
-        const normalizedKey = normalizeText(key);
-        const normalizedValue =
-          typeof value === "string"
-            ? value.trim()
-            : typeof value === "number" || typeof value === "boolean"
-              ? String(value)
-              : "";
-
-        return [normalizedKey, normalizedValue];
-      })
-      .filter(([key, value]) => key && value),
-  );
+  return Object.fromEntries(flattenSpecEntries(input));
 }
-
 function createId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
