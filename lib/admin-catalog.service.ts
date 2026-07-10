@@ -14,8 +14,8 @@ import type {
 import { getLeadRecords } from "@/lib/leads.service";
 import type { CategoryRow, MachineRow } from "@/lib/machine-catalog.types";
 import { isReadOnlyFilesystem, resolveProjectPath } from "@/lib/project-paths";
-import { isBase64Image, uploadBase64ImageToStorage } from "@/lib/image-storage";
-import { hasSupabaseConfig, supabaseRest, supabaseRestAdmin, supabaseRestCached } from "@/lib/supabase";
+import { isBase64Image, MACHINE_IMAGES_BUCKET, uploadBase64ImageToStorage } from "@/lib/image-storage";
+import { getSupabaseConfig, hasSupabaseConfig, supabaseRest, supabaseRestAdmin, supabaseRestCached, supabaseStorageRemove } from "@/lib/supabase";
 
 const catalogFilePath = resolveProjectPath("data", "admin-catalog.json");
 const supabaseCatalogTimeoutMs = 12_000;
@@ -503,6 +503,97 @@ export async function deleteAdminCategory(id: string) {
   });
 }
 
+function isSafeStoragePath(storagePath: string) {
+  const parts = storagePath.split("/");
+  return Boolean(storagePath && !storagePath.startsWith("/") && parts.every((part) => part && part !== "." && part !== ".."));
+}
+
+function getSupabaseMachineImagePath(imageUrl: string) {
+  if (!hasSupabaseConfig()) return null;
+
+  try {
+    const { url } = getSupabaseConfig();
+    const parsedUrl = new URL(imageUrl);
+    const supabaseOrigin = new URL(url).origin;
+    if (parsedUrl.origin !== supabaseOrigin) return null;
+
+    const objectPrefix = `/storage/v1/object/public/${MACHINE_IMAGES_BUCKET}/`;
+    const renderPrefix = `/storage/v1/render/image/public/${MACHINE_IMAGES_BUCKET}/`;
+    const matchedPrefix = parsedUrl.pathname.startsWith(objectPrefix)
+      ? objectPrefix
+      : parsedUrl.pathname.startsWith(renderPrefix)
+        ? renderPrefix
+        : null;
+
+    if (!matchedPrefix) return null;
+
+    const storagePath = decodeURIComponent(parsedUrl.pathname.slice(matchedPrefix.length));
+    return isSafeStoragePath(storagePath) ? storagePath : null;
+  } catch {
+    return null;
+  }
+}
+
+function getLocalPublicImagePath(imageUrl: string) {
+  try {
+    const pathname = imageUrl.startsWith("http://") || imageUrl.startsWith("https://")
+      ? new URL(imageUrl).pathname
+      : imageUrl;
+    const decodedPath = decodeURIComponent(pathname).replace(/\\/g, "/");
+    const localMachineImagePrefixes = ["/images/machines/", "/images/machine-images/", "/machine-images/"];
+    if (!localMachineImagePrefixes.some((prefix) => decodedPath.startsWith(prefix))) return null;
+
+    const relativeParts = decodedPath
+      .replace(/^\/+/, "")
+      .split("/")
+      .filter(Boolean);
+
+    if (relativeParts.some((part) => part === "." || part === "..")) return null;
+
+    const publicRoot = resolveProjectPath("public");
+    const resolvedPath = path.resolve(publicRoot, ...relativeParts);
+    const safeRoot = `${path.resolve(publicRoot)}${path.sep}`;
+
+    return resolvedPath.startsWith(safeRoot) ? resolvedPath : null;
+  } catch {
+    return null;
+  }
+}
+
+async function cleanupReplacedMachineImages(removedImages: string[], machinesAfterSave: AdminMachine[]) {
+  const referencedImages = new Set(machinesAfterSave.flatMap((machine) => machine.images));
+  const unusedImages = Array.from(new Set(removedImages.filter((image) => !referencedImages.has(image))));
+  if (unusedImages.length === 0) return;
+
+  const storagePaths = unusedImages
+    .map(getSupabaseMachineImagePath)
+    .filter((item): item is string => Boolean(item));
+
+  if (storagePaths.length > 0) {
+    try {
+      await supabaseStorageRemove(MACHINE_IMAGES_BUCKET, storagePaths);
+    } catch (error) {
+      console.warn("Unable to delete replaced Supabase machine images:", error);
+    }
+  }
+
+  if (isReadOnlyFilesystem()) return;
+
+  await Promise.all(
+    unusedImages.map(async (image) => {
+      const localPath = getLocalPublicImagePath(image);
+      if (!localPath) return;
+
+      try {
+        await unlink(localPath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+          console.warn(`Unable to delete replaced local image ${localPath}:`, error);
+        }
+      }
+    }),
+  );
+}
 export async function upsertAdminMachine(input: AdminMachineInput) {
   const catalog = await getAdminCatalog();
   const normalized = validateMachineInput(input, catalog.categories);
@@ -511,6 +602,7 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
   let machines = catalog.machines;
   const isUpdate = Boolean(input.id);
   const newId = input.id || createId("machine");
+  const oldMachine = isUpdate ? machines.find((machine) => machine.id === newId) : undefined;
 
   // Upload any base64 images to Supabase Storage before saving.
   // Images that are already URLs pass through unchanged.
@@ -528,11 +620,15 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
 
   const newMachine: AdminMachine = {
     id: newId,
-    createdAt: isUpdate ? (machines.find(m => m.id === input.id)?.createdAt ?? now) : now,
+    createdAt: oldMachine?.createdAt ?? now,
     updatedAt: now,
     ...normalized,
     images: resolvedImages,
   };
+
+  const removedImages = oldMachine
+    ? oldMachine.images.filter((image) => !resolvedImages.includes(image))
+    : [];
 
   if (isUpdate) {
     machines = machines.map((item) => (item.id === newId ? newMachine : item));
@@ -576,7 +672,9 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
     }
   }
 
-  return saveAdminCatalog({ ...catalog, machines });
+  const savedCatalog = await saveAdminCatalog({ ...catalog, machines });
+  await cleanupReplacedMachineImages(removedImages, savedCatalog.machines);
+  return savedCatalog;
 }
 
 export async function deleteAdminMachine(id: string) {

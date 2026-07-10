@@ -157,6 +157,63 @@ export async function supabaseStorageUpload(
   return getSupabaseStoragePublicUrl(bucket, storagePath);
 }
 
+export async function supabaseStorageCreateSignedUploadUrl(
+  bucket: string,
+  storagePath: string,
+  options: { upsert?: boolean } = {},
+): Promise<{ signedUrl: string; token: string; path: string }> {
+  const { url, storageKey } = getSupabaseConfig();
+  const response = await fetch(`${url}/storage/v1/object/upload/sign/${bucket}/${storagePath}`, {
+    method: "POST",
+    headers: {
+      apikey: storageKey,
+      Authorization: `Bearer ${storageKey}`,
+      "Content-Type": "application/json",
+      ...(options.upsert ? { "x-upsert": "true" } : {}),
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase signed upload URL failed (${response.status}): ${body}`);
+  }
+
+  const data = (await response.json()) as { signedURL?: string; signedUrl?: string; url?: string; token?: string; path?: string };
+  const signedUrl = data.signedUrl ?? data.signedURL ?? (data.url ? `${url}${data.url}` : "");
+  const token = data.token ?? (signedUrl ? new URL(signedUrl).searchParams.get("token") ?? "" : "");
+
+  if (!signedUrl || !token) {
+    throw new Error("Supabase did not return a valid signed upload URL.");
+  }
+
+  return {
+    signedUrl,
+    token,
+    path: data.path ?? storagePath,
+  };
+}
+
+export async function supabaseStorageRemove(bucket: string, storagePaths: string[]): Promise<void> {
+  const uniquePaths = Array.from(new Set(storagePaths.map((item) => item.trim()).filter(Boolean)));
+  if (uniquePaths.length === 0) return;
+
+  const { url, storageKey } = getSupabaseConfig();
+  const response = await fetch(`${url}/storage/v1/object/${bucket}`, {
+    method: "DELETE",
+    headers: {
+      apikey: storageKey,
+      Authorization: `Bearer ${storageKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefixes: uniquePaths }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase Storage delete failed (${response.status}): ${body}`);
+  }
+}
 /**
  * Returns the public CDN URL for a Supabase Storage object.
  */

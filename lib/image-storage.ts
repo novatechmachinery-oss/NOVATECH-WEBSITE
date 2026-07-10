@@ -4,7 +4,7 @@ import sharp from "sharp";
 
 import { hasSupabaseConfig, supabaseStorageUpload } from "@/lib/supabase";
 
-const BUCKET = "machine-images";
+export const MACHINE_IMAGES_BUCKET = "machine-images";
 const MAX_DIMENSION = 1600;
 const WEBP_QUALITY = 82;
 
@@ -36,11 +36,11 @@ function buildMachineFolder(machineId: string, machineName?: string): string {
   return sanitizePathSegment(machineName?.trim() || machineId);
 }
 
-function buildMachineStoragePath(machineId: string, imageIndex: number, machineName?: string): string {
+export function buildMachineImageStoragePath(machineId: string, imageIndex: number, machineName?: string, extension = "webp"): string {
   const machineFolder = buildMachineFolder(machineId, machineName);
   const safeMachineId = sanitizePathSegment(machineId);
   const version = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  return `${machineFolder}/${safeMachineId}-${imageIndex}-${version}.webp`;
+  return `${machineFolder}/${safeMachineId}-${imageIndex}-${version}.${extension}`;
 }
 
 /**
@@ -87,9 +87,9 @@ export async function uploadBase64ImageToStorage(
     const rawBuffer = Buffer.from(rawBase64, "base64");
     const optimizedBuffer = await optimizeImageBuffer(rawBuffer);
 
-    const storagePath = buildMachineStoragePath(machineId, imageIndex, machineName);
+    const storagePath = buildMachineImageStoragePath(machineId, imageIndex, machineName);
 
-    return await supabaseStorageUpload(BUCKET, storagePath, optimizedBuffer, "image/webp");
+    return await supabaseStorageUpload(MACHINE_IMAGES_BUCKET, storagePath, optimizedBuffer, "image/webp");
   } catch (error) {
     console.error(
       `Failed to upload image ${imageIndex} for machine ${machineId}:`,
@@ -110,7 +110,7 @@ export async function uploadImageFileToStorage(
   machineName?: string,
 ): Promise<string> {
   const optimizedBuffer = await optimizeImageBuffer(fileBuffer);
-  const storagePath = buildMachineStoragePath(machineId, imageIndex, machineName);
+  const storagePath = buildMachineImageStoragePath(machineId, imageIndex, machineName);
 
-  return supabaseStorageUpload(BUCKET, storagePath, optimizedBuffer, "image/webp");
+  return supabaseStorageUpload(MACHINE_IMAGES_BUCKET, storagePath, optimizedBuffer, "image/webp");
 }

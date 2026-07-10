@@ -67,3 +67,4 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
     </section>
   );
 }
+

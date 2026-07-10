@@ -117,6 +117,18 @@ type AdminAccessDraft = {
   password: string;
 };
 
+type SignedImageUpload = {
+  signedUrl: string;
+  path: string;
+  publicUrl: string;
+  contentType: string;
+};
+
+type OptimizedImageUpload = {
+  blob: Blob;
+  fileName: string;
+  contentType: "image/webp" | "image/jpeg";
+};
 const defaultCategoryForm: CategoryFormState = {
   mode: "category",
   name: "",
@@ -155,6 +167,9 @@ const MAIN_SITE_URL =
   process.env.NEXT_PUBLIC_MAIN_SITE_URL ||
   process.env.NEXT_PUBLIC_SITE_URL ||
   "https://novatechmachinery.in";
+const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
+const IMAGE_UPLOAD_QUALITY = 0.82;
+const IMAGE_UPLOAD_CONCURRENCY = 3;
 
 function slugify(value: string) {
   return value
@@ -164,10 +179,144 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function loadImageElement(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = document.createElement("img");
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`Unable to read image file: ${file.name}`));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: "image/webp" | "image/jpeg", quality: number) {
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, type, quality);
+  });
+}
+
+async function optimizeImageForDirectUpload(file: File): Promise<OptimizedImageUpload> {
+  const image = await loadImageElement(file);
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+
+  if (!sourceWidth || !sourceHeight) {
+    throw new Error(`Unable to determine image size: ${file.name}`);
+  }
+
+  const scale = Math.min(1, IMAGE_UPLOAD_MAX_DIMENSION / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) {
+    throw new Error("Your browser could not prepare the image for upload.");
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  const webpBlob = await canvasToBlob(canvas, "image/webp", IMAGE_UPLOAD_QUALITY);
+  const jpegBlob = webpBlob && webpBlob.type === "image/webp"
+    ? null
+    : await canvasToBlob(canvas, "image/jpeg", IMAGE_UPLOAD_QUALITY);
+  const blob = webpBlob?.type === "image/webp" ? webpBlob : jpegBlob;
+
+  if (!blob) {
+    throw new Error(`Unable to compress image: ${file.name}`);
+  }
+
+  const contentType = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
+  const extension = contentType === "image/webp" ? "webp" : "jpg";
+  const baseName = slugify(file.name.replace(/\.[^.]+$/, "")) || "machine-image";
+
+  return {
+    blob,
+    fileName: `${baseName}.${extension}`,
+    contentType,
+  };
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+) {
+  const results: R[] = [];
+  let nextIndex = 0;
+  const workerCount = Math.min(concurrency, items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex;
+        nextIndex += 1;
+        results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+      }
+    }),
+  );
+
+  return results;
+}
 function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+async function createSignedImageUpload(input: {
+  machineId: string;
+  machineName: string;
+  imageIndex: number;
+  contentType: string;
+}): Promise<SignedImageUpload> {
+  const response = await fetch("/api/admin/upload-image/sign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  const data = (await response.json()) as Partial<SignedImageUpload> & { error?: string };
+  if (!response.ok || data.error) {
+    throw new Error(data.error ?? "Unable to prepare image upload.");
+  }
+
+  if (!data.signedUrl || !data.path || !data.publicUrl || !data.contentType) {
+    throw new Error("Image upload preparation returned an invalid response.");
+  }
+
+  return {
+    signedUrl: data.signedUrl,
+    path: data.path,
+    publicUrl: data.publicUrl,
+    contentType: data.contentType,
+  };
+}
+async function uploadOptimizedImageToSupabase(upload: SignedImageUpload, optimized: OptimizedImageUpload) {
+  const formData = new FormData();
+  formData.append("cacheControl", "31536000");
+  formData.append("", optimized.blob, optimized.fileName);
+
+  const response = await fetch(upload.signedUrl, {
+    method: "PUT",
+    headers: {
+      "x-upsert": "false",
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase image upload failed (${response.status}): ${body}`);
+  }
+}
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
@@ -593,6 +742,8 @@ export default function AdminPanel() {
   const [newsletterSearch, setNewsletterSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [machineSpecificationsError, setMachineSpecificationsError] = useState<string | null>(null);
@@ -1848,39 +1999,43 @@ export default function AdminPanel() {
 
     const machineId = machineForm.id || `tmp_${Math.random().toString(36).slice(2, 10)}`;
     const existingCount = machineForm.images.length;
+    let completedCount = 0;
+
+    setUploadingImages(true);
+    setImageUploadStatus(`Preparing ${valid.length} image${valid.length === 1 ? "" : "s"}...`);
+    setError(null);
 
     try {
-      const uploadPromises = valid.map(async (file, localIndex) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("machineId", machineId);
-        formData.append("machineName", machineName);
-        formData.append("imageIndex", String(existingCount + localIndex));
-
-        const response = await fetch("/api/admin/upload-image", {
-          method: "POST",
-          body: formData,
+      const urls = await mapWithConcurrency(valid, IMAGE_UPLOAD_CONCURRENCY, async (file, localIndex) => {
+        setImageUploadStatus(`Optimizing ${file.name} (${completedCount + 1}/${valid.length})...`);
+        const optimized = await optimizeImageForDirectUpload(file);
+        const signedUpload = await createSignedImageUpload({
+          machineId,
+          machineName,
+          imageIndex: existingCount + localIndex,
+          contentType: optimized.contentType,
         });
 
-        if (!response.ok) {
-          const data = (await response.json()) as { error?: string };
-          throw new Error(data.error ?? `Upload failed for ${file.name}`);
-        }
+        setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${valid.length})...`);
+        await uploadOptimizedImageToSupabase(signedUpload, optimized);
+        completedCount += 1;
+        setImageUploadStatus(`Uploaded ${completedCount}/${valid.length} image${valid.length === 1 ? "" : "s"}.`);
 
-        const data = (await response.json()) as { url: string };
-        return data.url;
+        return signedUpload.publicUrl;
       });
 
-      const urls = await Promise.all(uploadPromises);
       setMachineForm((current) => ({
         ...current,
         images: [...current.images, ...urls],
       }));
+      setImageUploadStatus(`Uploaded ${urls.length} optimized image${urls.length === 1 ? "" : "s"}.`);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Images could not be uploaded.");
+      setImageUploadStatus(null);
+    } finally {
+      setUploadingImages(false);
     }
   }
-
   function makePrimaryImage(index: number) {
     setMachineForm((current) => {
       if (index === 0) return current;
@@ -3561,11 +3716,16 @@ export default function AdminPanel() {
       {categoryModalOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
-          onClick={() => setCategoryModalOpen(false)}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setCategoryModalOpen(false);
+            }
+          }}
         >
           <div
             className="w-full max-w-xl rounded-[1.6rem] bg-white p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black">
@@ -3778,11 +3938,16 @@ export default function AdminPanel() {
       {machineModalOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
-          onClick={() => setMachineModalOpen(false)}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setMachineModalOpen(false);
+            }
+          }}
         >
           <div
             className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[1.7rem] bg-white p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h3 className="text-[1.8rem] font-black">{machineForm.id ? "Edit Machine" : "Add Machine"}</h3>
@@ -3874,23 +4039,25 @@ export default function AdminPanel() {
                     <p className="text-sm font-semibold text-slate-900">Machine Images</p>
                     <p className="text-xs text-slate-500">Click the box to open the file manager. You can select multiple images.</p>
                   </div>
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingImages} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400">
                     <ImagePlus className="h-4 w-4" />
-                    Select Images
+                    {uploadingImages ? "Uploading..." : "Select Images"}
                   </button>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-4 flex h-52 w-full items-center justify-center rounded-[1.4rem] border-2 border-dashed border-slate-300 bg-white text-slate-500 transition hover:border-sky-300 hover:bg-sky-50"
+                  disabled={uploadingImages}
+                  className="mt-4 flex h-52 w-full items-center justify-center rounded-[1.4rem] border-2 border-dashed border-slate-300 bg-white text-slate-500 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:bg-slate-100"
                 >
                   <span className="flex flex-col items-center gap-3">
                     <Upload className="h-8 w-8" />
-                    <span className="text-sm font-semibold">Click to open file manager</span>
+                    <span className="text-sm font-semibold">{uploadingImages ? "Uploading optimized images..." : "Click to open file manager"}</span>
                     <span className="text-xs">PNG, JPG, WebP multiple images</span>
                   </span>
                 </button>
+                {imageUploadStatus ? <p className="mt-3 text-xs font-semibold text-sky-700">{imageUploadStatus}</p> : null}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -3954,10 +4121,10 @@ export default function AdminPanel() {
               <button
                 type="button"
                 onClick={() => void saveMachine()}
-                disabled={saving}
+                disabled={saving || uploadingImages}
                 className="rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#10486f] disabled:cursor-not-allowed disabled:bg-slate-300"
               >
-                {saving ? "Saving..." : "Save Machine"}
+                {saving ? "Saving..." : uploadingImages ? "Uploading..." : "Save Machine"}
               </button>
             </div>
           </div>
