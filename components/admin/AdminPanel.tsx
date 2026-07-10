@@ -17,6 +17,7 @@ import {
   KeyRound,
   LayoutDashboard,
   Mail,
+  Menu,
   MessageSquareQuote,
   Package2,
   Pencil,
@@ -732,6 +733,7 @@ function ToggleField({
 export default function AdminPanel() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<AdminSection>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [catalog, setCatalog] = useState<AdminCatalogSnapshot | null>(null);
   const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
@@ -2112,17 +2114,39 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-[#edf2f7] text-slate-950">
-      <div className="grid min-h-screen lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="border-r border-slate-200 bg-white">
+      {/* Mobile sidebar backdrop overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
+        {/* Sidebar: slide-in drawer on mobile, static column on lg+ */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-[260px] overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:translate-x-0 lg:transition-none ${
+            sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+          }`}
+        >
           <div className="border-b border-slate-200 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0d3f66_0%,#155b92_60%,#2f7fc7_100%)] text-white shadow-[0_16px_30px_rgba(20,91,147,0.24)]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0d3f66_0%,#155b92_60%,#2f7fc7_100%)] text-white shadow-[0_16px_30px_rgba(20,91,147,0.24)]">
                 <Settings2 className="h-5 w-5" />
               </div>
-              <div>
-                <p className="text-xl font-black">{siteSettings?.companyName ?? "Novatech"}</p>
-                <p className="text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.com"}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xl font-black">{siteSettings?.companyName ?? "Novatech"}</p>
+                <p className="truncate text-sm text-slate-500">{siteSettings?.adminEmail ?? "info@novatechmachinery.com"}</p>
               </div>
+              {/* Close button — mobile only */}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="ml-auto shrink-0 rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
@@ -2133,14 +2157,14 @@ export default function AdminPanel() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => { setActiveSection(item.id); setSidebarOpen(false); }}
                   className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left text-[0.98rem] font-semibold transition ${
                     activeSection === item.id
                       ? "border-[#145b93] bg-sky-50 text-[#145b93]"
                       : "border-transparent text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  <item.icon className="h-4.5 w-4.5" />
+                  <item.icon className="h-4.5 w-4.5 shrink-0" />
                   {item.label}
                 </button>
               ))}
@@ -2148,23 +2172,37 @@ export default function AdminPanel() {
           </div>
         </aside>
 
-        <main className="min-w-0">
-          <div className="border-b border-slate-200 bg-white px-6 py-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h1 className="text-[2rem] font-black">
+        <main className="min-w-0 flex-1">
+          {/* Top header bar */}
+          <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-5">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Hamburger — mobile/tablet only */}
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 lg:hidden"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+
+              {/* Title */}
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-xl font-black sm:text-[2rem]">
                   {sidebarItems.find((item) => item.id === activeSection)?.label}
                 </h1>
-                <p className="mt-1 text-sm text-slate-500">Manage full site control from here.</p>
+                <p className="mt-0.5 hidden text-sm text-slate-500 sm:block">Manage full site control from here.</p>
               </div>
-              <div className="flex items-center gap-3">
+
+              {/* Action buttons */}
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => void loadAdminData()}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:px-4 sm:py-2.5"
                 >
                   <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
                 <a
                   href={
@@ -2174,9 +2212,10 @@ export default function AdminPanel() {
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#10486f]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#145b93] px-3 py-2 text-sm font-semibold text-white hover:bg-[#10486f] sm:px-4 sm:py-2.5"
                 >
-                  View Site
+                  <Globe className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline">View Site</span>
                 </a>
                 <button
                   type="button"
@@ -2186,16 +2225,16 @@ export default function AdminPanel() {
                     await fetch(logoutUrl, { method: "POST" });
                     router.replace(isStandalone ? "/login" : "/admin/login");
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 sm:px-4 sm:py-2.5"
                 >
                   <LogOut className="h-4 w-4" />
-                  Logout
+                  <span className="hidden sm:inline">Logout</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             {message ? <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</div> : null}
             {error ? <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
 
