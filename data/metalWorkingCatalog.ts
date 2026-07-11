@@ -701,3 +701,4 @@ export const machineInventory: MachineItem[] = [
   ...demoMachineInventory,
   ...generatedCategoryMachines,
 ];
+
