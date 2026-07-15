@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { uploadImageFileToStorage } from "@/lib/image-storage";
+import { uploadImageFileToStorage, uploadOptimizedImageFileToStorage } from "@/lib/image-storage";
 import { hasSupabaseConfig } from "@/lib/supabase";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const machineId = formData.get("machineId");
     const machineName = formData.get("machineName");
     const imageIndex = formData.get("imageIndex");
+    const preOptimized = formData.get("preOptimized");
     const file = formData.get("file");
 
     if (!machineId || typeof machineId !== "string") {
@@ -52,12 +53,21 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
-    const publicUrl = await uploadImageFileToStorage(
-      fileBuffer,
-      machineId,
-      Number(imageIndex),
-      typeof machineName === "string" ? machineName : undefined,
-    );
+    const isPreOptimized = preOptimized === "true";
+    const publicUrl = isPreOptimized && (file.type === "image/webp" || file.type === "image/jpeg")
+      ? await uploadOptimizedImageFileToStorage(
+          fileBuffer,
+          machineId,
+          Number(imageIndex),
+          typeof machineName === "string" ? machineName : undefined,
+          file.type,
+        )
+      : await uploadImageFileToStorage(
+          fileBuffer,
+          machineId,
+          Number(imageIndex),
+          typeof machineName === "string" ? machineName : undefined,
+        );
 
     return NextResponse.json({ url: publicUrl });
   } catch (error) {

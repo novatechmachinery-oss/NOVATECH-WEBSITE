@@ -118,13 +118,6 @@ type AdminAccessDraft = {
   password: string;
 };
 
-type SignedImageUpload = {
-  signedUrl: string;
-  path: string;
-  publicUrl: string;
-  contentType: string;
-};
-
 type OptimizedImageUpload = {
   blob: Blob;
   fileName: string;
@@ -272,51 +265,30 @@ function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-async function createSignedImageUpload(input: {
+async function uploadOptimizedImageThroughApi(input: {
   machineId: string;
   machineName: string;
   imageIndex: number;
-  contentType: string;
-}): Promise<SignedImageUpload> {
-  const response = await fetch("/api/admin/upload-image/sign", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-
-  const data = (await response.json()) as Partial<SignedImageUpload> & { error?: string };
-  if (!response.ok || data.error) {
-    throw new Error(data.error ?? "Unable to prepare image upload.");
-  }
-
-  if (!data.signedUrl || !data.path || !data.publicUrl || !data.contentType) {
-    throw new Error("Image upload preparation returned an invalid response.");
-  }
-
-  return {
-    signedUrl: data.signedUrl,
-    path: data.path,
-    publicUrl: data.publicUrl,
-    contentType: data.contentType,
-  };
-}
-async function uploadOptimizedImageToSupabase(upload: SignedImageUpload, optimized: OptimizedImageUpload) {
+  optimized: OptimizedImageUpload;
+}) {
   const formData = new FormData();
-  formData.append("cacheControl", "31536000");
-  formData.append("", optimized.blob, optimized.fileName);
+  formData.append("file", input.optimized.blob, input.optimized.fileName);
+  formData.append("machineId", input.machineId);
+  formData.append("machineName", input.machineName);
+  formData.append("imageIndex", String(input.imageIndex));
+  formData.append("preOptimized", "true");
 
-  const response = await fetch(upload.signedUrl, {
-    method: "PUT",
-    headers: {
-      "x-upsert": "false",
-    },
+  const response = await fetch("/api/admin/upload-image", {
+    method: "POST",
     body: formData,
   });
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Supabase image upload failed (${response.status}): ${body}`);
+  const data = (await response.json()) as { url?: string; error?: string };
+  if (!response.ok || !data.url) {
+    throw new Error(data.error ?? "Image upload failed.");
   }
+
+  return data.url;
 }
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -2011,19 +1983,17 @@ export default function AdminPanel() {
       const urls = await mapWithConcurrency(valid, IMAGE_UPLOAD_CONCURRENCY, async (file, localIndex) => {
         setImageUploadStatus(`Optimizing ${file.name} (${completedCount + 1}/${valid.length})...`);
         const optimized = await optimizeImageForDirectUpload(file);
-        const signedUpload = await createSignedImageUpload({
+        setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${valid.length})...`);
+        const uploadedUrl = await uploadOptimizedImageThroughApi({
           machineId,
           machineName,
           imageIndex: existingCount + localIndex,
-          contentType: optimized.contentType,
+          optimized,
         });
-
-        setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${valid.length})...`);
-        await uploadOptimizedImageToSupabase(signedUpload, optimized);
         completedCount += 1;
         setImageUploadStatus(`Uploaded ${completedCount}/${valid.length} image${valid.length === 1 ? "" : "s"}.`);
 
-        return signedUpload.publicUrl;
+        return uploadedUrl;
       });
 
       setMachineForm((current) => ({

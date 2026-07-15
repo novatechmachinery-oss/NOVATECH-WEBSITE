@@ -114,3 +114,19 @@ export async function uploadImageFileToStorage(
 
   return supabaseStorageUpload(MACHINE_IMAGES_BUCKET, storagePath, optimizedBuffer, "image/webp");
 }
+
+/**
+ * Upload a browser-optimized image buffer without re-compressing it server-side.
+ */
+export async function uploadOptimizedImageFileToStorage(
+  fileBuffer: Buffer,
+  machineId: string,
+  imageIndex: number,
+  machineName: string | undefined,
+  contentType: "image/webp" | "image/jpeg",
+): Promise<string> {
+  const extension = contentType === "image/webp" ? "webp" : "jpg";
+  const storagePath = buildMachineImageStoragePath(machineId, imageIndex, machineName, extension);
+
+  return supabaseStorageUpload(MACHINE_IMAGES_BUCKET, storagePath, fileBuffer, contentType);
+}
