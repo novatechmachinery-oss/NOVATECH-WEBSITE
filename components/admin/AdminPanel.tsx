@@ -21,7 +21,6 @@ import {
   MessageSquareQuote,
   Package2,
   Pencil,
-  Phone,
   Plus,
   RefreshCcw,
   Save,
@@ -2814,124 +2813,140 @@ export default function AdminPanel() {
             ) : null}
 
             {activeSection === "leads" && dashboard ? (
-              <div className="space-y-6">
-                <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
-                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Lead Inbox</p>
-                    <h2 className="mt-2 text-2xl font-black text-slate-900">Website enquiries</h2>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
+              <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 sm:text-xs">Lead Inbox</p>
+                    <h2 className="mt-2 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">Website enquiries</h2>
+                    <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500">
                       Contact form, newsletter, and website messages will appear here as soon as visitors submit them.
                     </p>
-
-                    <div className="mt-6 rounded-[1.5rem] bg-[linear-gradient(145deg,#0f3b63_0%,#145b93_58%,#2f7fc7_100%)] p-5 text-white shadow-[0_18px_40px_rgba(20,91,147,0.22)]">
-                      <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-100">Total Leads</p>
-                      <p className="mt-3 text-5xl font-black leading-none">{dashboard.recentLeads.length}</p>
-                      <p className="mt-3 text-sm leading-6 text-sky-100/90">
-                        Latest enquiry records from your live website forms.
-                      </p>
-                    </div>
-
-                    <div className="mt-5 grid gap-3">
-                      <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 px-4 py-4">
-                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">What shows here</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          Name, phone number, email, machine interest, message, and enquiry date.
-                        </p>
-                      </div>
-                    </div>
                   </div>
-
-                  <div className="rounded-[1.7rem] border border-slate-200 bg-white p-6 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Recent Messages</p>
-                        <h2 className="mt-2 text-2xl font-black text-slate-900">Latest lead records</h2>
-                      </div>
-                      <MessageSquareQuote className="h-5 w-5 text-slate-400" />
+                  <div className="flex w-full items-center justify-between gap-3 rounded-[1rem] bg-[linear-gradient(145deg,#0f3b63_0%,#145b93_62%,#2f7fc7_100%)] px-5 py-4 text-white shadow-[0_14px_32px_rgba(20,91,147,0.18)] sm:w-auto sm:min-w-[220px]">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-sky-100">Total Leads</p>
+                      <p className="mt-1 text-sm font-semibold text-sky-100/90">Live website records</p>
                     </div>
-
-                    {dashboard.recentLeads.length ? (
-                      <div className="mt-5 space-y-4">
-                        {dashboard.recentLeads.map((lead) => (
-                          <div key={lead.id} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-start justify-between gap-2 sm:hidden mb-1">
-                                  <p className="text-base font-black text-slate-900 break-words">{lead.name}</p>
-                                  <div className="flex shrink-0 items-center gap-1.5">
-                                    <p className="text-xs font-semibold text-slate-400">{formatDate(lead.createdAt)}</p>
-                                    <button
-                                      type="button"
-                                      onClick={() => void removeLead(lead.id, lead.name)}
-                                      disabled={saving}
-                                      className="rounded-full border border-rose-200 p-1.5 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                      aria-label={`Delete lead from ${lead.name}`}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                                <p className="hidden sm:block text-lg font-black text-slate-900">{lead.name}</p>
-                                <p className="mt-1 text-sm text-slate-500 break-words">{lead.machineInterested || "General website enquiry"}</p>
-                              </div>
-                              <div className="hidden sm:flex shrink-0 items-center gap-2">
-                                <p className="text-xs font-semibold text-slate-400">{formatDate(lead.createdAt)}</p>
-                                <button
-                                  type="button"
-                                  onClick={() => void removeLead(lead.id, lead.name)}
-                                  disabled={saving}
-                                  className="rounded-full border border-rose-200 p-2 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                  aria-label={`Delete lead from ${lead.name}`}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Phone</p>
-                                <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
-                                  <Phone className="h-4 w-4 text-slate-400" />
-                                  {lead.phone || "Not provided"}
-                                </p>
-                              </div>
-                              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Email</p>
-                                <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-800 break-all">
-                                  <Mail className="h-4 w-4 text-slate-400" />
-                                  {lead.email || "Not provided"}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white px-4 py-4">
-                              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Message</p>
-                              <p className="mt-2 text-sm leading-7 text-slate-700">
-                                {lead.message || "No message added by the visitor."}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="mt-5 flex min-h-[360px] items-center justify-center rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
-                        <div className="max-w-md">
-                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                            <MessageSquareQuote className="h-7 w-7" />
-                          </div>
-                          <h3 className="mt-5 text-xl font-black text-slate-900">No enquiries yet</h3>
-                          <p className="mt-3 text-sm leading-7 text-slate-500">
-                            When someone sends a message from the website, their name, phone number, email, machine interest, and message will appear here automatically.
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    <p className="text-4xl font-black leading-none">{dashboard.recentLeads.length}</p>
                   </div>
                 </div>
+
+                {dashboard.recentLeads.length ? (
+                  <>
+                    <div className="mt-5 hidden overflow-hidden rounded-[1rem] border border-slate-200 lg:block">
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[1080px] border-collapse bg-white text-left">
+                          <thead>
+                            <tr className="border-b border-slate-200 bg-white text-sm font-black text-slate-500">
+                              <th className="px-5 py-4">Name</th>
+                              <th className="px-5 py-4">Phone</th>
+                              <th className="px-5 py-4">Email</th>
+                              <th className="px-5 py-4">Machine</th>
+                              <th className="px-5 py-4">Message</th>
+                              <th className="px-5 py-4">Submitted</th>
+                              <th className="px-5 py-4 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {dashboard.recentLeads.map((lead) => (
+                              <tr key={lead.id} className="border-b border-slate-200 text-sm font-semibold text-slate-500 last:border-b-0 even:bg-slate-50/70 hover:bg-sky-50/50">
+                                <td className="max-w-[180px] px-5 py-5 align-top font-black text-slate-950">
+                                  <span className="block break-words">{lead.name || "Not provided"}</span>
+                                </td>
+                                <td className="px-5 py-5 align-top">
+                                  <span className="break-words">{lead.phone || "Not provided"}</span>
+                                </td>
+                                <td className="max-w-[240px] px-5 py-5 align-top">
+                                  <span className="block break-all">{lead.email || "Not provided"}</span>
+                                </td>
+                                <td className="max-w-[260px] px-5 py-5 align-top">
+                                  <span className="block break-words leading-6">{lead.machineInterested || "General website enquiry"}</span>
+                                </td>
+                                <td className="max-w-[320px] px-5 py-5 align-top">
+                                  <span className="line-clamp-3 break-words leading-6">{lead.message || "No message added by the visitor."}</span>
+                                </td>
+                                <td className="px-5 py-5 align-top">
+                                  <span className="whitespace-nowrap">{formatDate(lead.createdAt)}</span>
+                                </td>
+                                <td className="px-5 py-5 align-top text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeLead(lead.id, lead.name)}
+                                    disabled={saving}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    aria-label={`Delete lead from ${lead.name}`}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-3 lg:hidden">
+                      {dashboard.recentLeads.map((lead) => (
+                        <article key={lead.id} className="rounded-[1rem] border border-slate-200 bg-white p-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="break-words text-lg font-black leading-tight text-slate-950">{lead.name || "Not provided"}</p>
+                              <p className="mt-1 break-words text-sm font-semibold leading-5 text-slate-500">
+                                {lead.machineInterested || "General website enquiry"}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeLead(lead.id, lead.name)}
+                              disabled={saving}
+                              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label={`Delete lead from ${lead.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          <div className="mt-4 flex flex-col gap-2 text-sm font-semibold text-slate-600">
+                            <div className="flex min-w-0 gap-2">
+                              <span className="w-20 shrink-0 text-slate-400">Phone</span>
+                              <span className="min-w-0 break-words">{lead.phone || "Not provided"}</span>
+                            </div>
+                            <div className="flex min-w-0 gap-2">
+                              <span className="w-20 shrink-0 text-slate-400">Email</span>
+                              <span className="min-w-0 break-all">{lead.email || "Not provided"}</span>
+                            </div>
+                            <div className="flex min-w-0 gap-2">
+                              <span className="w-20 shrink-0 text-slate-400">Submitted</span>
+                              <span className="min-w-0">{formatDate(lead.createdAt)}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 rounded-[0.9rem] border border-slate-200 bg-slate-50 px-3 py-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Message</p>
+                            <p className="mt-2 break-words text-sm font-semibold leading-6 text-slate-700">
+                              {lead.message || "No message added by the visitor."}
+                            </p>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-5 flex min-h-[320px] items-center justify-center rounded-[1.25rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                    <div className="max-w-md">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                        <MessageSquareQuote className="h-7 w-7" />
+                      </div>
+                      <h3 className="mt-5 text-xl font-black text-slate-900">No enquiries yet</h3>
+                      <p className="mt-3 text-sm font-semibold leading-7 text-slate-500">
+                        When someone sends a message from the website, their name, phone number, email, machine interest, and message will appear here automatically.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : null}
-
             {activeSection === "newsletter" ? (
               <div className="space-y-6">
                 <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
