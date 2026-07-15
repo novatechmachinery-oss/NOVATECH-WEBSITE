@@ -40,6 +40,7 @@ export async function middleware(request: NextRequest) {
     return new NextResponse("Admin is not available on this deployment.", { status: 404 });
   }
 
+  // Allow login page and public API routes through
   if (pathname === LOGIN_PAGE || PUBLIC_ADMIN_API_ROUTES.has(pathname)) {
     return NextResponse.next();
   }
@@ -48,6 +49,7 @@ export async function middleware(request: NextRequest) {
   const admin = await getAuthenticatedAdmin(request, response);
 
   if (!admin) {
+    // For API routes — return 401
     if (pathname.startsWith("/api/")) {
       const unauthorizedResponse = NextResponse.json(
         { error: "Unauthorized. Please log in to access this resource." },
@@ -57,11 +59,9 @@ export async function middleware(request: NextRequest) {
       return unauthorizedResponse;
     }
 
-    const loginUrl = new URL(LOGIN_PAGE, request.url);
-    loginUrl.searchParams.set("from", pathname);
-    const redirectResponse = NextResponse.redirect(loginUrl);
-    clearAdminAuthCookies(request, redirectResponse);
-    return redirectResponse;
+    // For all other /admin/* routes — return 404 (hide admin panel existence)
+    clearAdminAuthCookies(request, response);
+    return new NextResponse(null, { status: 404 });
   }
 
   return response;
