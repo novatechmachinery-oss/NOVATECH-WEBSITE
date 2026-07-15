@@ -41,7 +41,7 @@ export default async function CarbideScrapPage() {
               <p className="flex items-center gap-4 text-[0.82rem] font-black uppercase tracking-[0.2em] text-[#145b93] sm:text-sm">
                 <span className="h-0.5 w-12 bg-[#E32636]" />Carbide Scrap<span className="h-0.5 w-12 bg-[#E32636]" />
               </p>
-              <h1 className="mt-5 text-[2.35rem] font-black leading-[0.98] tracking-[-0.04em] text-[#073b5c] sm:text-[3.2rem] xl:text-[3.8rem]">
+              <h1 className="mt-5 text-2xl font-black leading-tight text-[#073b5c] sm:text-3xl">
                 Have a<br />Carbide Scrap<br /><span className="text-[#df202c]">Requirement?</span>
               </h1>
               <span className="mt-6 block h-1 w-24 bg-[#145b93]" />

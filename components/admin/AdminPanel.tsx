@@ -2862,8 +2862,8 @@ export default function AdminPanel() {
                                 <td className="max-w-[260px] px-5 py-5 align-top">
                                   <span className="block break-words leading-6">{lead.machineInterested || "General website enquiry"}</span>
                                 </td>
-                                <td className="max-w-[320px] px-5 py-5 align-top">
-                                  <span className="line-clamp-3 break-words leading-6">{lead.message || "No message added by the visitor."}</span>
+                                <td className="max-w-[420px] px-5 py-5 align-top">
+                                  <span className="line-clamp-5 break-words leading-6">{lead.message || "No message added by the visitor."}</span>
                                 </td>
                                 <td className="px-5 py-5 align-top">
                                   <span className="whitespace-nowrap">{formatDate(lead.createdAt)}</span>

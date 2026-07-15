@@ -27,10 +27,10 @@ export default function CarbideEnquiryForm() {
       "Carbide scrap enquiry",
       `Material: ${values.material}`,
       `Preferred form: ${values.preferredForm || "Not specified"}`,
-      `Quantity: ${values.quantity} ${values.unit}`,
+      `Quantity required: ${values.quantity} ${values.unit}`,
       `Grade / specification: ${values.grade || "Not specified"}`,
       `Additional requirements: ${values.requirements || "None"}`,
-    ].join("\n");
+    ].join(" | ");
 
     try {
       const response = await fetch("/api/contact", {
