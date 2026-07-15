@@ -290,6 +290,21 @@ async function uploadOptimizedImageThroughApi(input: {
 
   return data.url;
 }
+async function cleanupPendingUploadedImages(urls: string[]) {
+  const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
+  if (uniqueUrls.length === 0) return;
+
+  const response = await fetch("/api/admin/upload-image/cleanup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ urls: uniqueUrls }),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(data?.error ?? "Pending uploaded images could not be cleaned up.");
+  }
+}
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
@@ -718,6 +733,7 @@ export default function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null);
+  const [pendingUploadedImageUrls, setPendingUploadedImageUrls] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [machineSpecificationsError, setMachineSpecificationsError] = useState<string | null>(null);
@@ -1400,6 +1416,34 @@ export default function AdminPanel() {
     setCategoryModalOpen(true);
   }
 
+  async function closeMachineModal() {
+    if (uploadingImages) {
+      setError("Please wait until image upload finishes before closing this machine.");
+      return;
+    }
+
+    const pendingUrls = Array.from(new Set(pendingUploadedImageUrls));
+    if (pendingUrls.length > 0) {
+      const shouldDiscard = window.confirm(
+        `${pendingUrls.length} uploaded image${pendingUrls.length === 1 ? "" : "s"} ${pendingUrls.length === 1 ? "is" : "are"} not saved to this machine yet. Discard and delete ${pendingUrls.length === 1 ? "it" : "them"}?`,
+      );
+
+      if (!shouldDiscard) {
+        return;
+      }
+
+      try {
+        await cleanupPendingUploadedImages(pendingUrls);
+      } catch (cleanupError) {
+        setError(cleanupError instanceof Error ? cleanupError.message : "Pending uploaded images could not be cleaned up.");
+        return;
+      }
+    }
+
+    setPendingUploadedImageUrls([]);
+    setImageUploadStatus(null);
+    setMachineModalOpen(false);
+  }
   async function saveMachine() {
     setSaving(true);
     setError(null);
@@ -1434,7 +1478,16 @@ export default function AdminPanel() {
       if (!response.ok || "error" in data) {
         throw new Error("error" in data ? data.error : "Machine save failed.");
       }
+      const pendingUrlsToCleanup = pendingUploadedImageUrls.filter((url) => !machineForm.images.includes(url));
+      if (pendingUrlsToCleanup.length > 0) {
+        cleanupPendingUploadedImages(pendingUrlsToCleanup).catch((cleanupError) => {
+          console.warn("Pending uploaded image cleanup failed after save:", cleanupError);
+        });
+      }
+
       setCatalog(data);
+      setPendingUploadedImageUrls([]);
+      setImageUploadStatus(null);
       setMachineForm(defaultMachineForm);
       setMachineModalOpen(false);
       setMessage(machineForm.id ? "Machine updated successfully." : "Machine added successfully.");
@@ -2000,7 +2053,8 @@ export default function AdminPanel() {
         ...current,
         images: [...current.images, ...urls],
       }));
-      setImageUploadStatus(`Uploaded ${urls.length} optimized image${urls.length === 1 ? "" : "s"}.`);
+      setPendingUploadedImageUrls((current) => [...current, ...urls]);
+      setImageUploadStatus(`Uploaded ${urls.length} optimized image${urls.length === 1 ? "" : "s"}. Click Save Machine to keep them.`);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Images could not be uploaded.");
       setImageUploadStatus(null);
@@ -4113,7 +4167,7 @@ export default function AdminPanel() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setMachineModalOpen(false);
+              void closeMachineModal();
             }
           }}
         >
@@ -4124,7 +4178,7 @@ export default function AdminPanel() {
           >
             <div className="flex items-center justify-between">
               <h3 className="text-[1.8rem] font-black">{machineForm.id ? "Edit Machine" : "Add Machine"}</h3>
-              <button type="button" onClick={() => setMachineModalOpen(false)} className="rounded-full border border-slate-200 p-2 text-slate-500">
+              <button type="button" onClick={() => void closeMachineModal()} className="rounded-full border border-slate-200 p-2 text-slate-500">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -4290,7 +4344,7 @@ export default function AdminPanel() {
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
-              <button type="button" onClick={() => setMachineModalOpen(false)} className="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
+              <button type="button" onClick={() => void closeMachineModal()} className="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
               <button
                 type="button"
                 onClick={() => void saveMachine()}

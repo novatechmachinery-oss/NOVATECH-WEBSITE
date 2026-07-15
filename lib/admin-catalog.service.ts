@@ -627,6 +627,10 @@ async function cleanupReplacedMachineImages(removedImages: string[], machinesAft
     }),
   );
 }
+export async function cleanupUnusedMachineImages(imageUrls: string[]) {
+  const catalog = await getAdminCatalog();
+  await cleanupReplacedMachineImages(imageUrls, catalog.machines);
+}
 export async function upsertAdminMachine(input: AdminMachineInput) {
   const catalog = await getAdminCatalog();
   const normalized = validateMachineInput(input, catalog.categories);
