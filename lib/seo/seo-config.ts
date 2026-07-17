@@ -3,7 +3,7 @@ import "server-only";
 import { getSeoSettings } from "@/lib/seo-settings.service";
 import { getSiteSettings } from "@/lib/site-settings.service";
 
-const FALLBACK_SITE_URL = "https://novatechmachinery.in";
+const FALLBACK_SITE_URL = "https://novatechmachinery.com";
 const FALLBACK_LOCALE = "en_IN";
 
 function trimTrailingSlash(value: string) {

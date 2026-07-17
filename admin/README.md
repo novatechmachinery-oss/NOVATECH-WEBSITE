@@ -27,7 +27,7 @@ Start command: npm run start
 Use a separate domain such as:
 
 ```text
-https://admin.novatechmachinery.in
+https://admin.novatechmachinery.com
 ```
 
 Admin URLs:
@@ -62,7 +62,7 @@ On the public website deployment, disable the built-in admin surface:
 
 ```env
 DISABLE_MAIN_ADMIN_ROUTES=true
-ADMIN_APP_URL=https://admin.novatechmachinery.in
+ADMIN_APP_URL=https://admin.novatechmachinery.com
 ```
 
 With those set, `/admin/*` on the main website redirects to the standalone admin app, and `/api/admin/*` returns `404` on the public deployment.

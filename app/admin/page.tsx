@@ -7,6 +7,6 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPage() {
-  const adminUrl = (process.env.ADMIN_APP_URL ?? "https://admin.novatechmachinery.in").replace(/\/$/, "");
+  const adminUrl = (process.env.ADMIN_APP_URL ?? "https://admin.novatechmachinery.com").replace(/\/$/, "");
   redirect(adminUrl);
 }

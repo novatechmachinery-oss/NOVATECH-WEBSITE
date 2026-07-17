@@ -159,7 +159,7 @@ const defaultMachineFilters: MachineFilterState = {
 const MAIN_SITE_URL =
   process.env.NEXT_PUBLIC_MAIN_SITE_URL ||
   process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://novatechmachinery.in";
+  "https://novatechmachinery.com";
 const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
 const IMAGE_UPLOAD_QUALITY = 0.82;
 const IMAGE_UPLOAD_CONCURRENCY = 3;
