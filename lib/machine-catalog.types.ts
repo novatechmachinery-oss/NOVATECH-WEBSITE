@@ -37,11 +37,6 @@ export type MachineItem = {
   specifications?: Array<{ label: string; value: string }>;
 };
 
-export type MachineSearchItem = Pick<
-  MachineItem,
-  "id" | "title" | "category" | "subcategory" | "manufacturer" | "model"
->;
-
 export type CategoryRow = {
   id: string;
   name: string;
@@ -72,4 +67,3 @@ export type MachineRow = {
   stock_status: string | null;
   category_id: string | null;
 };
-

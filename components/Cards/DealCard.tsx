@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { getMachinePath } from "@/lib/machine-urls";
 
 const FALLBACK_IMAGE = "/images/ChatGPT Image May 29, 2026, 04_08_37 PM.png";
 
@@ -68,7 +67,7 @@ export default function DealCard({
 
   function openDeal() {
     if (machineId) {
-      router.push(getMachinePath(machineId));
+      router.push(`/used-machinery?machine=${encodeURIComponent(machineId)}`);
       return;
     }
 

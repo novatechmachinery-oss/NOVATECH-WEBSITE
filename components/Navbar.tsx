@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { usePathname } from "next/navigation";
 import HeaderSearch from "./HeaderSearch";
-import type { MachineSearchItem } from "@/lib/machines";
+import type { MachineItem } from "@/lib/machines";
 
 const navItems = [
   { label: "HOME", href: "/", icon: Home },
@@ -36,7 +36,7 @@ function isActiveNavItem(pathname: string | null, href: string) {
 }
 
 type NavbarProps = {
-  machines: MachineSearchItem[];
+  machines: MachineItem[];
 };
 
 export default function Navbar({ machines }: NavbarProps) {
@@ -76,4 +76,3 @@ export default function Navbar({ machines }: NavbarProps) {
     </nav>
   );
 }
-

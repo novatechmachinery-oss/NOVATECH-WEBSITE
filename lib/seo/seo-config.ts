@@ -12,13 +12,12 @@ function trimTrailingSlash(value: string) {
 
 export async function getSeoConfig() {
   const [seoSettings, siteSettings] = await Promise.all([getSeoSettings(), getSiteSettings()]);
-  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const configuredUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
 
   const baseUrl = trimTrailingSlash(configuredUrl || FALLBACK_SITE_URL);
-  const configuredName = siteSettings.companyName || seoSettings.defaultTitle || "Novatech Machinery";
-  const siteName = configuredName.trim().toLowerCase() === "novatech"
-    ? "Novatech Machinery"
-    : configuredName;
+  const siteName = siteSettings.companyName || seoSettings.defaultTitle || "Novatech Machinery";
 
   return {
     siteName,
@@ -28,7 +27,7 @@ export async function getSeoConfig() {
     defaultDescription:
       seoSettings.defaultDescription ||
       "Used and industrial machinery marketplace for Novatech Machinery.",
-    defaultOgImage: `${baseUrl}/images/10.png`,
+    defaultOgImage: `${baseUrl}/images/hero-banner-Bt56BS_O.webp`,
     defaultLocale: FALLBACK_LOCALE,
   };
 }

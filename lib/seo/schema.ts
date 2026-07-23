@@ -1,7 +1,6 @@
 import "server-only";
 
 import type { MachineItem } from "@/lib/machines";
-import { getMachinePath } from "@/lib/machine-urls";
 import { generateBreadcrumbs } from "@/lib/seo/breadcrumbs";
 import { getSeoConfig } from "@/lib/seo/seo-config";
 import { getSiteSettings } from "@/lib/site-settings.service";
@@ -12,44 +11,26 @@ export async function getGlobalSchemas() {
   const organization = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${config.baseUrl}/#organization`,
     name: config.siteName,
     url: config.baseUrl,
-    description: config.defaultDescription,
     email: siteSettings.contact.emailAddress,
     telephone: siteSettings.contact.phonePrimary,
     address: {
       "@type": "PostalAddress",
       streetAddress: siteSettings.contact.officeAddress,
-      addressLocality: "Mohali",
-      addressRegion: "Punjab",
       addressCountry: "IN",
-    },
-    logo: {
-      "@type": "ImageObject",
-      url: `${config.baseUrl}/images/MAIN%20LOGO.png`,
-    },
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "sales",
-      telephone: siteSettings.contact.phonePrimary,
-      email: siteSettings.contact.emailAddress,
-      areaServed: "Worldwide",
-      availableLanguage: ["English", "Hindi", "Punjabi"],
     },
   };
 
   const website = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": `${config.baseUrl}/#website`,
     name: config.siteName,
     url: config.baseUrl,
-    publisher: { "@id": `${config.baseUrl}/#organization` },
     potentialAction: {
       "@type": "SearchAction",
-      target: `${config.baseUrl}/used-machinery?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
+      target: `${config.baseUrl}/used-machinery?category={category}`,
+      "query-input": "required name=category",
     },
   };
 
@@ -61,19 +42,14 @@ export async function getLocalBusinessSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "@id": `${config.baseUrl}/#localbusiness`,
     name: config.siteName,
     url: config.baseUrl,
     image: `${config.baseUrl}/images/MAIN%20LOGO.png`,
     telephone: siteSettings.contact.phonePrimary,
     email: siteSettings.contact.emailAddress,
-    description: config.defaultDescription,
-    parentOrganization: { "@id": `${config.baseUrl}/#organization` },
     address: {
       "@type": "PostalAddress",
       streetAddress: siteSettings.contact.officeAddress,
-      addressLocality: "Mohali",
-      addressRegion: "Punjab",
       addressCountry: "IN",
     },
   };
@@ -115,21 +91,11 @@ export async function getItemListSchema(
 
 export async function getProductSchema(machine: MachineItem) {
   const { baseUrl } = await getSeoConfig();
-  const url = `${baseUrl}${getMachinePath(machine)}`;
-
-  const condition = machine.condition?.toLowerCase();
-  const itemCondition = condition?.includes("refurb")
-    ? "https://schema.org/RefurbishedCondition"
-    : condition?.includes("used")
-      ? "https://schema.org/UsedCondition"
-      : condition?.includes("new")
-        ? "https://schema.org/NewCondition"
-        : undefined;
+  const url = `${baseUrl}/used-machinery?machine=${encodeURIComponent(machine.id)}`;
 
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    "@id": `${url}#product`,
     name: machine.title,
     description: machine.description || `${machine.title} available at Novatech Machinery`,
     image: [machine.imageSrc.startsWith("http") ? machine.imageSrc : `${baseUrl}${machine.imageSrc}`],
@@ -140,45 +106,15 @@ export async function getProductSchema(machine: MachineItem) {
         }
       : undefined,
     model: machine.model,
-    sku: machine.stockNumber || undefined,
+    sku: machine.stockNumber || machine.id,
     category: machine.subcategory || machine.category,
-    itemCondition,
-    url,
-  };
-}
-
-export async function getBreadcrumbListSchema(
-  items: Array<{ name: string; path: string }>,
-) {
-  const { baseUrl } = await getSeoConfig();
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      item: item.path.startsWith("http") ? item.path : `${baseUrl}${item.path}`,
-    })),
-  };
-}
-
-export async function getMachineBreadcrumbSchema(machine: MachineItem) {
-  const { baseUrl } = await getSeoConfig();
-  const categoryUrl = `${baseUrl}/used-machinery?category=${encodeURIComponent(
-    machine.categorySlug || machine.category,
-  )}`;
-  const machineUrl = `${baseUrl}${getMachinePath(machine)}`;
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${baseUrl}/` },
-      { "@type": "ListItem", position: 2, name: "Used Machinery", item: `${baseUrl}/used-machinery` },
-      { "@type": "ListItem", position: 3, name: machine.category, item: categoryUrl },
-      { "@type": "ListItem", position: 4, name: machine.title, item: machineUrl },
-    ],
+    offers: {
+      "@type": "Offer",
+      availability: "https://schema.org/InStock",
+      priceCurrency: "INR",
+      price: "0",
+      url,
+    },
   };
 }
 

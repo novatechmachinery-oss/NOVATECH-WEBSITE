@@ -16,6 +16,7 @@ import { getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/", {
@@ -51,16 +52,6 @@ export default async function Home() {
         <div className="space-y-0">
           <HeroSlider slides={HOME_HERO_SLIDES} />
         </div>
-
-        <section className="mx-[-0.75rem] bg-white px-4 py-5 text-center sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
-          <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-            Used CNC Machines, Industrial Machinery and Machine Tools
-          </h1>
-          <p className="mx-auto mt-2 max-w-4xl leading-7 text-slate-600">
-            Browse used CNC and conventional machinery for turning, milling, boring, grinding,
-            forming and other industrial applications, with direct enquiry support from Novatech Machinery.
-          </p>
-        </section>
 
         <section className="mx-[-0.75rem] bg-white py-4 sm:mx-[-1.25rem] sm:py-5 lg:mx-[-1.5rem] lg:py-6 xl:mx-[-2rem]">
           <div className="mx-auto w-full px-3 sm:px-4 lg:px-6 xl:px-8">
@@ -122,5 +113,4 @@ export default async function Home() {
     </div>
   );
 }
-
 

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -120,8 +119,8 @@ function normalizeSpecs(input: unknown) {
 
   return Object.fromEntries(flattenSpecEntries(input));
 }
-function createId() {
-  return randomUUID();
+function createId(prefix: string) {
+  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function compareCreatedAtDesc(left: { createdAt: string }, right: { createdAt: string }) {
@@ -476,7 +475,7 @@ export async function upsertAdminCategory(input: AdminCategoryInput) {
 
   let categories = catalog.categories;
   const isUpdate = Boolean(input.id);
-  const newId = input.id || createId();
+  const newId = input.id || createId("cat");
 
   const newCategory: AdminCategory = {
     id: newId,
@@ -638,9 +637,9 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
   const now = new Date().toISOString();
 
   let machines = catalog.machines;
-  const newId = input.id || createId();
-  const oldMachine = machines.find((machine) => machine.id === newId);
-  const isUpdate = Boolean(oldMachine);
+  const isUpdate = Boolean(input.id);
+  const newId = input.id || createId("machine");
+  const oldMachine = isUpdate ? machines.find((machine) => machine.id === newId) : undefined;
 
   // Upload any base64 images to Supabase Storage before saving.
   // Images that are already URLs pass through unchanged.
@@ -717,28 +716,19 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
 
 export async function deleteAdminMachine(id: string) {
   const catalog = await getAdminCatalog();
-  const removedMachine = catalog.machines.find((machine) => machine.id === id);
-  let canDeleteStoredImages = !hasSupabaseConfig();
 
   if (hasSupabaseConfig()) {
     try {
       await supabaseRestAdmin(`machines?id=eq.${id}`, { method: "DELETE" });
-      canDeleteStoredImages = true;
     } catch (error) {
       console.error("Supabase sync failed for machine deletion:", error);
     }
   }
 
-  const savedCatalog = await saveAdminCatalog({
+  return saveAdminCatalog({
     ...catalog,
     machines: catalog.machines.filter((item) => item.id !== id),
   });
-
-  if (removedMachine && canDeleteStoredImages) {
-    await cleanupReplacedMachineImages(removedMachine.images, savedCatalog.machines);
-  }
-
-  return savedCatalog;
 }
 
 export async function getAdminDashboardData() {

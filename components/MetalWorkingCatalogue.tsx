@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -59,7 +58,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { MachineCategory, MachineItem } from "@/lib/machines";
-import { getMachinePath } from "@/lib/machine-urls";
 import { REQUEST_PRICE_WHATSAPP_HREF, WHATSAPP_HREF } from "@/lib/whatsapp";
 import { contactDetails } from "@/lib/contact-details";
 const sidebarCategoryIconMap: Record<string, LucideIcon> = {
@@ -609,8 +607,6 @@ type MetalWorkingCatalogueProps = {
   initialMachineMode?: MachineMode | null;
   initialSearchQuery?: string | null;
   pageHeading?: string;
-  pageDescription?: string;
-  breadcrumbs?: Array<{ name: string; href: string }>;
 };
 
 type PaginationItem = number | "ellipsis-left" | "ellipsis-right";
@@ -678,8 +674,6 @@ export default function MetalWorkingCatalogue({
   initialMachineMode = null,
   initialSearchQuery = null,
   pageHeading = "Metal Working Machinery",
-  pageDescription,
-  breadcrumbs,
 }: MetalWorkingCatalogueProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -1023,7 +1017,28 @@ export default function MetalWorkingCatalogue({
 
     setSelectedSubcategory(subcategory ?? null);
 
-    router.push(getMachinePath(machineId));
+    const params = new URLSearchParams();
+
+    if (category) {
+      const resolvedCategory = machineCategories.find((item) => item.name === category);
+      params.set("category", resolvedCategory?.slug ?? category);
+    }
+
+    if (subcategory) {
+      params.set("subcategory", subcategory);
+    }
+
+    if (machineMode !== "all") {
+      params.set("mode", machineMode);
+    }
+
+    if (machineSearch.trim()) {
+      params.set("q", machineSearch.trim());
+    }
+
+    params.set("machine", machineId);
+
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function handleBackToResults() {
@@ -1253,30 +1268,9 @@ export default function MetalWorkingCatalogue({
     <section className="w-full overflow-x-clip px-2.5 pb-8 pt-3 sm:px-4 sm:pb-10 sm:pt-4 lg:px-5 xl:px-8 2xl:px-10">
       {!selectedMachine ? (
       <div className="border-b border-slate-200 pb-2.5 sm:pb-3">
-        {breadcrumbs && breadcrumbs.length > 1 ? (
-          <nav aria-label="Breadcrumb" className="mb-2 text-sm text-slate-600">
-            <ol className="flex flex-wrap items-center gap-2">
-              {breadcrumbs.map((crumb, index) => (
-                <li key={crumb.href} className="flex items-center gap-2">
-                  {index > 0 ? <span aria-hidden="true">/</span> : null}
-                  {index === breadcrumbs.length - 1 ? (
-                    <span aria-current="page" className="font-semibold text-slate-900">{crumb.name}</span>
-                  ) : (
-                    <Link href={crumb.href} className="transition hover:text-sky-700">{crumb.name}</Link>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
-        ) : null}
         <h1 className="mt-1 text-[1.55rem] font-black tracking-tight text-slate-950 sm:text-[2rem] lg:text-[2.65rem]">
           {pageHeading}
         </h1>
-        {pageDescription ? (
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
-            {pageDescription}
-          </p>
-        ) : null}
 
         <div className="hidden lg:block">
           <div className="min-w-0">

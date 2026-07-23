@@ -32,10 +32,15 @@ export function sanitizePathSegment(value: string): string {
     || "unknown";
 }
 
-export function buildMachineImageStoragePath(machineId: string, imageIndex: number, _machineName?: string, extension = "webp"): string {
+function buildMachineFolder(machineId: string, machineName?: string): string {
+  return sanitizePathSegment(machineName?.trim() || machineId);
+}
+
+export function buildMachineImageStoragePath(machineId: string, imageIndex: number, machineName?: string, extension = "webp"): string {
+  const machineFolder = buildMachineFolder(machineId, machineName);
   const safeMachineId = sanitizePathSegment(machineId);
-  const uniqueName = `${Date.now()}-${imageIndex}-${Math.random().toString(36).slice(2, 8)}`;
-  return `${safeMachineId}/${uniqueName}.${extension}`;
+  const version = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `${machineFolder}/${safeMachineId}-${imageIndex}-${version}.${extension}`;
 }
 
 /**
