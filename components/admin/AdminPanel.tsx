@@ -163,6 +163,7 @@ const MAIN_SITE_URL =
 const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
 const IMAGE_UPLOAD_QUALITY = 0.82;
 const IMAGE_UPLOAD_CONCURRENCY = 3;
+const IMAGE_UPLOAD_MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 function slugify(value: string) {
   return value
@@ -246,17 +247,26 @@ async function mapWithConcurrency<T, R>(
 ) {
   const results: R[] = [];
   let nextIndex = 0;
+  let firstError: unknown;
   const workerCount = Math.min(concurrency, items.length);
 
   await Promise.all(
     Array.from({ length: workerCount }, async () => {
-      while (nextIndex < items.length) {
+      while (nextIndex < items.length && !firstError) {
         const currentIndex = nextIndex;
         nextIndex += 1;
-        results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+        try {
+          results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+        } catch (error) {
+          firstError ??= error;
+        }
       }
     }),
   );
+
+  if (firstError) {
+    throw firstError;
+  }
 
   return results;
 }
@@ -264,30 +274,44 @@ function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-async function uploadOptimizedImageThroughApi(input: {
+async function uploadOptimizedImageDirectly(input: {
   machineId: string;
   machineName: string;
   imageIndex: number;
   optimized: OptimizedImageUpload;
 }) {
-  const formData = new FormData();
-  formData.append("file", input.optimized.blob, input.optimized.fileName);
-  formData.append("machineId", input.machineId);
-  formData.append("machineName", input.machineName);
-  formData.append("imageIndex", String(input.imageIndex));
-  formData.append("preOptimized", "true");
-
-  const response = await fetch("/api/admin/upload-image", {
+  const response = await fetch("/api/admin/upload-image/sign", {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      machineId: input.machineId,
+      machineName: input.machineName,
+      imageIndex: input.imageIndex,
+      contentType: input.optimized.contentType,
+      fileSize: input.optimized.blob.size,
+    }),
   });
 
-  const data = (await response.json()) as { url?: string; error?: string };
-  if (!response.ok || !data.url) {
-    throw new Error(data.error ?? "Image upload failed.");
+  const data = (await response.json()) as { signedUrl?: string; publicUrl?: string; error?: string };
+  if (!response.ok || !data.signedUrl || !data.publicUrl) {
+    throw new Error(data.error ?? "Unable to authorize the image upload.");
   }
 
-  return data.url;
+  const uploadBody = new FormData();
+  uploadBody.append("cacheControl", "31536000");
+  uploadBody.append("", input.optimized.blob, input.optimized.fileName);
+  const uploadResponse = await fetch(data.signedUrl, {
+    method: "PUT",
+    headers: { "x-upsert": "false" },
+    body: uploadBody,
+  });
+
+  if (!uploadResponse.ok) {
+    const detail = await uploadResponse.text().catch(() => "");
+    throw new Error(detail || `Image upload failed (${uploadResponse.status}).`);
+  }
+
+  return data.publicUrl;
 }
 async function cleanupPendingUploadedImages(urls: string[]) {
   const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
@@ -753,6 +777,7 @@ export default function AdminPanel() {
   const [importing, setImporting] = useState(false);
   const [testingSmtp, setTestingSmtp] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const newMachineIdRef = useRef<string | null>(null);
   const settingsImportInputRef = useRef<HTMLInputElement | null>(null);
   const seoBaseInitializedRef = useRef(false);
   const [migrationStatus, setMigrationStatus] = useState<{
@@ -1361,6 +1386,7 @@ export default function AdminPanel() {
   function openMachineModal(machine?: AdminMachine) {
     setError(null);
     setMachineSpecificationsError(null);
+    newMachineIdRef.current = null;
     if (!catalog || !machine) {
       setMachineForm(defaultMachineForm);
       setMachineModalOpen(true);
@@ -1440,6 +1466,7 @@ export default function AdminPanel() {
     }
 
     setPendingUploadedImageUrls([]);
+    newMachineIdRef.current = null;
     setImageUploadStatus(null);
     setMachineModalOpen(false);
   }
@@ -1455,6 +1482,7 @@ export default function AdminPanel() {
           method: machineForm.id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            id: machineForm.id || newMachineIdRef.current || undefined,
             name: machineForm.name,
             brand: machineForm.brand,
             model: machineForm.model,
@@ -1486,6 +1514,7 @@ export default function AdminPanel() {
 
       setCatalog(data);
       setPendingUploadedImageUrls([]);
+      newMachineIdRef.current = null;
       setImageUploadStatus(null);
       setMachineForm(defaultMachineForm);
       setMachineModalOpen(false);
@@ -2014,8 +2043,23 @@ export default function AdminPanel() {
     }
     if (selectedFiles.length === 0) return;
 
-    const valid = selectedFiles.filter((file) => file.type.startsWith("image/"));
-    if (valid.length === 0) return;
+    const invalidType = selectedFiles.find((file) => !file.type.startsWith("image/"));
+    if (invalidType) {
+      setError(`${invalidType.name} is not a recognized image file.`);
+      return;
+    }
+
+    const oversized = selectedFiles.find((file) => file.size > IMAGE_UPLOAD_MAX_FILE_SIZE);
+    if (oversized) {
+      setError(`${oversized.name} is larger than the 10 MB upload limit.`);
+      return;
+    }
+
+    const emptyFile = selectedFiles.find((file) => file.size === 0);
+    if (emptyFile) {
+      setError(`${emptyFile.name} is empty and cannot be uploaded.`);
+      return;
+    }
 
     const machineName = machineForm.name.trim();
     if (!machineName) {
@@ -2023,27 +2067,32 @@ export default function AdminPanel() {
       return;
     }
 
-    const machineId = machineForm.id || `tmp_${Math.random().toString(36).slice(2, 10)}`;
+    const machineId = machineForm.id || newMachineIdRef.current || crypto.randomUUID();
+    if (!machineForm.id) {
+      newMachineIdRef.current = machineId;
+    }
     const existingCount = machineForm.images.length;
     let completedCount = 0;
+    const uploadedDuringAttempt: string[] = [];
 
     setUploadingImages(true);
-    setImageUploadStatus(`Preparing ${valid.length} image${valid.length === 1 ? "" : "s"}...`);
+    setImageUploadStatus(`Preparing ${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"}...`);
     setError(null);
 
     try {
-      const urls = await mapWithConcurrency(valid, IMAGE_UPLOAD_CONCURRENCY, async (file, localIndex) => {
-        setImageUploadStatus(`Optimizing ${file.name} (${completedCount + 1}/${valid.length})...`);
+      const urls = await mapWithConcurrency(selectedFiles, IMAGE_UPLOAD_CONCURRENCY, async (file, localIndex) => {
+        setImageUploadStatus(`Optimizing ${file.name} (${completedCount + 1}/${selectedFiles.length})...`);
         const optimized = await optimizeImageForDirectUpload(file);
-        setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${valid.length})...`);
-        const uploadedUrl = await uploadOptimizedImageThroughApi({
+        setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${selectedFiles.length})...`);
+        const uploadedUrl = await uploadOptimizedImageDirectly({
           machineId,
           machineName,
           imageIndex: existingCount + localIndex,
           optimized,
         });
+        uploadedDuringAttempt.push(uploadedUrl);
         completedCount += 1;
-        setImageUploadStatus(`Uploaded ${completedCount}/${valid.length} image${valid.length === 1 ? "" : "s"}.`);
+        setImageUploadStatus(`Uploaded ${completedCount}/${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"}.`);
 
         return uploadedUrl;
       });
@@ -2055,6 +2104,13 @@ export default function AdminPanel() {
       setPendingUploadedImageUrls((current) => [...current, ...urls]);
       setImageUploadStatus(`Uploaded ${urls.length} optimized image${urls.length === 1 ? "" : "s"}. Click Save Machine to keep them.`);
     } catch (uploadError) {
+      if (uploadedDuringAttempt.length > 0) {
+        try {
+          await cleanupPendingUploadedImages(uploadedDuringAttempt);
+        } catch (cleanupError) {
+          console.warn("Failed upload batch cleanup was incomplete:", cleanupError);
+        }
+      }
       setError(uploadError instanceof Error ? uploadError.message : "Images could not be uploaded.");
       setImageUploadStatus(null);
     } finally {

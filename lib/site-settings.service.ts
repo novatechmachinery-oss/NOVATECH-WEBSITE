@@ -119,9 +119,9 @@ const defaultSettings: SiteSettings = {
       testEmail: "test@example.com",
     },
     analytics: {
-      googleAnalyticsId: "G-P6982NCZTC",
-      metaPixelId: "1254549116261073",
-      clarityProjectId: "w8ffhp8peo",
+      googleAnalyticsId: "",
+      metaPixelId: "",
+      clarityProjectId: "",
     },
   },
 };

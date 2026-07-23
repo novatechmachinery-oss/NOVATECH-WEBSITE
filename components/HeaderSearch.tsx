@@ -4,26 +4,15 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { MachineItem } from "@/lib/machines";
+import type { MachineSearchItem } from "@/lib/machines";
+import { getMachinePath } from "@/lib/machine-urls";
 
 type HeaderSearchProps = {
-  machines: MachineItem[];
+  machines: MachineSearchItem[];
 };
 
-function buildMachineHref(machine: MachineItem) {
-  const params = new URLSearchParams();
-
-  if (machine.categorySlug ?? machine.category) {
-    params.set("category", machine.categorySlug ?? machine.category);
-  }
-
-  if (machine.subcategorySlug ?? machine.subcategory) {
-    params.set("subcategory", machine.subcategorySlug ?? machine.subcategory ?? "");
-  }
-
-  params.set("machine", machine.id);
-
-  return `/used-machinery?${params.toString()}`;
+function buildMachineHref(machine: MachineSearchItem) {
+  return getMachinePath(machine);
 }
 
 export default function HeaderSearch({ machines }: HeaderSearchProps) {
@@ -55,7 +44,7 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
       .slice(0, 6);
   }, [machines, query]);
 
-  function openMachineSuggestion(machine: MachineItem) {
+  function openMachineSuggestion(machine: MachineSearchItem) {
     router.push(buildMachineHref(machine));
     setQuery("");
     setIsOpen(false);
@@ -140,3 +129,4 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
     </div>
   );
 }
+

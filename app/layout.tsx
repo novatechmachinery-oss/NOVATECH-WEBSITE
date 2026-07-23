@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import "./globals.css";
+import AnalyticsPageView from "@/components/seo/AnalyticsPageView";
 import { getSeoConfig } from "@/lib/seo/seo-config";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getGlobalSchemas } from "@/lib/seo/schema";
@@ -18,13 +20,29 @@ export async function generateMetadata(): Promise<Metadata> {
     ...metadata,
     metadataBase: new URL(seoConfig.baseUrl),
     applicationName: seoConfig.siteName,
+    authors: [{ name: seoConfig.siteName, url: seoConfig.baseUrl }],
+    creator: seoConfig.siteName,
+    publisher: seoConfig.siteName,
+    category: "Industrial machinery",
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
     icons: {
       icon: "/main-logo.png",
       shortcut: "/main-logo.png",
       apple: "/main-logo.png",
     },
+    manifest: "/manifest.webmanifest",
     verification: {
-      google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined,
+      google:
+        process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+        process.env.NEXT_PUBLIC_GSC_VERIFICATION ||
+        undefined,
+      other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+        ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+        : undefined,
     },
   };
 }
@@ -45,7 +63,7 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en-IN" className="h-full antialiased">
       <body className="min-h-full bg-slate-50 font-sans text-slate-950">
         {tracking.googleAnalyticsId ? (
           <>
@@ -57,8 +75,11 @@ export default async function RootLayout({
               {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', '${tracking.googleAnalyticsId}');`}
+gtag('config', '${tracking.googleAnalyticsId}', { send_page_view: false });`}
             </Script>
+            <Suspense fallback={null}>
+              <AnalyticsPageView measurementId={tracking.googleAnalyticsId} />
+            </Suspense>
           </>
         ) : null}
         {tracking.metaPixelId ? (

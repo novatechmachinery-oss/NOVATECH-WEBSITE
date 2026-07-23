@@ -74,6 +74,9 @@ type MetadataOptions = {
   fallbackKeywords?: string[];
   lookupRoutes?: string[];
   canonicalRoute?: string;
+  noIndex?: boolean;
+  noFollow?: boolean;
+  openGraphImage?: string;
 };
 
 export async function generatePageMetadata(
@@ -94,14 +97,14 @@ export async function generatePageMetadata(
   const ogDescription = page?.ogDescription?.trim() || description;
   const ogImage = toAbsoluteUrl(
     seoConfig.baseUrl,
-    page?.ogImageUrl?.trim() || seoConfig.defaultOgImage,
+    options.openGraphImage || page?.ogImageUrl?.trim() || seoConfig.defaultOgImage,
   );
   const keywords = page?.keywords?.trim()
     ? splitKeywords(page.keywords)
     : options.fallbackKeywords;
 
-  const index = !(page?.noIndex ?? false);
-  const follow = !(page?.noFollow ?? false);
+  const index = !(options.noIndex ?? page?.noIndex ?? false);
+  const follow = !(options.noFollow ?? page?.noFollow ?? false);
 
   return {
     title: appendTitleSuffix(titleBase, seoConfig.titleSuffix),

@@ -7,7 +7,8 @@ import { Boxes, ChevronDown, ChevronRight, Factory, Info, Mail, PhoneCall, Pill,
 import { usePathname, useRouter } from "next/navigation";
 
 import NewsletterSignup from "./NewsletterSignup";
-import type { MachineItem } from "@/lib/machines";
+import type { MachineSearchItem } from "@/lib/machines";
+import { getMachinePath } from "@/lib/machine-urls";
 
 type TopHeaderProps = {
   phonePrimary?: string;
@@ -15,7 +16,7 @@ type TopHeaderProps = {
   logoSrc?: string;
   logoAlt?: string;
   emailAddress?: string;
-  machines?: MachineItem[];
+  machines?: MachineSearchItem[];
   categoryLinks?: Array<{
     id?: string;
     label: string;
@@ -47,20 +48,8 @@ function getWhatsAppHref(phoneNumber: string) {
   return `https://wa.me/${phoneNumber.replace(/\D/g, "")}`;
 }
 
-function buildMachineHref(machine: MachineItem) {
-  const params = new URLSearchParams();
-
-  if (machine.categorySlug ?? machine.category) {
-    params.set("category", machine.categorySlug ?? machine.category);
-  }
-
-  if (machine.subcategorySlug ?? machine.subcategory) {
-    params.set("subcategory", machine.subcategorySlug ?? machine.subcategory ?? "");
-  }
-
-  params.set("machine", machine.id);
-
-  return `/used-machinery?${params.toString()}`;
+function buildMachineHref(machine: MachineSearchItem) {
+  return getMachinePath(machine);
 }
 
 function PhoneIcon() {
@@ -171,15 +160,13 @@ export default function TopHeader({
     }
 
     document.body.style.overflow = "hidden";
-    setIsCompactSearchOpen(false);
-    setIsCompactSuggestionsOpen(false);
 
     return () => {
       document.body.style.overflow = "";
     };
   }, [isMobileMenuOpen]);
 
-  function openCompactMachineSuggestion(machine: MachineItem) {
+  function openCompactMachineSuggestion(machine: MachineSearchItem) {
     router.push(buildMachineHref(machine));
     setIsCompactSearchOpen(false);
     setCompactSearchQuery("");
@@ -219,6 +206,8 @@ export default function TopHeader({
               onClick={() => {
                 setIsMobileMenuOpen((current) => !current);
                 setIsDrawerMachineryOpen(false);
+                setIsCompactSearchOpen(false);
+                setIsCompactSuggestionsOpen(false);
               }}
               className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 2xl:hidden"
               aria-label="Open menu"
@@ -625,3 +614,4 @@ export default function TopHeader({
     </div>
   );
 }
+
