@@ -8,12 +8,14 @@ import {
 } from "@/lib/supabase";
 
 const ALLOWED_DIRECT_UPLOAD_TYPES = ["image/webp", "image/jpeg"];
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 type SignedUploadRequest = {
   machineId?: unknown;
   machineName?: unknown;
   imageIndex?: unknown;
   contentType?: unknown;
+  fileSize?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -30,6 +32,7 @@ export async function POST(request: Request) {
     const machineName = typeof body.machineName === "string" ? body.machineName.trim() : "";
     const contentType = typeof body.contentType === "string" ? body.contentType.trim() : "";
     const imageIndex = Number(body.imageIndex);
+    const fileSize = Number(body.fileSize);
 
     if (!machineId) {
       return NextResponse.json({ error: "machineId is required." }, { status: 400 });
@@ -42,6 +45,13 @@ export async function POST(request: Request) {
     if (!ALLOWED_DIRECT_UPLOAD_TYPES.includes(contentType)) {
       return NextResponse.json(
         { error: "Only optimized WebP or JPEG images can use direct upload." },
+        { status: 400 },
+      );
+    }
+
+    if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > MAX_FILE_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: "The optimized image must be between 1 byte and 10 MB." },
         { status: 400 },
       );
     }

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { buildCategoryIndex, getAdminCatalog } from "@/lib/admin-catalog.service";
 import type { AdminCategory, AdminMachine } from "@/lib/admin-catalog.types";
 import type {
@@ -7,6 +9,7 @@ import type {
   MachineCategory,
   MachineItem,
   MachineRow,
+  MachineSearchItem,
 } from "@/lib/machine-catalog.types";
 import { hasSupabaseConfig, supabaseRest } from "@/lib/supabase";
 
@@ -153,7 +156,7 @@ function normalizeMachine(row: MachineRow, categoryMap: Map<string, CategoryRow>
   }
 
   const images = asStringArray(row.images).map(normalizeImageUrl).filter(Boolean);
-  const primaryImage = images[0] ?? "/images/hero-banner-Bt56BS_O.webp";
+  const primaryImage = images[0] ?? "/images/10.png";
   const machineType = normalizeMachineType(row.machine_type);
   const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
   const badgeTarget = subcategory?.name ?? mainCategory.name;
@@ -205,7 +208,7 @@ function normalizeAdminMachine(
   }
 
   const images = machine.images.map(normalizeImageUrl).filter(Boolean);
-  const primaryImage = images[0] ?? "/images/hero-banner-Bt56BS_O.webp";
+  const primaryImage = images[0] ?? "/images/10.png";
   const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
   const badgeTarget = subcategory?.name ?? mainCategory.name;
 
@@ -255,7 +258,7 @@ function normalizeAdminMachine(
 }
 
 export async function getCategories() {
-  const adminCatalog = await getAdminCatalog();
+  const adminCatalog = await getAdminCatalog({ cache: "public" });
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     return createCategoryRowsFromAdmin(adminCatalog.categories);
   }
@@ -272,8 +275,8 @@ export async function getCategories() {
   }
 }
 
-export async function getMachineInventory() {
-  const adminCatalog = await getAdminCatalog();
+export const getMachineInventory = cache(async function getMachineInventory() {
+  const adminCatalog = await getAdminCatalog({ cache: "public" });
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
     const categoryMap = buildCategoryIndex(adminCatalog.categories);
     return adminCatalog.machines
@@ -301,7 +304,26 @@ export async function getMachineInventory() {
   return machineRows
     .map((row) => normalizeMachine(row, categoryMap))
     .filter((machine): machine is MachineItem => machine !== null);
-}
+});
+
+
+export const getMachineSearchIndex = cache(async function getMachineSearchIndex() {
+  const machines = await getMachineInventory();
+
+  return machines.map((machine) => ({
+    id: machine.id,
+    title: machine.title,
+    category: machine.category,
+    subcategory: machine.subcategory,
+    manufacturer: machine.manufacturer,
+    model: machine.model,
+  } satisfies MachineSearchItem));
+});
+
+export const getMachineById = cache(async function getMachineById(id: string) {
+  const machines = await getMachineInventory();
+  return machines.find((machine) => machine.id === id) ?? null;
+});
 
 export function deriveMachineCategories(machines: MachineItem[], categories: CategoryRow[]) {
   const counts = new Map<string, number>();
@@ -333,14 +355,15 @@ export function deriveMachineCategories(machines: MachineItem[], categories: Cat
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export async function getMachineCatalogData() {
+export const getMachineCatalogData = cache(async function getMachineCatalogData() {
   const [categories, machineInventory] = await Promise.all([getCategories(), getMachineInventory()]);
 
   return {
+    categoryRows: categories,
     machineInventory,
     machineCategories: deriveMachineCategories(machineInventory, categories),
   };
-}
+});
 
 function compareMachineRecency(left: MachineItem, right: MachineItem) {
   const leftDate = Date.parse(left.updatedAt ?? left.createdAt ?? "") || 0;
@@ -373,3 +396,7 @@ export async function getSpecialDeals(limit?: number) {
     specifications: machine.specifications ?? [],
   }));
 }
+
+
+
+

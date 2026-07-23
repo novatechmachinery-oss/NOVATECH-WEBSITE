@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type HeroSliderProps = {
@@ -37,11 +38,14 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
   return (
     <section className="relative left-1/2 -mt-4 h-[49vh] min-h-[400px] max-h-[455px] w-screen -translate-x-1/2 overflow-hidden shadow-2xl shadow-slate-950/20 md:h-[53vh] md:min-h-[415px] md:max-h-[495px] lg:h-[55vh] lg:min-h-[435px] lg:max-h-[525px]">
       <div className="absolute inset-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
+          key={slides[currentIndex].src}
           src={slides[currentIndex].src}
           alt={slides[currentIndex].alt}
-          className="hero-slide-image h-full w-full object-cover object-center transition-opacity duration-700 ease-in-out"
+          fill
+          priority={currentIndex === 0}
+          sizes="100vw"
+          className="hero-slide-image object-cover object-center transition-opacity duration-700 ease-in-out"
         />
       </div>
 
@@ -67,4 +71,6 @@ export default function HeroSlider({ slides = defaultSlides }: HeroSliderProps) 
     </section>
   );
 }
+
+
 

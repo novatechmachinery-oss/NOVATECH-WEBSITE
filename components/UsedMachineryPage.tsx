@@ -13,6 +13,8 @@ type UsedMachineryPageProps = {
   initialMachineMode?: MachineMode | null;
   initialSearchQuery?: string | null;
   pageHeading?: string;
+  pageDescription?: string;
+  breadcrumbs?: Array<{ name: string; href: string }>;
 };
 
 export default function UsedMachineryPage({
@@ -24,6 +26,8 @@ export default function UsedMachineryPage({
   initialMachineMode = null,
   initialSearchQuery = null,
   pageHeading = "Metal Working Machinery",
+  pageDescription,
+  breadcrumbs,
 }: UsedMachineryPageProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -40,6 +44,8 @@ export default function UsedMachineryPage({
           initialMachineMode={initialMachineMode}
           initialSearchQuery={initialSearchQuery}
           pageHeading={pageHeading}
+          pageDescription={pageDescription}
+          breadcrumbs={breadcrumbs}
         />
       </main>
 
@@ -53,4 +59,3 @@ export default function UsedMachineryPage({
     </div>
   );
 }
- 

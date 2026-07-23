@@ -4,11 +4,13 @@ import DealCard from "@/components/Cards/DealCard";
 import Footer from "@/components/Footer";
 import MachineCard from "@/components/Cards/MachineCard";
 import SiteHeader from "@/components/SiteHeader";
+import JsonLd from "@/components/seo/JsonLd";
 import { getMachineInventory } from "@/lib/machines";
+import { getMachinePath } from "@/lib/machine-urls";
 import { generatePageMetadata } from "@/lib/seo/metadata";
+import { getBreadcrumbSchema, getItemListSchema } from "@/lib/seo/schema";
 
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/special-deals", {
@@ -36,10 +38,23 @@ export default async function SpecialDealsPage() {
         getMachineTime(right.updatedAt ?? right.createdAt) -
         getMachineTime(left.updatedAt ?? left.createdAt),
     );
+  const [breadcrumbSchema, itemListSchema] = await Promise.all([
+    getBreadcrumbSchema("/special-deals"),
+    getItemListSchema(
+      "/special-deals",
+      "Special Deal Machines",
+      specialDeals.slice(0, 12).map((machine) => ({
+        name: machine.title,
+        url: getMachinePath(machine),
+      })),
+    ),
+  ]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <SiteHeader />
+      <JsonLd data={breadcrumbSchema} />
+      <JsonLd data={itemListSchema} />
 
       <main className="px-3 py-6 sm:px-5 lg:px-6 xl:px-8">
         <section className="mx-auto max-w-[1680px]">
@@ -87,3 +102,4 @@ export default async function SpecialDealsPage() {
     </div>
   );
 }
+
