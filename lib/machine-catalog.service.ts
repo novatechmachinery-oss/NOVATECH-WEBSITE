@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 
 import { buildCategoryIndex, getAdminCatalog } from "@/lib/admin-catalog.service";
 import type { AdminCategory, AdminMachine } from "@/lib/admin-catalog.types";
@@ -156,7 +157,7 @@ function normalizeMachine(row: MachineRow, categoryMap: Map<string, CategoryRow>
   }
 
   const images = asStringArray(row.images).map(normalizeImageUrl).filter(Boolean);
-  const primaryImage = images[0] ?? "/images/10.png";
+  const primaryImage = images[0] ?? "/images/10.webp";
   const machineType = normalizeMachineType(row.machine_type);
   const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
   const badgeTarget = subcategory?.name ?? mainCategory.name;
@@ -208,7 +209,7 @@ function normalizeAdminMachine(
   }
 
   const images = machine.images.map(normalizeImageUrl).filter(Boolean);
-  const primaryImage = images[0] ?? "/images/10.png";
+  const primaryImage = images[0] ?? "/images/10.webp";
   const imagePositions = images.length > 0 ? buildImagePositions(images.length) : ["center center"];
   const badgeTarget = subcategory?.name ?? mainCategory.name;
 
@@ -275,36 +276,44 @@ export async function getCategories() {
   }
 }
 
-export const getMachineInventory = cache(async function getMachineInventory() {
-  const adminCatalog = await getAdminCatalog({ cache: "public" });
-  if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
-    const categoryMap = buildCategoryIndex(adminCatalog.categories);
-    return adminCatalog.machines
-      .filter((machine) => machine.stockStatus !== "sold")
-      .map((machine) => normalizeAdminMachine(machine, categoryMap))
+// Cross-request cache: Vercel serves this from cache for 120s instead of hitting Supabase
+const getMachineInventoryCached = unstable_cache(
+  async function _getMachineInventory() {
+    const adminCatalog = await getAdminCatalog({ cache: "public" });
+    if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
+      const categoryMap = buildCategoryIndex(adminCatalog.categories);
+      return adminCatalog.machines
+        .filter((machine) => machine.stockStatus !== "sold")
+        .map((machine) => normalizeAdminMachine(machine, categoryMap))
+        .filter((machine): machine is MachineItem => machine !== null);
+    }
+
+    if (!hasSupabaseConfig()) {
+      return [] as MachineItem[];
+    }
+
+    const [categories, machineRows] = await Promise.all([
+      getCategories(),
+      supabaseRest<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
+        (error) => {
+          console.error("Failed to fetch machines from Supabase.", error);
+          return [] as MachineRow[];
+        },
+      ),
+    ]);
+
+    const categoryMap = createCategoryMap(categories);
+
+    return machineRows
+      .map((row) => normalizeMachine(row, categoryMap))
       .filter((machine): machine is MachineItem => machine !== null);
-  }
+  },
+  ["machine-inventory"],
+  { revalidate: 120, tags: ["machines"] },
+);
 
-  if (!hasSupabaseConfig()) {
-    return [] as MachineItem[];
-  }
-
-  const [categories, machineRows] = await Promise.all([
-    getCategories(),
-    supabaseRest<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
-      (error) => {
-        console.error("Failed to fetch machines from Supabase.", error);
-        return [] as MachineRow[];
-      },
-    ),
-  ]);
-
-  const categoryMap = createCategoryMap(categories);
-
-  return machineRows
-    .map((row) => normalizeMachine(row, categoryMap))
-    .filter((machine): machine is MachineItem => machine !== null);
-});
+// Per-request deduplication: same request won't call the cache twice
+export const getMachineInventory = cache(getMachineInventoryCached);
 
 
 export const getMachineSearchIndex = cache(async function getMachineSearchIndex() {
