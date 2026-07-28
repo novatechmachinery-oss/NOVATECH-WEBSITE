@@ -28,7 +28,7 @@ export async function getSeoConfig() {
     defaultDescription:
       seoSettings.defaultDescription ||
       "Used and industrial machinery marketplace for Novatech Machinery.",
-    defaultOgImage: `${baseUrl}/images/10.png`,
+    defaultOgImage: `${baseUrl}/images/10.webp`,
     defaultLocale: FALLBACK_LOCALE,
   };
 }
