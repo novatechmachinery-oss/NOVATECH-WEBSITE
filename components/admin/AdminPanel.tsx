@@ -1316,7 +1316,7 @@ export default function AdminPanel() {
         const parentCategory = directCategory?.parentId ? categoryById.get(directCategory.parentId) : undefined;
         const mainCategory = parentCategory ?? directCategory;
         const subcategory = parentCategory ? directCategory : undefined;
-        const route = buildAdminSeoRoute("/used-machinery", { machine: machine.id });
+        const route = `/machines/${encodeURIComponent(machine.id)}`;
         const brandModel = [machine.brand, machine.model].filter(Boolean).join(" ");
         const listingName = brandModel || machine.name;
         const categoryLabel = subcategory?.name || mainCategory?.name || "industrial machinery";

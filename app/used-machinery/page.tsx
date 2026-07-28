@@ -125,7 +125,6 @@ export default async function UsedMachineryRoutePage({
       : null,
     selectedMachine ? getProductSchema(selectedMachine) : null,
   ]);
-  const breadcrumbs = breadcrumbItems.map((item) => ({ name: item.name, href: item.path }));
 
   return (
     <>
@@ -140,10 +139,9 @@ export default async function UsedMachineryRoutePage({
         initialMachineId={machine}
         initialMachineMode={readMachineMode(params.mode)}
         initialSearchQuery={q}
-        pageHeading={selection.heading}
-        pageDescription={selection.description}
-        breadcrumbs={breadcrumbs}
+        pageHeading="All Machines"
       />
     </>
   );
 }
+

@@ -119,7 +119,6 @@ export default async function MetalWorkingMachineryPage({
       : null,
     selectedMachine ? getProductSchema(selectedMachine) : null,
   ]);
-  const breadcrumbs = breadcrumbItems.map((item) => ({ name: item.name, href: item.path }));
 
   return (
     <>
@@ -133,9 +132,7 @@ export default async function MetalWorkingMachineryPage({
         initialSubcategory={subcategory}
         initialMachineId={machine}
         initialSearchQuery={q}
-        pageHeading={selection.category ? selection.heading : "Metal Working Machinery"}
-        pageDescription={selection.category ? selection.description : undefined}
-        breadcrumbs={breadcrumbs}
+        pageHeading="Metal Working Machinery"
       />
     </>
   );
