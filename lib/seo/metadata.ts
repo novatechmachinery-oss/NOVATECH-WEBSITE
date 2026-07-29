@@ -45,9 +45,22 @@ function appendTitleSuffix(title: string, suffix: string) {
   if (!normalizedTitle) {
     return normalizedSuffix.replace(/^\|\s*/, "").trim();
   }
-  if (!normalizedSuffix || normalizedTitle.endsWith(normalizedSuffix)) {
+  if (!normalizedSuffix) {
     return normalizedTitle;
   }
+
+  // Extract content after the | separator (e.g. "| Novatech Machinery" → "Novatech Machinery")
+  const suffixContent = normalizedSuffix.replace(/^\|\s*/, "").trim();
+
+  // Don't append if already ends with full suffix, or title equals suffix content (avoids duplication)
+  if (
+    normalizedTitle.endsWith(normalizedSuffix) ||
+    normalizedTitle === suffixContent ||
+    normalizedTitle.toLowerCase() === suffixContent.toLowerCase()
+  ) {
+    return normalizedTitle;
+  }
+
   return `${normalizedTitle}${normalizedSuffix}`;
 }
 
