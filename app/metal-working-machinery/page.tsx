@@ -45,9 +45,12 @@ export async function generateMetadata({
       ? selection.description
       : "Explore metal working machinery including turning, milling, boring, drilling, grinding, and CNC equipment from Novatech Machinery.",
     fallbackKeywords: [
-      "metal working machinery",
-      "used metalworking machines",
-      "industrial metal machines",
+      "metal working machinery india",
+      "used metalworking machines mohali",
+      "industrial metal machines punjab",
+      "cnc metal working machine india",
+      "used lathe machine india",
+      "used milling machine punjab",
     ],
     lookupRoutes: [
       ...(machine ? [aliasRoute, machineAliasRoute] : []),

@@ -20,14 +20,20 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata("/", {
-    fallbackTitle: "Used Industrial Machines in India",
+    fallbackTitle: "Used Industrial Machinery Dealer in India | Novatech Machinery",
     fallbackDescription:
-      "Browse used industrial machines, CNC machines, boring mills, lathes, and heavy machinery with trusted sourcing from Novatech Machinery.",
+      "Novatech Machinery — India's trusted dealer for used and refurbished industrial machinery in Mohali, Punjab. Browse CNC machines, lathes, boring mills, milling machines and more. Serving buyers across India.",
     fallbackKeywords: [
-      "used industrial machines",
-      "cnc machines india",
-      "used machinery dealer",
-      "industrial machinery supplier",
+      "used industrial machinery india",
+      "industrial machinery dealer mohali",
+      "used cnc machines punjab",
+      "used machinery dealer india",
+      "industrial machinery supplier mohali",
+      "second hand machinery india",
+      "used cnc machine for sale india",
+      "industrial machinery chandigarh",
+      "used lathe machine india",
+      "used milling machine india",
     ],
   });
 }

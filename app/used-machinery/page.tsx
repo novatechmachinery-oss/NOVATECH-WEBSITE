@@ -54,9 +54,12 @@ export async function generateMetadata({
     fallbackTitle: selection.heading,
     fallbackDescription: selection.description,
     fallbackKeywords: [
-      "used machinery for sale",
-      "used cnc machines",
-      "industrial machines inventory",
+      "used machinery for sale india",
+      "used cnc machines india",
+      "industrial machines inventory mohali",
+      "buy used machinery punjab",
+      "second hand industrial machinery india",
+      "used cnc machine dealer chandigarh",
     ],
     lookupRoutes: [
       ...(machine ? [machineRoute] : []),

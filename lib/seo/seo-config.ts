@@ -27,7 +27,7 @@ export async function getSeoConfig() {
     defaultTitle: seoSettings.defaultTitle || siteName,
     defaultDescription:
       seoSettings.defaultDescription ||
-      "Used and industrial machinery marketplace for Novatech Machinery.",
+      "Novatech Machinery — India's trusted dealer of used and refurbished industrial machinery. Buy used CNC machines, lathes, milling machines, boring mills, and heavy equipment. Serving Mohali, Punjab, and all across India.",
     defaultOgImage: `${baseUrl}/images/10.webp`,
     defaultLocale: FALLBACK_LOCALE,
   };

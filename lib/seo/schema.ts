@@ -34,9 +34,30 @@ export async function getGlobalSchemas() {
       contactType: "sales",
       telephone: siteSettings.contact.phonePrimary,
       email: siteSettings.contact.emailAddress,
-      areaServed: "Worldwide",
+      areaServed: "IN",
       availableLanguage: ["English", "Hindi", "Punjabi"],
     },
+    areaServed: [
+      { "@type": "State", name: "Punjab" },
+      { "@type": "State", name: "Haryana" },
+      { "@type": "State", name: "Delhi" },
+      { "@type": "State", name: "Rajasthan" },
+      { "@type": "State", name: "Maharashtra" },
+      { "@type": "State", name: "Gujarat" },
+      { "@type": "State", name: "Uttar Pradesh" },
+      { "@type": "Country", name: "India" },
+    ],
+    knowsAbout: [
+      "Used Industrial Machinery",
+      "CNC Machines",
+      "Metal Working Machinery",
+      "Used Lathes",
+      "Boring Mills",
+      "Milling Machines",
+      "Pharmaceutical Machinery",
+      "Textile Machinery",
+      "Plastic Machinery",
+    ],
   };
 
   const website = {
@@ -74,8 +95,35 @@ export async function getLocalBusinessSchema() {
       streetAddress: siteSettings.contact.officeAddress,
       addressLocality: "Mohali",
       addressRegion: "Punjab",
+      postalCode: "160071",
       addressCountry: "IN",
     },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 30.7046,
+      longitude: 76.7179,
+    },
+    hasMap: "https://maps.google.com/?q=Novatech+Machinery+Mohali+Punjab",
+    priceRange: "₹₹",
+    areaServed: [
+      { "@type": "City", name: "Mohali" },
+      { "@type": "City", name: "Chandigarh" },
+      { "@type": "City", name: "Ludhiana" },
+      { "@type": "City", name: "Amritsar" },
+      { "@type": "City", name: "Jalandhar" },
+      { "@type": "City", name: "Delhi" },
+      { "@type": "City", name: "Mumbai" },
+      { "@type": "City", name: "Pune" },
+      { "@type": "City", name: "Ahmedabad" },
+      { "@type": "City", name: "Hyderabad" },
+      { "@type": "State", name: "Punjab" },
+      { "@type": "State", name: "Haryana" },
+      { "@type": "Country", name: "India" },
+    ],
+    sameAs: [
+      "https://www.facebook.com/novatechmachinery",
+      "https://www.indiamart.com/novatechmachinery",
+    ],
   };
 }
 
