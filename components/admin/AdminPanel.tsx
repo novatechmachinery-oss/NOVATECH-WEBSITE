@@ -196,7 +196,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: "image/webp" | "image/jpe
   });
 }
 
-async function optimizeImageForDirectUpload(file: File): Promise<OptimizedImageUpload> {
+async function optimizeImageForUpload(file: File): Promise<OptimizedImageUpload> {
   const image = await loadImageElement(file);
   const sourceWidth = image.naturalWidth || image.width;
   const sourceHeight = image.naturalHeight || image.height;
@@ -274,45 +274,32 @@ function normalizeCategoryName(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-async function uploadOptimizedImageDirectly(input: {
+async function uploadOptimizedImage(input: {
   machineId: string;
   machineName: string;
   imageIndex: number;
   optimized: OptimizedImageUpload;
 }) {
-  const response = await fetch("/api/admin/upload-image/sign", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      machineId: input.machineId,
-      machineName: input.machineName,
-      imageIndex: input.imageIndex,
-      contentType: input.optimized.contentType,
-      fileSize: input.optimized.blob.size,
-    }),
-  });
-
-  const data = (await response.json()) as { signedUrl?: string; publicUrl?: string; error?: string };
-  if (!response.ok || !data.signedUrl || !data.publicUrl) {
-    throw new Error(data.error ?? "Unable to authorize the image upload.");
-  }
-
   const uploadBody = new FormData();
-  uploadBody.append("cacheControl", "31536000");
-  uploadBody.append("", input.optimized.blob, input.optimized.fileName);
-  const uploadResponse = await fetch(data.signedUrl, {
-    method: "PUT",
-    headers: { "x-upsert": "false" },
+  uploadBody.append("machineId", input.machineId);
+  uploadBody.append("machineName", input.machineName);
+  uploadBody.append("imageIndex", String(input.imageIndex));
+  uploadBody.append("preOptimized", "true");
+  uploadBody.append("file", input.optimized.blob, input.optimized.fileName);
+
+  const response = await fetch("/api/admin/upload-image", {
+    method: "POST",
     body: uploadBody,
   });
 
-  if (!uploadResponse.ok) {
-    const detail = await uploadResponse.text().catch(() => "");
-    throw new Error(detail || `Image upload failed (${uploadResponse.status}).`);
+  const data = (await response.json().catch(() => null)) as { url?: string; error?: string } | null;
+  if (!response.ok || !data?.url) {
+    throw new Error(data?.error ?? `Image upload failed (${response.status}).`);
   }
 
-  return data.publicUrl;
+  return data.url;
 }
+
 async function cleanupPendingUploadedImages(urls: string[]) {
   const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
   if (uniqueUrls.length === 0) return;
@@ -2082,9 +2069,9 @@ export default function AdminPanel() {
     try {
       const urls = await mapWithConcurrency(selectedFiles, IMAGE_UPLOAD_CONCURRENCY, async (file, localIndex) => {
         setImageUploadStatus(`Optimizing ${file.name} (${completedCount + 1}/${selectedFiles.length})...`);
-        const optimized = await optimizeImageForDirectUpload(file);
+        const optimized = await optimizeImageForUpload(file);
         setImageUploadStatus(`Uploading ${file.name} (${completedCount + 1}/${selectedFiles.length})...`);
-        const uploadedUrl = await uploadOptimizedImageDirectly({
+        const uploadedUrl = await uploadOptimizedImage({
           machineId,
           machineName,
           imageIndex: existingCount + localIndex,

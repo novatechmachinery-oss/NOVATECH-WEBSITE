@@ -765,6 +765,8 @@ export default function MetalWorkingCatalogue({
   const [canScrollThumbnailsLeft, setCanScrollThumbnailsLeft] = useState(false);
   const [canScrollThumbnailsRight, setCanScrollThumbnailsRight] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showFullImageHint, setShowFullImageHint] = useState(Boolean(initialMachineId));
+  const [imageAspectRatios, setImageAspectRatios] = useState<Record<string, number>>({});
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialSelectedCategory);
@@ -897,6 +899,16 @@ export default function MetalWorkingCatalogue({
     };
   }, [selectedMachineId, selectedMachine?.images?.length]);
 
+  useEffect(() => {
+    if (!showFullImageHint) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setShowFullImageHint(false), 12200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showFullImageHint]);
+
   function toggleCategory(name: string) {
     setOpenCategories((prev) =>
       Object.fromEntries(
@@ -1010,6 +1022,7 @@ export default function MetalWorkingCatalogue({
   function openMachine(machineId: string, category?: string, subcategory?: string) {
     setSelectedMachineId(machineId);
     setActiveImageIndex(0);
+    setShowFullImageHint(true);
 
     if (category) {
       setSelectedCategory(category);
@@ -1140,6 +1153,7 @@ export default function MetalWorkingCatalogue({
 
   const activeGalleryImage =
     machineDetailGallery[activeImageIndex] ?? machineDetailGallery[0] ?? null;
+  const activeImageAspectRatio = activeGalleryImage ? imageAspectRatios[activeGalleryImage.src] : undefined;
   const hasMultipleGalleryImages = machineDetailGallery.length > 1;
   const activeImageDownloadHref =
     selectedMachine && activeGalleryImage
@@ -1559,10 +1573,16 @@ export default function MetalWorkingCatalogue({
                 <div className="min-w-0">
                   <div className="min-w-0">
                     <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                      <div className="group relative flex h-[210px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
+                      <div
+                        className="group relative flex w-full items-center justify-center overflow-hidden bg-white"
+                        style={{ aspectRatio: activeImageAspectRatio ?? 1400 / 920 }}
+                      >
                         <button suppressHydrationWarning
                           type="button"
-                          onClick={() => setIsLightboxOpen(true)}
+                          onClick={() => {
+                            setShowFullImageHint(false);
+                            setIsLightboxOpen(true);
+                          }}
                           className="block h-full w-full cursor-zoom-in"
                           aria-label="Enlarge selected machine image"
                         >
@@ -1575,10 +1595,37 @@ export default function MetalWorkingCatalogue({
                             unoptimized
                             quality={100}
                             sizes="(min-width: 1280px) 55vw, 100vw"
-                            className="h-full w-full object-cover"
-                            style={{ objectPosition: activeGalleryImage?.position ?? "center" }}
+                            className="h-full w-full object-contain object-center"
+                            onLoad={(event) => {
+                              const { naturalWidth, naturalHeight } = event.currentTarget;
+
+                              if (naturalWidth > 0 && naturalHeight > 0) {
+                                const imageSrc = activeGalleryImage?.src ?? selectedMachine.imageSrc;
+                                const aspectRatio = naturalWidth / naturalHeight;
+
+                                setImageAspectRatios((current) =>
+                                  current[imageSrc] === aspectRatio
+                                    ? current
+                                    : { ...current, [imageSrc]: aspectRatio },
+                                );
+                              }
+                            }}
                           />
                         </button>
+
+                        {showFullImageHint ? (
+                          <div className="pointer-events-none absolute inset-x-0 top-16 z-30 overflow-hidden px-3">
+                            <div
+                              role="status"
+                              className="machine-image-click-hint flex w-max items-center gap-2 rounded-full border border-white/45 bg-[linear-gradient(90deg,rgba(20,91,147,0.96),rgba(14,116,144,0.96))] px-4 py-2 text-white shadow-[0_10px_28px_rgba(15,23,42,0.38)] backdrop-blur-md"
+                            >
+                              <Maximize2 className="h-4 w-4 shrink-0" />
+                              <span className="text-xs font-black uppercase tracking-[0.08em] sm:text-sm">
+                                Click to view full image
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
 
                         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between bg-[linear-gradient(180deg,rgba(15,23,42,0.32),transparent)] px-3 py-3 text-white">
                           <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
@@ -1596,7 +1643,10 @@ export default function MetalWorkingCatalogue({
                             </a>
                             <button
                               type="button"
-                              onClick={() => setIsLightboxOpen(true)}
+                              onClick={() => {
+                                setShowFullImageHint(false);
+                                setIsLightboxOpen(true);
+                              }}
                               className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
                               aria-label="Open enlarged image"
                             >

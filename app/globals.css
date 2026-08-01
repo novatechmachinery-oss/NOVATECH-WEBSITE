@@ -1053,3 +1053,31 @@ a[class*="inline-flex"][class*="rounded"] {
     clip-path: none !important;
   }
 }
+
+@keyframes machine-image-hint-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-115%);
+  }
+  12% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(calc(100vw - 8%));
+  }
+}
+
+.machine-image-click-hint {
+  animation: machine-image-hint-sweep 12s ease-in-out forwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .machine-image-click-hint {
+    animation: none;
+  }
+}
