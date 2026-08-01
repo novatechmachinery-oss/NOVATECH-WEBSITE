@@ -113,3 +113,4 @@ export default function SpecialDealsSlider({ deals }: SpecialDealsSliderProps) {
     </div>
   );
 }
+ 
