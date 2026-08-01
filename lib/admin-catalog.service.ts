@@ -228,6 +228,13 @@ async function readSupabaseCatalog(readMode: CatalogReadMode = "fresh") {
     return null;
   }
 
+  // Admin reads must bypass the process-local cache. On serverless deployments,
+  // a save and the following refresh can hit different instances; reusing a
+  // cached snapshot there makes successfully updated fields appear unchanged.
+  if (readMode === "fresh") {
+    return readSupabaseCatalogUncached("fresh");
+  }
+
   const now = Date.now();
 
   if (supabaseCatalogCache && supabaseCatalogCache.expiresAt > now) {
