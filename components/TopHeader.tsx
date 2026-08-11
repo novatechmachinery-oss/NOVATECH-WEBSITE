@@ -203,24 +203,24 @@ export default function TopHeader({
 
   return (
     <div
-      className="border-b-0 border-slate-200 bg-[#fff7e6] text-slate-800 2xl:border-b"
+      className="border-b-0 border-slate-200 bg-[#fff7e6] text-slate-800 min-[1440px]:border-b"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="grid w-full grid-cols-1 gap-0 px-1.5 pb-0 pt-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:pb-0 min-[414px]:pt-1 sm:px-3 sm:pb-0 sm:pt-1.5 md:px-4 md:pb-0 md:pt-2 lg:px-5 lg:pb-0 lg:pt-2 2xl:grid-cols-[150px_minmax(0,1fr)_300px] 2xl:items-center 2xl:px-6 2xl:py-2">
-        <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible 2xl:contents">
+      <div className="grid w-full grid-cols-1 gap-0 px-1.5 pb-0 pt-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:pb-0 min-[414px]:pt-1 sm:px-3 sm:pb-0 sm:pt-1.5 md:px-4 md:pb-0 md:pt-2 lg:px-5 lg:pb-0 lg:pt-2 min-[1440px]:grid-cols-[150px_minmax(0,1fr)_300px] min-[1440px]:items-center min-[1440px]:px-6 min-[1440px]:py-2">
+        <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible min-[1440px]:contents">
           <Link href="/" className="flex-none transition hover:opacity-95">
-            <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] 2xl:h-[108px] 2xl:w-[150px]">
+            <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] min-[1440px]:h-[108px] min-[1440px]:w-[150px]">
               <Image src={logoSrc} alt={logoAlt} fill sizes="120px" className="object-contain" />
             </div>
           </Link>
-          <div className="relative min-w-0 max-w-full flex-1 2xl:flex 2xl:h-[108px] 2xl:flex-col 2xl:justify-start">
+          <div className="relative min-w-0 max-w-full flex-1 min-[1440px]:flex min-[1440px]:h-[108px] min-[1440px]:flex-col min-[1440px]:justify-start">
             <button
               type="button"
               onClick={() => {
                 setIsMobileMenuOpen((current) => !current);
                 setIsDrawerMachineryOpen(false);
               }}
-              className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 2xl:hidden"
+              className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 min-[1440px]:hidden"
               aria-label="Open menu"
               aria-expanded={isMobileMenuOpen}
             >
@@ -229,7 +229,7 @@ export default function TopHeader({
               <span className="h-0.5 w-5 rounded-full bg-current" />
             </button>
             <div
-              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] lg:leading-[1.03] 2xl:justify-start 2xl:pr-4"
+              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] lg:leading-[1.03] min-[1440px]:justify-start min-[1440px]:pr-4"
               style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
             >
               <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
@@ -240,11 +240,11 @@ export default function TopHeader({
                 <br />
                 PRIVATE LIMITED
               </span>
-              <span className="hidden max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] sm:block md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
+              <span className="hidden max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] sm:block md:text-[1.78rem] lg:text-[1.92rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
                 NOVATECH MACHINERY CORPORATION
               </span>
               <div className="mt-0 hidden max-w-full flex-col gap-1 sm:flex">
-                <span className="block max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:text-[1.78rem] lg:text-[1.92rem] 2xl:whitespace-nowrap 2xl:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
+                <span className="block max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:text-[1.78rem] lg:text-[1.92rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
                   (OPC) PRIVATE LIMITED
                 </span>
               </div>
@@ -253,7 +253,7 @@ export default function TopHeader({
         </div>
 
         {isMobileMenuOpen ? (
-          <div className="fixed inset-0 z-[9999] 2xl:hidden" aria-modal="true" role="dialog">
+          <div className="fixed inset-0 z-[9999] min-[1440px]:hidden" aria-modal="true" role="dialog">
             <button
               type="button"
               aria-label="Close mobile menu"
@@ -386,12 +386,12 @@ export default function TopHeader({
           </div>
         ) : null}
 
-        <div className="hidden min-w-0 flex-col items-center justify-center gap-2 px-2 pb-1 pt-1 text-sm text-slate-900 2xl:flex 2xl:items-end 2xl:justify-end 2xl:pb-0 2xl:pt-2">
-          <div className="hidden shrink-0 2xl:flex">
+        <div className="hidden min-w-0 flex-col items-center justify-center gap-2 px-2 pb-1 pt-1 text-sm text-slate-900 min-[1440px]:flex min-[1440px]:items-end min-[1440px]:justify-end min-[1440px]:pb-0 min-[1440px]:pt-2">
+          <div className="hidden shrink-0 min-[1440px]:flex">
             <NewsletterSignup variant="desktop" />
           </div>
 
-          <div className="hidden w-full translate-y-4 flex-wrap items-center justify-center gap-x-5 gap-y-2 leading-none 2xl:flex 2xl:flex-nowrap 2xl:justify-end">
+          <div className="hidden w-full translate-y-4 flex-wrap items-center justify-center gap-x-5 gap-y-2 leading-none min-[1440px]:flex min-[1440px]:flex-nowrap min-[1440px]:justify-end">
             <div className="inline-flex shrink-0 items-center gap-1">
               <a
                 href={`tel:${cleanPhoneNumber(phonePrimary)}`}
@@ -428,7 +428,7 @@ export default function TopHeader({
         </div>
 
         {!isMobileMenuOpen ? (
-          <div className="border-t border-slate-200 bg-[#fff7e6] px-0 pb-0 pt-0 min-[414px]:px-0 min-[414px]:pb-0 min-[414px]:pt-0 2xl:hidden">
+          <div className="border-t border-slate-200 bg-[#fff7e6] px-0 pb-0 pt-0 min-[414px]:px-0 min-[414px]:pb-0 min-[414px]:pt-0 min-[1440px]:hidden">
           {isCompactSearchOpen ? (
             <div className="relative z-[100]">
               <form

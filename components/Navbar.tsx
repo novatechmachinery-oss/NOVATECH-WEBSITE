@@ -44,10 +44,10 @@ export default function Navbar({ machines }: NavbarProps) {
 
   return (
     <nav
-      className="hidden border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)] 2xl:block"
+      className="hidden border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)] min-[1440px]:block"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="mx-auto hidden h-[50px] w-full max-w-[1600px] items-center justify-between gap-5 px-4 2xl:flex 2xl:px-8">
+      <div className="mx-auto hidden h-[50px] w-full max-w-[1600px] items-center justify-between gap-5 px-4 min-[1440px]:flex min-[1440px]:px-8">
         <div className="flex items-center gap-1.5 text-[0.82rem] font-black uppercase tracking-[0.005em] text-white">
           {navItems.map((link) => {
             const isActive = isActiveNavItem(pathname, link.href);

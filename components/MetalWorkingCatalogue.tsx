@@ -766,7 +766,6 @@ export default function MetalWorkingCatalogue({
   const [canScrollThumbnailsRight, setCanScrollThumbnailsRight] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showFullImageHint, setShowFullImageHint] = useState(Boolean(initialMachineId));
-  const [imageAspectRatios, setImageAspectRatios] = useState<Record<string, number>>({});
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialSelectedCategory);
@@ -1153,7 +1152,6 @@ export default function MetalWorkingCatalogue({
 
   const activeGalleryImage =
     machineDetailGallery[activeImageIndex] ?? machineDetailGallery[0] ?? null;
-  const activeImageAspectRatio = activeGalleryImage ? imageAspectRatios[activeGalleryImage.src] : undefined;
   const hasMultipleGalleryImages = machineDetailGallery.length > 1;
   const activeImageDownloadHref =
     selectedMachine && activeGalleryImage
@@ -1573,10 +1571,7 @@ export default function MetalWorkingCatalogue({
                 <div className="min-w-0">
                   <div className="min-w-0">
                     <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                      <div
-                        className="group relative flex w-full items-center justify-center overflow-hidden bg-white"
-                        style={{ aspectRatio: activeImageAspectRatio ?? 1400 / 920 }}
-                      >
+                      <div className="group relative flex h-[210px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
                         <button suppressHydrationWarning
                           type="button"
                           onClick={() => {
@@ -1596,20 +1591,6 @@ export default function MetalWorkingCatalogue({
                             quality={100}
                             sizes="(min-width: 1280px) 55vw, 100vw"
                             className="h-full w-full object-contain object-center"
-                            onLoad={(event) => {
-                              const { naturalWidth, naturalHeight } = event.currentTarget;
-
-                              if (naturalWidth > 0 && naturalHeight > 0) {
-                                const imageSrc = activeGalleryImage?.src ?? selectedMachine.imageSrc;
-                                const aspectRatio = naturalWidth / naturalHeight;
-
-                                setImageAspectRatios((current) =>
-                                  current[imageSrc] === aspectRatio
-                                    ? current
-                                    : { ...current, [imageSrc]: aspectRatio },
-                                );
-                              }
-                            }}
                           />
                         </button>
 
@@ -1660,7 +1641,7 @@ export default function MetalWorkingCatalogue({
                             <button suppressHydrationWarning
                               type="button"
                               onClick={showPreviousGalleryImage}
-                              className="absolute left-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:left-4 sm:h-11 sm:w-11"
+                              className="absolute left-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:left-4 sm:h-11 sm:w-11"
                               aria-label="Show previous machine image"
                             >
                               <ChevronLeft className="h-5 w-5" />
@@ -1668,7 +1649,7 @@ export default function MetalWorkingCatalogue({
                             <button suppressHydrationWarning
                               type="button"
                               onClick={showNextGalleryImage}
-                              className="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:right-4 sm:h-11 sm:w-11"
+                              className="absolute right-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93] sm:right-4 sm:h-11 sm:w-11"
                               aria-label="Show next machine image"
                             >
                               <ChevronRight className="h-5 w-5" />

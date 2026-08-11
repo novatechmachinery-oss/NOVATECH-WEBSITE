@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getSeoConfig } from "@/lib/seo/seo-config";
+import { getNextConfigRuntime } from "next/dist/server/config-shared";
 
 function toTitleCase(value: string) {
   return value
@@ -30,3 +31,4 @@ export async function generateBreadcrumbs(pathnameWithQuery: string) {
   return crumbs;
 }
 
+ 

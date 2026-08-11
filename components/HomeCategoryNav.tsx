@@ -57,11 +57,11 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
 
   return (
     <div
-      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] 2xl:block 2xl:h-[50px]"
+      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] min-[1440px]:block min-[1440px]:h-[50px]"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
       <div className="w-full px-0">
-        <div className="flex flex-wrap gap-px bg-white/45 2xl:h-[50px] 2xl:flex-nowrap">
+        <div className="flex flex-wrap gap-px bg-white/45 min-[1440px]:h-[50px] min-[1440px]:flex-nowrap">
           {desktopTypes.map((item, index) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
             const Icon = iconMap[item.label.trim().toLowerCase() as keyof typeof iconMap] ?? Settings;
