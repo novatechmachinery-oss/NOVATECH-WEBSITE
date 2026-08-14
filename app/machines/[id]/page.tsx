@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Footer from "@/components/Footer";
+import MachineImageGallery from "@/components/MachineImageGallery";
 import SiteHeader from "@/components/SiteHeader";
 import JsonLd from "@/components/seo/JsonLd";
 import TrackedLink from "@/components/seo/TrackedLink";
@@ -114,34 +115,11 @@ export default async function MachinePage({ params }: MachinePageProps) {
         <article className="overflow-hidden border border-slate-200 bg-white shadow-sm">
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
             <section aria-label={`${machine.title} images`} className="border-b border-slate-200 p-3 lg:border-b-0 lg:border-r sm:p-5">
-              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                <Image
-                  src={images[0]}
-                  alt={machine.imageAlt || machine.title}
-                  fill
-                  priority
-                  unoptimized={/^https?:\/\//i.test(images[0])}
-                  sizes="(min-width: 1024px) 56vw, 100vw"
-                  className="object-contain"
-                />
-              </div>
-              {images.length > 1 ? (
-                <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
-                  {images.slice(1).map((src, index) => (
-                    <div key={`${src}-${index}`} className="relative aspect-square overflow-hidden border border-slate-200 bg-slate-100">
-                      <Image
-                        src={src}
-                        alt={`${machine.title} view ${index + 2}`}
-                        fill
-                        loading="lazy"
-                        unoptimized={/^https?:\/\//i.test(src)}
-                        sizes="160px"
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+              <MachineImageGallery
+                images={images}
+                title={machine.title}
+                imageAlt={machine.imageAlt}
+              />
             </section>
 
             <section className="p-5 sm:p-7">
@@ -164,11 +142,32 @@ export default async function MachinePage({ params }: MachinePageProps) {
                   </div>
                 ))}
               </dl>
-              <p className="mt-5 leading-7 text-slate-700">{machine.description}</p>
+              {machine.description ? (
+                <div className="mt-5 space-y-1.5 text-sm leading-6 text-slate-700">
+                  {machine.description
+                    .split(/\n+/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line, i) => {
+                      const colonIdx = line.indexOf(":");
+                      if (colonIdx > 0 && colonIdx < 40) {
+                        const label = line.slice(0, colonIdx).trim();
+                        const value = line.slice(colonIdx + 1).trim();
+                        return (
+                          <div key={i} className="flex gap-2">
+                            <span className="min-w-[130px] font-semibold text-slate-800">{label}:</span>
+                            <span>{value}</span>
+                          </div>
+                        );
+                      }
+                      return <p key={i}>{line}</p>;
+                    })}
+                </div>
+              ) : null}
               <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                <TrackedLink eventName="contact_whatsapp" eventContext={machine.category} href={whatsappHref} className="inline-flex min-h-11 items-center justify-center bg-emerald-600 px-4 text-sm font-black text-white hover:bg-emerald-700">WhatsApp</TrackedLink>
+                <TrackedLink eventName="contact_whatsapp" eventContext={machine.category} href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center bg-emerald-600 px-4 text-sm font-black text-white hover:bg-emerald-700">WhatsApp</TrackedLink>
                 <TrackedLink eventName="contact_phone" eventContext={machine.category} href={`tel:${settings.contact.phonePrimary.replace(/\s+/g, "")}`} className="inline-flex min-h-11 items-center justify-center bg-[#145b93] px-4 text-sm font-black text-white hover:bg-[#0f4f7f]">Call Now</TrackedLink>
-                <TrackedLink eventName="contact_email" eventContext={machine.category} href={`mailto:${settings.contact.emailAddress}?subject=${encodeURIComponent(`Enquiry: ${machine.title}`)}`} className="inline-flex min-h-11 items-center justify-center border border-[#145b93] px-4 text-sm font-black text-[#145b93] hover:bg-sky-50">Email Enquiry</TrackedLink>
+                <TrackedLink eventName="contact_email" eventContext={machine.category} href={`/contact`} className="inline-flex min-h-11 items-center justify-center border border-[#145b93] px-4 text-sm font-black text-[#145b93] hover:bg-sky-50">Email Enquiry</TrackedLink>
               </div>
             </section>
           </div>
@@ -177,8 +176,8 @@ export default async function MachinePage({ params }: MachinePageProps) {
             <section className="border-t border-slate-200 p-5 sm:p-7">
               <h2 className="text-xl font-black">Machine specifications</h2>
               <dl className="mt-4 grid gap-px overflow-hidden border border-slate-200 bg-slate-200 sm:grid-cols-2">
-                {machine.specifications.map((spec) => (
-                  <div key={`${spec.label}-${spec.value}`} className="grid grid-cols-[minmax(120px,0.7fr)_minmax(0,1.3fr)] bg-white p-3 text-sm">
+                {machine.specifications.map((spec, idx) => (
+                  <div key={`${spec.label}-${spec.value}-${idx}`} className="grid grid-cols-[minmax(120px,0.7fr)_minmax(0,1.3fr)] bg-white p-3 text-sm">
                     <dt className="font-bold text-slate-600">{spec.label}</dt>
                     <dd className="break-words text-slate-900">{spec.value}</dd>
                   </div>

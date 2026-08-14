@@ -24,4 +24,4 @@ export default function AnalyticsPageView({ measurementId }: { measurementId: st
   }, [measurementId, pathname, searchParams]);
 
   return null;
-}
+}   
