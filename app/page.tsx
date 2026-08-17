@@ -12,8 +12,51 @@ import SpecialDealsSlider from "../components/SpecialDealsSlider";
 import { getSpecialDeals } from "@/lib/machines";
 import { HOME_HERO_SLIDES } from "@/lib/home-hero-slides";
 import { generatePageMetadata } from "@/lib/seo/metadata";
-import { getLocalBusinessSchema } from "@/lib/seo/schema";
+import { getFaqSchema, getLocalBusinessSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
+
+const HOME_FAQS = [
+  {
+    question: "What type of machinery does Novatech Machinery sell?",
+    answer:
+      "Novatech Machinery deals in used and refurbished industrial machinery including CNC machines, lathes, milling machines, boring mills, grinding machines, drilling machines, metal working machinery, textile machinery, pharmaceutical machinery, and plastic processing machinery.",
+  },
+  {
+    question: "Where is Novatech Machinery located?",
+    answer:
+      "Novatech Machinery is located at Sixth Floor, OS 621, Sector 70, Sahibzada Ajit Singh Nagar (Mohali), Punjab, India — 160071. We serve customers across Mohali, Chandigarh, Ludhiana, Amritsar, Delhi, Mumbai, Pune, Ahmedabad and all across India.",
+  },
+  {
+    question: "Does Novatech Machinery sell used CNC machines in India?",
+    answer:
+      "Yes, Novatech Machinery is a leading dealer of used and refurbished CNC machines in India. Our inventory includes CNC lathes, CNC milling machines, CNC boring mills, CNC machining centres, and CNC grinding machines from top global brands.",
+  },
+  {
+    question: "How can I buy a used machine from Novatech Machinery?",
+    answer:
+      "You can browse our complete machine inventory on the website and contact us via WhatsApp, phone call, or email enquiry. Our team will assist you with specifications, pricing, and delivery arrangements across India.",
+  },
+  {
+    question: "Does Novatech Machinery deliver machinery across India?",
+    answer:
+      "Yes, Novatech Machinery delivers used and refurbished industrial machinery across all major cities and states in India including Punjab, Haryana, Delhi, Rajasthan, Maharashtra, Gujarat, and Uttar Pradesh.",
+  },
+  {
+    question: "What brands of used machines does Novatech deal in?",
+    answer:
+      "Novatech Machinery deals in used machines from top global brands including SKODA, Mazak, DMG Mori, Okuma, Haas, Fanuc, Siemens, and many other reputed international manufacturers.",
+  },
+  {
+    question: "Are Novatech’s machines in good working condition?",
+    answer:
+      "Yes, all machines listed by Novatech Machinery are thoroughly inspected before listing. We offer used, refurbished, and excellent working condition machines with complete specifications and images.",
+  },
+  {
+    question: "How to contact Novatech Machinery for an enquiry?",
+    answer:
+      "You can contact Novatech Machinery by calling +91 96462 55755, via WhatsApp, or through the enquiry form on our Contact page. We respond to all enquiries within 24 hours.",
+  },
+];
 
 export const revalidate = 300;
 export const dynamic = "force-dynamic";
@@ -39,10 +82,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const [specialDeals, settings, localBusinessSchema] = await Promise.all([
+  const [specialDeals, settings, localBusinessSchema, faqSchema] = await Promise.all([
     getSpecialDeals(undefined),
     getSiteSettings(),
     getLocalBusinessSchema(),
+    getFaqSchema(HOME_FAQS),
   ]);
 
   return (
@@ -54,6 +98,11 @@ export default async function Home() {
           type="application/ld+json"
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
         <div className="space-y-0">
           <HeroSlider slides={HOME_HERO_SLIDES} />
@@ -107,6 +156,28 @@ export default async function Home() {
         <section className="mx-[-0.75rem] bg-white sm:mx-[-1.25rem] lg:mx-[-1.5rem] xl:mx-[-2rem]">
           <div className="mx-auto max-w-[1840px] px-2 pb-4 sm:px-3 sm:pb-5 lg:px-4 xl:px-5">
             <SpecialDealsSlider deals={specialDeals} />
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="mx-[-0.75rem] bg-white py-8 sm:mx-[-1.25rem] sm:py-10 lg:mx-[-1.5rem] xl:mx-[-2rem]">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-6 text-center text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+              Frequently Asked Questions
+            </h2>
+            <div className="divide-y divide-slate-200 border border-slate-200">
+              {HOME_FAQS.map((faq, i) => (
+                <details key={i} className="group bg-white">
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 font-semibold text-slate-800 hover:bg-slate-50">
+                    <span>{faq.question}</span>
+                    <span className="ml-4 shrink-0 text-[#145b93] transition-transform group-open:rotate-180">&#9660;</span>
+                  </summary>
+                  <div className="border-t border-slate-100 px-5 py-4 text-sm leading-7 text-slate-600">
+                    {faq.answer}
+                  </div>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
       </main>
