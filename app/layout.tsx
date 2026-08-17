@@ -30,8 +30,11 @@ export async function generateMetadata(): Promise<Metadata> {
       telephone: false,
     },
     icons: {
-      icon: "/main-logo.png",
-      shortcut: "/main-logo.png",
+      icon: [
+        { url: "/favicon.ico", type: "image/x-icon" },
+        { url: "/main-logo.png", type: "image/png" },
+      ],
+      shortcut: "/favicon.ico",
       apple: "/main-logo.png",
     },
     manifest: "/manifest.webmanifest",

@@ -10,3 +10,4 @@ export default function AdminLoginPage() {
   const adminUrl = (process.env.ADMIN_APP_URL ?? "https://admin.novatechmachinery.com").replace(/\/$/, "");
   redirect(`${adminUrl}/login`);
 }
+                         
