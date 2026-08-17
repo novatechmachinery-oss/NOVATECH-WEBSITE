@@ -334,6 +334,12 @@ export const getMachineById = cache(async function getMachineById(id: string) {
   return machines.find((machine) => machine.id === id) ?? null;
 });
 
+export const getMachineBySlug = cache(async function getMachineBySlug(slug: string) {
+  const { generateMachineSlug } = await import("@/lib/machine-urls");
+  const machines = await getMachineInventory();
+  return machines.find((machine) => generateMachineSlug(machine) === slug) ?? null;
+});
+
 export function deriveMachineCategories(machines: MachineItem[], categories: CategoryRow[]) {
   const counts = new Map<string, number>();
   const specialDealsCount = machines.filter((machine) => machine.isSpecialDeal).length;

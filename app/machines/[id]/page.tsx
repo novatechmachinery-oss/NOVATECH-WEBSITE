@@ -8,11 +8,12 @@ import MachineImageGallery from "@/components/MachineImageGallery";
 import SiteHeader from "@/components/SiteHeader";
 import JsonLd from "@/components/seo/JsonLd";
 import TrackedLink from "@/components/seo/TrackedLink";
-import { getMachineById, getMachineInventory } from "@/lib/machines";
+import { getMachineBySlug, getMachineById, getMachineInventory } from "@/lib/machines";
 import { getMachinePath } from "@/lib/machine-urls";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getMachineBreadcrumbSchema, getProductSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
+import { redirect } from "next/navigation";
 
 export const revalidate = 300;
 
@@ -37,10 +38,14 @@ function machineTitle(name: string, brand?: string) {
 
 export async function generateMetadata({ params }: MachinePageProps): Promise<Metadata> {
   const { id } = await params;
-  const machine = await getMachineById(decodeURIComponent(id));
+  const idOrSlug = decodeURIComponent(id);
+
+  // Try slug first, then fall back to ID for backward compat
+  const machine =
+    (await getMachineBySlug(idOrSlug)) ?? (await getMachineById(idOrSlug));
 
   if (!machine) {
-    return generatePageMetadata(getMachinePath(id), {
+    return generatePageMetadata(`/machines/${idOrSlug}`, {
       fallbackTitle: "Machine Not Found",
       fallbackDescription: "The requested machine is not available.",
       noIndex: true,
@@ -69,8 +74,24 @@ export async function generateMetadata({ params }: MachinePageProps): Promise<Me
 
 export default async function MachinePage({ params }: MachinePageProps) {
   const { id } = await params;
-  const machine = await getMachineById(decodeURIComponent(id));
+  const idOrSlug = decodeURIComponent(id);
+
+  // Try slug first
+  let machine = await getMachineBySlug(idOrSlug);
+  let isOldIdUrl = false;
+
+  if (!machine) {
+    // Fall back to ID lookup (old URL format like /machines/machine_9l115xpm)
+    machine = await getMachineById(idOrSlug);
+    if (machine) isOldIdUrl = true;
+  }
+
   if (!machine) notFound();
+
+  // Redirect old ID-based URLs to new slug URLs (301)
+  if (isOldIdUrl) {
+    redirect(getMachinePath(machine));
+  }
 
   const [inventory, settings, productSchema, breadcrumbSchema] = await Promise.all([
     getMachineInventory(),

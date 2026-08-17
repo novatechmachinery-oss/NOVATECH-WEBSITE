@@ -11,6 +11,7 @@ export {
   getCategories,
   getMachineCatalogData,
   getMachineById,
+  getMachineBySlug,
   getMachineInventory,
   getMachineSearchIndex,
   getSpecialDeals,
