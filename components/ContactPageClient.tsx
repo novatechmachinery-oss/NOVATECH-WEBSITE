@@ -58,18 +58,12 @@ function buildTouchedState() {
 export default function ContactPageClient({ settings }: ContactPageClientProps) {
   const mapsQuery = encodeURIComponent(settings.mapLocation);
   const emailAddress = settings.emailAddress.trim();
-  const emailComposeQuery = new URLSearchParams({
-    view: "cm",
-    fs: "1",
-    to: emailAddress,
-    su: "Machinery enquiry",
-  }).toString();
   const contactLinks = {
     mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
     mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
     whatsappLink: WHATSAPP_HREF,
     primaryCallLink: `tel:${settings.phonePrimary.replace(/\s+/g, "")}`,
-    emailLink: `https://mail.google.com/mail/?${emailComposeQuery}`,
+    emailLink: `mailto:${emailAddress}?subject=${encodeURIComponent("Machinery enquiry")}`,
   };
   const contactCards = [
     {

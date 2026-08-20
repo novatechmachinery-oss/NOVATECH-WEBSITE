@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronRight, CircleDollarSign, Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import Footer from "@/components/Footer";
@@ -13,6 +14,7 @@ import { getMachinePath } from "@/lib/machine-urls";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getMachineBreadcrumbSchema, getProductSchema } from "@/lib/seo/schema";
 import { getSiteSettings } from "@/lib/site-settings.service";
+import { REQUEST_PRICE_WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import { redirect } from "next/navigation";
 
 export const revalidate = 300;
@@ -34,6 +36,14 @@ function truncate(value: string, maximum = 158) {
 function machineTitle(name: string, brand?: string) {
   const includesBrand = brand && name.toLowerCase().includes(brand.toLowerCase());
   return `${name} for Sale${brand && !includesBrand ? ` | ${brand}` : ""}`;
+}
+
+function WhatsAppBrandIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12.04 3.5a8.43 8.43 0 0 0-7.24 12.75L3.88 20l3.85-.9A8.42 8.42 0 1 0 12.04 3.5Zm0 15.36a6.9 6.9 0 0 1-3.52-.96l-.25-.15-2.27.53.54-2.22-.16-.26a6.9 6.9 0 1 1 5.66 3.06Zm3.8-5.15c-.2-.1-1.2-.6-1.39-.66-.19-.07-.33-.1-.47.1-.14.2-.54.66-.66.8-.12.14-.24.15-.44.05-.2-.1-.86-.32-1.64-1.02-.61-.54-1.02-1.21-1.14-1.41-.12-.2-.01-.31.09-.41.09-.09.2-.24.3-.36.1-.12.14-.2.2-.34.07-.14.03-.26-.02-.36-.05-.1-.47-1.13-.64-1.55-.17-.4-.34-.35-.47-.36h-.4c-.14 0-.36.05-.55.26-.19.2-.72.7-.72 1.72 0 1.01.74 1.99.84 2.13.1.14 1.46 2.23 3.54 3.12.49.21.88.34 1.18.44.5.16.95.14 1.31.08.4-.06 1.2-.49 1.37-.96.17-.47.17-.88.12-.96-.05-.08-.19-.13-.39-.23Z" />
+    </svg>
+  );
 }
 
 export async function generateMetadata({ params }: MachinePageProps): Promise<Metadata> {
@@ -113,6 +123,9 @@ export default async function MachinePage({ params }: MachinePageProps) {
   const whatsappHref = `https://wa.me/${settings.contact.whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
     `I am interested in ${machine.title} (${getMachinePath(machine)})`,
   )}`;
+  const requestPriceHref = `https://wa.me/${REQUEST_PRICE_WHATSAPP_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent(
+    `Please share the best price for ${machine.title} (${getMachinePath(machine)})`,
+  )}`;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -144,12 +157,69 @@ export default async function MachinePage({ params }: MachinePageProps) {
             </section>
 
             <section className="p-5 sm:p-7">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">
-                {machine.subcategory || machine.category}
-              </p>
-              <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-3xl">
-                {machine.title}
-              </h1>
+              <div className="border-b border-slate-200 pb-4">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">
+                  {machine.subcategory || machine.category}
+                </p>
+                <div className="mt-2 flex flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                  <div className="min-w-0 2xl:flex-1">
+                    <h1 className="break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                      {machine.title}
+                    </h1>
+                  </div>
+                  <div className="grid min-w-0 grid-cols-1 gap-2 min-[560px]:grid-cols-3 2xl:w-[560px] 2xl:shrink-0">
+                    <TrackedLink
+                      eventName="contact_whatsapp"
+                      eventContext={machine.category}
+                      href={requestPriceHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-[#145b93] bg-[#145b93] py-1 text-left text-white shadow-[0_12px_24px_rgba(20,91,147,0.18)] transition hover:-translate-y-0.5 hover:bg-[#0f4c7c] hover:shadow-[0_16px_28px_rgba(20,91,147,0.24)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center">
+                      <CircleDollarSign className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">Request Price</span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-sky-100">Get Best Quote</span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center opacity-80 transition group-hover:translate-x-0.5" />
+                    </TrackedLink>
+                    <TrackedLink
+                      eventName="contact_whatsapp"
+                      eventContext={machine.category}
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_16px_28px_rgba(16,185,129,0.14)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center text-emerald-600">
+                      <WhatsAppBrandIcon className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">WhatsApp</span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-slate-500">Chat With Us</span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+                    </TrackedLink>
+                    <TrackedLink
+                      eventName="contact_phone"
+                      eventContext={machine.category}
+                      href={`tel:${settings.contact.phonePrimary.replace(/\s+/g, "")}`}
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_16px_28px_rgba(14,165,233,0.14)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center text-[#145b93]">
+                      <Phone className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">Call Now</span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-slate-500">Speak to Expert</span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#145b93]" />
+                    </TrackedLink>
+                  </div>
+                </div>
+              </div>
               <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden border border-slate-200 bg-slate-200 text-sm">
                 {[
                   ["Brand", machine.manufacturer],
@@ -185,11 +255,6 @@ export default async function MachinePage({ params }: MachinePageProps) {
                     })}
                 </div>
               ) : null}
-              <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                <TrackedLink eventName="contact_whatsapp" eventContext={machine.category} href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center bg-emerald-600 px-4 text-sm font-black text-white hover:bg-emerald-700">WhatsApp</TrackedLink>
-                <TrackedLink eventName="contact_phone" eventContext={machine.category} href={`tel:${settings.contact.phonePrimary.replace(/\s+/g, "")}`} className="inline-flex min-h-11 items-center justify-center bg-[#145b93] px-4 text-sm font-black text-white hover:bg-[#0f4f7f]">Call Now</TrackedLink>
-                <TrackedLink eventName="contact_email" eventContext={machine.category} href={`/contact`} className="inline-flex min-h-11 items-center justify-center border border-[#145b93] px-4 text-sm font-black text-[#145b93] hover:bg-sky-50">Email Enquiry</TrackedLink>
-              </div>
             </section>
           </div>
 

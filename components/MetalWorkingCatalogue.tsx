@@ -35,7 +35,6 @@ import {
   KeyRound,
   Layers3,
   Maximize2,
-  MessageCircle,
   Minus,
   MoveHorizontal,
   PackageOpen,
@@ -99,6 +98,14 @@ const sidebarCategoryIconMap: Record<string, LucideIcon> = {
   "Welding Equipment": Flame,
   "Wire Machinery": Cable,
 };
+
+function WhatsAppBrandIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12.04 3.5a8.43 8.43 0 0 0-7.24 12.75L3.88 20l3.85-.9A8.42 8.42 0 1 0 12.04 3.5Zm0 15.36a6.9 6.9 0 0 1-3.52-.96l-.25-.15-2.27.53.54-2.22-.16-.26a6.9 6.9 0 1 1 5.66 3.06Zm3.8-5.15c-.2-.1-1.2-.6-1.39-.66-.19-.07-.33-.1-.47.1-.14.2-.54.66-.66.8-.12.14-.24.15-.44.05-.2-.1-.86-.32-1.64-1.02-.61-.54-1.02-1.21-1.14-1.41-.12-.2-.01-.31.09-.41.09-.09.2-.24.3-.36.1-.12.14-.2.2-.34.07-.14.03-.26-.02-.36-.05-.1-.47-1.13-.64-1.55-.17-.4-.34-.35-.47-.36h-.4c-.14 0-.36.05-.55.26-.19.2-.72.7-.72 1.72 0 1.01.74 1.99.84 2.13.1.14 1.46 2.23 3.54 3.12.49.21.88.34 1.18.44.5.16.95.14 1.31.08.4-.06 1.2-.49 1.37-.96.17-.47.17-.88.12-.96-.05-.08-.19-.13-.39-.23Z" />
+    </svg>
+  );
+}
 
 function GridMachineCard({ m, onClick }: { m: MachineItem; onClick: () => void }) {
   const imageList = useMemo(
@@ -1533,37 +1540,74 @@ export default function MetalWorkingCatalogue({
             </button>
 
             <div className="mt-3 min-w-0">
-              <div className="mb-3 min-w-0">
-                <h1 className="break-words text-[1.35rem] font-semibold uppercase leading-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">
-                  {selectedMachine.title}
-                </h1>
+              <div className="mb-4 min-w-0 border-b border-slate-200 pb-4">
+                <p className="mb-2 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#145b93]">
+                  {selectedMachine.subcategory || selectedMachine.category}
+                </p>
+                <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="min-w-0 xl:flex-1">
+                    <h1 className="break-words text-[1.35rem] font-semibold uppercase leading-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">
+                      {selectedMachine.title}
+                    </h1>
+                  </div>
 
-                <div className="mt-2 grid min-w-0 grid-cols-1 gap-1.5 min-[520px]:grid-cols-3 sm:gap-2 lg:gap-3">
-                  <a
-                    href={REQUEST_PRICE_WHATSAPP_HREF}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex min-h-[38px] min-w-0 items-center justify-center gap-1 border border-[#145b93] bg-[#145b93] px-2 py-1.5 text-center text-[0.72rem] font-semibold leading-tight text-white transition hover:bg-[#0f4c7c] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
-                  >
-                    <CircleDollarSign className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-                    <span className="min-w-0">Request Price</span>
-                  </a>
-                  <a
-                    href={WHATSAPP_HREF}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex min-h-[38px] min-w-0 items-center justify-center gap-1 border border-slate-300 bg-white px-2 py-1.5 text-center text-[0.72rem] font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-                    <span className="min-w-0">WhatsApp</span>
-                  </a>
-                  <a
-                    href="tel:+919646255855"
-                    className="inline-flex min-h-[38px] min-w-0 items-center justify-center gap-1 border border-slate-300 bg-white px-2 py-1.5 text-center text-[0.72rem] font-semibold leading-tight text-slate-800 transition hover:border-[#145b93] hover:text-[#145b93] sm:min-h-[42px] sm:gap-2 sm:px-3 sm:text-sm"
-                  >
-                    <Phone className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-                    <span className="min-w-0">Call Now</span>
-                  </a>
+                  <div className="grid min-w-0 grid-cols-1 gap-2 min-[560px]:grid-cols-3 xl:w-[700px] xl:shrink-0">
+                    <a
+                      href={REQUEST_PRICE_WHATSAPP_HREF}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-[#145b93] bg-[#145b93] py-1 text-left text-white shadow-[0_12px_24px_rgba(20,91,147,0.18)] transition hover:-translate-y-0.5 hover:bg-[#0f4c7c] hover:shadow-[0_16px_28px_rgba(20,91,147,0.24)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center">
+                      <CircleDollarSign className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
+                        Request Price
+                      </span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-sky-100">
+                        Get Best Quote
+                      </span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center opacity-80 transition group-hover:translate-x-0.5" />
+                    </a>
+                    <a
+                      href={WHATSAPP_HREF}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_16px_28px_rgba(16,185,129,0.14)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center text-emerald-600">
+                      <WhatsAppBrandIcon className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
+                        WhatsApp
+                      </span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-slate-500">
+                        Chat With Us
+                      </span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+                    </a>
+                    <a
+                      href="tel:+919646255855"
+                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_16px_28px_rgba(14,165,233,0.14)]"
+                    >
+                    <span className="flex w-[30%] shrink-0 items-center justify-center text-[#145b93]">
+                      <Phone className="h-9 w-9" />
+                    </span>
+                    <span className="min-w-0 flex-1 self-center leading-tight">
+                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
+                        Call Now
+                      </span>
+                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-slate-500">
+                        Speak to Expert
+                      </span>
+                    </span>
+                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#145b93]" />
+                    </a>
+                  </div>
                 </div>
               </div>
 
