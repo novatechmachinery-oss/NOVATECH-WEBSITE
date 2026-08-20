@@ -58,6 +58,22 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // /machines (no ID) → used-machinery listing page
+      {
+        source: "/machines",
+        destination: "/used-machinery",
+        permanent: true,
+      },
+      // Old UUID-format machine URLs → used-machinery (deleted machines)
+      {
+        source: "/machines/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        destination: "/used-machinery",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
