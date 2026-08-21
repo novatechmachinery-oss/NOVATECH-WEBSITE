@@ -8,20 +8,22 @@ const initialValues = {
   preferredForm: "", quantity: "", unit: "", grade: "", requirements: "",
 };
 
+type MessageState = { text: string; kind: "success" | "error" | "" };
+
 export default function CarbideEnquiryForm() {
   const [values, setValues] = useState(initialValues);
-  const [message, setMessage] = useState("");
+  const [messageState, setMessageState] = useState<MessageState>({ text: "", kind: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setValues((current) => ({ ...current, [event.target.name]: event.target.value }));
-    setMessage("");
+    setMessageState({ text: "", kind: "" });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setMessage("");
+    setMessageState({ text: "", kind: "" });
 
     const requirement = [
       "Carbide scrap enquiry",
@@ -50,9 +52,15 @@ export default function CarbideEnquiryForm() {
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.message || "Unable to submit your enquiry.");
       setValues(initialValues);
-      setMessage(result?.message || "Your enquiry has been submitted successfully.");
+      setMessageState({
+        text: result?.message || "Your enquiry has been submitted successfully. We will contact you shortly.",
+        kind: "success",
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to submit your enquiry.");
+      setMessageState({
+        text: error instanceof Error ? error.message : "Unable to submit your enquiry. Please try again.",
+        kind: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -76,7 +84,18 @@ export default function CarbideEnquiryForm() {
         <Field label="Quantity Required *"><div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-2"><input required name="quantity" value={values.quantity} onChange={handleChange} className={control} placeholder="Quantity" /><select required name="unit" value={values.unit} onChange={handleChange} className={control}><option value="">Unit</option><option>Kg</option><option>MT</option><option>Pieces</option></select></div></Field>
         <Field label="Grade / Specification (If any)"><input name="grade" value={values.grade} onChange={handleChange} className={control} placeholder="Enter grade or specification" /></Field>
         <div className="sm:col-span-2"><Field label="Additional Requirements (Optional)"><textarea name="requirements" value={values.requirements} onChange={handleChange} rows={4} className={`${control} py-3`} placeholder="Any other specific requirement or message" /></Field></div>
-        {message ? <p className="rounded-md bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 sm:col-span-2" role="status">{message}</p> : null}
+        {messageState.text ? (
+          <p
+            className={`rounded-md px-4 py-3 text-sm font-semibold sm:col-span-2 ${
+              messageState.kind === "success"
+                ? "border border-green-200 bg-green-50 text-green-700"
+                : "border border-red-200 bg-red-50 text-red-700"
+            }`}
+            role="status"
+          >
+            {messageState.kind === "success" ? "✅ " : "❌ "}{messageState.text}
+          </p>
+        ) : null}
         <button type="submit" disabled={isSubmitting} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#df202c] px-6 py-3 font-black uppercase tracking-wide text-white transition hover:bg-[#c71925] disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2">
           <Send className="h-5 w-5" />{isSubmitting ? "Submitting..." : "Submit Enquiry"}
         </button>

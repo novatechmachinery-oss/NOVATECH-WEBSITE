@@ -26,7 +26,7 @@ import {
 } from "@/lib/contactForm";
 import { countries } from "@/lib/countries";
 import type { SiteSettings } from "@/lib/site-settings.types";
-import { WHATSAPP_HREF } from "@/lib/whatsapp";
+import { getWhatsAppHref } from "@/lib/whatsapp";
 
 type SubmitState =
   | { kind: "idle"; message: string }
@@ -61,17 +61,24 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   const contactLinks = {
     mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
     mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    whatsappLink: WHATSAPP_HREF,
+    whatsappLink: getWhatsAppHref(settings.whatsappNumber),
     primaryCallLink: `tel:${settings.phonePrimary.replace(/\s+/g, "")}`,
     emailLink: `mailto:${emailAddress}?subject=${encodeURIComponent("Machinery enquiry")}`,
   };
   const contactCards = [
     {
-      icons: [Phone, WhatsAppIcon],
-      label: "Call Us/WhatsApp Us",
-      title: `${settings.phonePrimary} / ${settings.phoneSecondary}`,
+      icon: Phone,
+      label: "Call Us",
+      title: settings.phonePrimary,
       detail: settings.businessHours,
       href: contactLinks.primaryCallLink,
+    },
+    {
+      icon: WhatsAppIcon,
+      label: "WhatsApp Us",
+      title: settings.whatsappNumber,
+      detail: settings.businessHours,
+      href: contactLinks.whatsappLink,
     },
     {
       icon: Mail,
@@ -637,10 +644,9 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
             
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {contactCards.map((item) => {
               const Icon = item.icon;
-              const Icons = item.icons;
 
               return (
                 <a
@@ -653,17 +659,8 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                   className="group border border-slate-200 bg-white p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_22px_42px_rgba(20,91,147,0.12)]"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex min-h-14 w-12 shrink-0 flex-col items-center justify-center gap-1 bg-sky-50 text-sky-700">
-                      {Icons ? (
-                        Icons.map((InlineIcon, iconIndex) => (
-                          <InlineIcon
-                            key={iconIndex}
-                            className={`h-5 w-5 ${iconIndex === 1 ? "text-emerald-600" : ""}`}
-                          />
-                        ))
-                      ) : Icon ? (
-                        <Icon className="h-5 w-5" />
-                      ) : null}
+                    <span className="inline-flex min-h-14 w-12 shrink-0 items-center justify-center bg-sky-50 text-sky-700">
+                      {Icon ? <Icon className={item.label === "WhatsApp Us" ? "h-5 w-5 text-emerald-600" : "h-5 w-5"} /> : null}
                     </span>
                     <div className="min-w-0">
                       <p className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-slate-500">
