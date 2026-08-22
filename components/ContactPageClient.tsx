@@ -26,7 +26,6 @@ import {
 } from "@/lib/contactForm";
 import { countries } from "@/lib/countries";
 import type { SiteSettings } from "@/lib/site-settings.types";
-import { getWhatsAppHref } from "@/lib/whatsapp";
 
 type SubmitState =
   | { kind: "idle"; message: string }
@@ -61,24 +60,24 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
   const contactLinks = {
     mapsEmbedUrl: `https://maps.google.com/maps?q=${mapsQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
     mapsOpenUrl: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    whatsappLink: getWhatsAppHref(settings.whatsappNumber),
     primaryCallLink: `tel:${settings.phonePrimary.replace(/\s+/g, "")}`,
+    secondaryCallLink: `tel:${settings.phoneSecondary.replace(/\s+/g, "")}`,
     emailLink: `mailto:${emailAddress}?subject=${encodeURIComponent("Machinery enquiry")}`,
   };
   const contactCards = [
     {
-      icon: Phone,
-      label: "Call Us",
+      icons: [Phone, WhatsAppIcon],
+      label: "Call Us/WhatsApp Us",
       title: settings.phonePrimary,
       detail: settings.businessHours,
       href: contactLinks.primaryCallLink,
     },
     {
-      icon: WhatsAppIcon,
-      label: "WhatsApp Us",
-      title: settings.whatsappNumber,
+      icons: [Phone, WhatsAppIcon],
+      label: "Call Us/WhatsApp Us",
+      title: settings.phoneSecondary,
       detail: settings.businessHours,
-      href: contactLinks.whatsappLink,
+      href: contactLinks.secondaryCallLink,
     },
     {
       icon: Mail,
@@ -647,10 +646,11 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {contactCards.map((item) => {
               const Icon = item.icon;
+              const Icons = item.icons;
 
               return (
                 <a
-                  key={item.label}
+                  key={item.title}
                   href={item.href}
                   target={item.href.startsWith("http") ? "_blank" : undefined}
                   rel={item.href.startsWith("http") ? "noreferrer" : undefined}
@@ -660,7 +660,18 @@ export default function ContactPageClient({ settings }: ContactPageClientProps) 
                 >
                   <div className="flex items-start gap-3">
                     <span className="inline-flex min-h-14 w-12 shrink-0 items-center justify-center bg-sky-50 text-sky-700">
-                      {Icon ? <Icon className={item.label === "WhatsApp Us" ? "h-5 w-5 text-emerald-600" : "h-5 w-5"} /> : null}
+                      {Icons ? (
+                        <span className="flex flex-col items-center gap-1">
+                          {Icons.map((InlineIcon, iconIndex) => (
+                            <InlineIcon
+                              key={iconIndex}
+                              className={`h-5 w-5 ${iconIndex === 1 ? "text-emerald-600" : ""}`}
+                            />
+                          ))}
+                        </span>
+                      ) : Icon ? (
+                        <Icon className="h-5 w-5" />
+                      ) : null}
                     </span>
                     <div className="min-w-0">
                       <p className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-slate-500">

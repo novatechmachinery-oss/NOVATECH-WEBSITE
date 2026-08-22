@@ -192,6 +192,17 @@ export async function getProductSchema(machine: MachineItem) {
     category: machine.subcategory || machine.category,
     itemCondition,
     url,
+    offers: {
+      "@type": "Offer",
+      availability: "https://schema.org/InStock",
+      itemCondition: itemCondition ?? "https://schema.org/UsedCondition",
+      seller: {
+        "@type": "Organization",
+        name: "Novatech Machinery",
+        url: baseUrl,
+      },
+      url,
+    },
   };
 }
 
