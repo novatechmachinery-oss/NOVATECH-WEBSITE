@@ -161,13 +161,10 @@ export default async function MachinePage({ params }: MachinePageProps) {
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">
                   {machine.subcategory || machine.category}
                 </p>
-                <div className="mt-2 flex flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                  <div className="min-w-0 2xl:flex-1">
-                    <h1 className="break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl">
-                      {machine.title}
-                    </h1>
-                  </div>
-                  <div className="grid min-w-0 grid-cols-1 gap-2 min-[560px]:grid-cols-3 2xl:w-[560px] 2xl:shrink-0">
+                <h1 className="mt-2 break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                  {machine.title}
+                </h1>
+                <div className="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                     <TrackedLink
                       eventName="contact_whatsapp"
                       eventContext={machine.category}
@@ -219,80 +216,79 @@ export default async function MachinePage({ params }: MachinePageProps) {
                     </TrackedLink>
                   </div>
                 </div>
-              </div>
-              <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden border border-slate-200 bg-slate-200 text-sm">
-                {[
-                  ["Brand", machine.manufacturer],
-                  ["Model", machine.model],
-                  ["Condition", machine.condition],
-                  ["Stock number", machine.stockNumber],
-                ].filter((item): item is [string, string] => Boolean(item[1])).map(([label, value]) => (
-                  <div key={label} className="bg-white p-3">
-                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</dt>
-                    <dd className="mt-1 font-semibold text-slate-900">{value}</dd>
+                <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden border border-slate-200 bg-slate-200 text-sm">
+                  {[
+                    ["Brand", machine.manufacturer],
+                    ["Model", machine.model],
+                    ["Condition", machine.condition],
+                    ["Stock number", machine.stockNumber],
+                  ].filter((item): item is [string, string] => Boolean(item[1])).map(([label, value]) => (
+                    <div key={label} className="bg-white p-3">
+                      <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</dt>
+                      <dd className="mt-1 font-semibold text-slate-900">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {machine.description ? (
+                  <div className="mt-5 space-y-1.5 text-sm leading-6 text-slate-700">
+                    {machine.description
+                      .split(/\n+/)
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line, i) => {
+                        const colonIdx = line.indexOf(":");
+                        if (colonIdx > 0 && colonIdx < 40) {
+                          const label = line.slice(0, colonIdx).trim();
+                          const value = line.slice(colonIdx + 1).trim();
+                          return (
+                            <div key={i} className="flex gap-2">
+                              <span className="min-w-[130px] font-semibold text-slate-800">{label}:</span>
+                              <span>{value}</span>
+                            </div>
+                          );
+                        }
+                        return <p key={i}>{line}</p>;
+                      })}
                   </div>
-                ))}
-              </dl>
-              {machine.description ? (
-                <div className="mt-5 space-y-1.5 text-sm leading-6 text-slate-700">
-                  {machine.description
-                    .split(/\n+/)
-                    .map((line) => line.trim())
-                    .filter(Boolean)
-                    .map((line, i) => {
-                      const colonIdx = line.indexOf(":");
-                      if (colonIdx > 0 && colonIdx < 40) {
-                        const label = line.slice(0, colonIdx).trim();
-                        const value = line.slice(colonIdx + 1).trim();
-                        return (
-                          <div key={i} className="flex gap-2">
-                            <span className="min-w-[130px] font-semibold text-slate-800">{label}:</span>
-                            <span>{value}</span>
-                          </div>
-                        );
-                      }
-                      return <p key={i}>{line}</p>;
-                    })}
-                </div>
-              ) : null}
-            </section>
-          </div>
+                ) : null}
+              </section>
+            </div>
 
-          {machine.specifications?.length ? (
-            <section className="border-t border-slate-200 p-5 sm:p-7">
-              <h2 className="text-xl font-black">Machine specifications</h2>
-              <dl className="mt-4 grid gap-px overflow-hidden border border-slate-200 bg-slate-200 sm:grid-cols-2">
-                {machine.specifications.map((spec, idx) => (
-                  <div key={`${spec.label}-${spec.value}-${idx}`} className="grid grid-cols-[minmax(120px,0.7fr)_minmax(0,1.3fr)] bg-white p-3 text-sm">
-                    <dt className="font-bold text-slate-600">{spec.label}</dt>
-                    <dd className="break-words text-slate-900">{spec.value}</dd>
-                  </div>
+            {machine.specifications?.length ? (
+              <section className="border-t border-slate-200 p-5 sm:p-7">
+                <h2 className="text-xl font-black">Machine specifications</h2>
+                <dl className="mt-4 grid gap-px overflow-hidden border border-slate-200 bg-slate-200 sm:grid-cols-2">
+                  {machine.specifications.map((spec, idx) => (
+                    <div key={`${spec.label}-${spec.value}-${idx}`} className="grid grid-cols-[minmax(120px,0.7fr)_minmax(0,1.3fr)] bg-white p-3 text-sm">
+                      <dt className="font-bold text-slate-600">{spec.label}</dt>
+                      <dd className="break-words text-slate-900">{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+          </article>
+
+          {related.length ? (
+            <section className="mt-8" aria-labelledby="related-machines">
+              <h2 id="related-machines" className="text-xl font-black">Related machines</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {related.map((item) => (
+                  <Link key={item.id} href={getMachinePath(item)} className="group overflow-hidden border border-slate-200 bg-white shadow-sm">
+                    <div className="relative aspect-[4/3] bg-slate-100">
+                      <Image src={item.imageSrc} alt={item.imageAlt || item.title} fill loading="lazy" unoptimized={/^https?:\/\//i.test(item.imageSrc)} sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-black leading-snug group-hover:text-sky-700">{item.title}</h3>
+                      <p className="mt-1 text-sm text-slate-600">{item.manufacturer || item.subcategory || item.category}</p>
+                    </div>
+                  </Link>
                 ))}
-              </dl>
+              </div>
             </section>
           ) : null}
-        </article>
-
-        {related.length ? (
-          <section className="mt-8" aria-labelledby="related-machines">
-            <h2 id="related-machines" className="text-xl font-black">Related machines</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {related.map((item) => (
-                <Link key={item.id} href={getMachinePath(item)} className="group overflow-hidden border border-slate-200 bg-white shadow-sm">
-                  <div className="relative aspect-[4/3] bg-slate-100">
-                    <Image src={item.imageSrc} alt={item.imageAlt || item.title} fill loading="lazy" unoptimized={/^https?:\/\//i.test(item.imageSrc)} sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-black leading-snug group-hover:text-sky-700">{item.title}</h3>
-                    <p className="mt-1 text-sm text-slate-600">{item.manufacturer || item.subcategory || item.category}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-      </main>
-      <Footer />
-    </div>
-  );
+        </main>
+        <Footer />
+      </div>
+    );
 }
