@@ -71,6 +71,7 @@ type MachineFormState = {
   model: string;
   serialNumber: string;
   inventoryNumber: string;
+  referenceNumber: string;
   countryOfOrigin: string;
   price: string;
   condition: AdminMachine["condition"];
@@ -135,6 +136,7 @@ const defaultMachineForm: MachineFormState = {
   model: "",
   serialNumber: "",
   inventoryNumber: "",
+  referenceNumber: "",
   countryOfOrigin: "",
   price: "",
   condition: "used",
@@ -397,6 +399,7 @@ function getMachineSearchEntries(machine: MachineRow) {
     model: machine.model,
     serialNumber: machine.serialNumber,
     inventoryNumber: machine.inventoryNumber,
+    referenceNumber: machine.referenceNumber,
     countryOfOrigin: machine.countryOfOrigin,
     price: machine.price,
     condition: machine.condition,
@@ -907,6 +910,19 @@ export default function AdminPanel() {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [catalog, machineFilters]);
 
+  const nextReferenceNumber = useMemo(() => {
+    if (!catalog?.machines.length) {
+      return 1;
+    }
+
+    return (
+      catalog.machines.reduce(
+        (highest, machine) => Math.max(highest, machine.referenceNumber ?? 0),
+        0,
+      ) + 1
+    );
+  }, [catalog]);
+
   const machineFiltersActive = Object.values(machineFilters).some((value) => value.trim());
 
   const activeSubcategories = machineForm.categoryId
@@ -1375,7 +1391,10 @@ export default function AdminPanel() {
     setMachineSpecificationsError(null);
     newMachineIdRef.current = null;
     if (!catalog || !machine) {
-      setMachineForm(defaultMachineForm);
+      setMachineForm({
+        ...defaultMachineForm,
+        referenceNumber: String(nextReferenceNumber),
+      });
       setMachineModalOpen(true);
       return;
     }
@@ -1392,6 +1411,7 @@ export default function AdminPanel() {
       model: machine.model ?? "",
       serialNumber: machine.serialNumber ?? "",
       inventoryNumber: machine.inventoryNumber ?? "",
+      referenceNumber: machine.referenceNumber ? String(machine.referenceNumber) : "",
       countryOfOrigin: machine.countryOfOrigin ?? "",
       price: machine.price ? String(machine.price) : "",
       condition: machine.condition,
@@ -1475,6 +1495,7 @@ export default function AdminPanel() {
             model: machineForm.model,
             serialNumber: machineForm.serialNumber,
             inventoryNumber: machineForm.inventoryNumber,
+            referenceNumber: machineForm.referenceNumber ? Number(machineForm.referenceNumber) : null,
             countryOfOrigin: machineForm.countryOfOrigin,
             price: machineForm.price ? Number(machineForm.price) : null,
             condition: machineForm.condition,
@@ -4247,6 +4268,7 @@ export default function AdminPanel() {
               <Field label="Model" value={machineForm.model} onChange={(value) => setMachineForm((current) => ({ ...current, model: value }))} />
               <Field label="Serial Number" value={machineForm.serialNumber} onChange={(value) => setMachineForm((current) => ({ ...current, serialNumber: value }))} />
               <Field label="Inventory Number" value={machineForm.inventoryNumber} onChange={(value) => setMachineForm((current) => ({ ...current, inventoryNumber: value }))} />
+              <Field label="Ref. No." type="number" value={machineForm.referenceNumber} onChange={(value) => setMachineForm((current) => ({ ...current, referenceNumber: value }))} />
               <Field label="Country of Origin" value={machineForm.countryOfOrigin} onChange={(value) => setMachineForm((current) => ({ ...current, countryOfOrigin: value }))} />
               <Field label="Price" type="number" value={machineForm.price} onChange={(value) => setMachineForm((current) => ({ ...current, price: value }))} />
 

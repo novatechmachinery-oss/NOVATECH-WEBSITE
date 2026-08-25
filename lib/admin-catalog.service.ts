@@ -23,6 +23,7 @@ const supabaseCatalogTimeoutMs = 12_000;
 const supabaseCatalogCacheMs = 60_000;
 const supabaseCatalogFailureCooldownMs = 60_000;
 const recentMachineLimit = 8;
+const referenceNumberSpecKey = "__referenceNumber";
 let catalogWriteQueue = Promise.resolve();
 let supabaseCatalogRead: Promise<AdminCatalogSnapshot | null> | null = null;
 let supabaseCatalogCache: { catalog: AdminCatalogSnapshot; expiresAt: number } | null = null;
@@ -52,6 +53,110 @@ function normalizeText(value: unknown) {
 function optionalText(value: unknown) {
   const text = normalizeText(value);
   return text || undefined;
+}
+
+function optionalPositiveInteger(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value > 0 ? value : undefined;
+  }
+
+  const text = normalizeText(value);
+  if (!text) {
+    return undefined;
+  }
+
+  const parsed = Number(text);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function getSpecificationValue(specifications: unknown, keys: string[]) {
+  if (!specifications || typeof specifications !== "object" || Array.isArray(specifications)) {
+    return undefined;
+  }
+
+  const entries = Object.entries(specifications as Record<string, unknown>);
+  const normalizedKeys = new Set(keys.map((key) => key.toLowerCase()));
+  return entries.find(([key]) => normalizedKeys.has(key.trim().toLowerCase()))?.[1];
+}
+
+function extractReferenceNumber(value: unknown) {
+  return optionalPositiveInteger(
+    getSpecificationValue(value, [
+      referenceNumberSpecKey,
+      "referenceNumber",
+      "reference_number",
+      "Ref. No.",
+      "Ref No",
+      "Reference Number",
+    ]),
+  );
+}
+
+function stripReferenceNumberSpec(specifications: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(specifications).filter(([key]) => {
+      const normalizedKey = key.trim().toLowerCase();
+      return ![
+        referenceNumberSpecKey.toLowerCase(),
+        "referencenumber",
+        "reference_number",
+        "ref. no.",
+        "ref no",
+        "reference number",
+      ].includes(normalizedKey);
+    }),
+  );
+}
+
+function assignDefaultReferenceNumbers(machines: AdminMachine[]) {
+  const assignedNumbers = new Set(
+    machines
+      .map((machine) => machine.referenceNumber)
+      .filter((value): value is number => typeof value === "number" && Number.isInteger(value) && value > 0),
+  );
+  let nextReferenceNumber = 1;
+
+  const defaultNumbers = new Map<string, number>();
+
+  machines
+    .map((machine, index) => ({ machine, index }))
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.machine.createdAt) || 0;
+      const rightTime = Date.parse(right.machine.createdAt) || 0;
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      return left.index - right.index;
+    })
+    .forEach(({ machine }) => {
+      if (machine.referenceNumber) {
+        defaultNumbers.set(machine.id, machine.referenceNumber);
+        return;
+      }
+
+      while (assignedNumbers.has(nextReferenceNumber)) {
+        nextReferenceNumber += 1;
+      }
+
+      defaultNumbers.set(machine.id, nextReferenceNumber);
+      assignedNumbers.add(nextReferenceNumber);
+      nextReferenceNumber += 1;
+    });
+
+  return machines.map((machine) => ({
+    ...machine,
+    referenceNumber: defaultNumbers.get(machine.id),
+  }));
+}
+
+function getNextReferenceNumber(machines: AdminMachine[]) {
+  const highestReferenceNumber = machines.reduce(
+    (highest, machine) => Math.max(highest, machine.referenceNumber ?? 0),
+    0,
+  );
+  return highestReferenceNumber + 1;
 }
 
 function normalizeImages(images: unknown) {
@@ -175,7 +280,7 @@ function seedCategoryRows(rows: CategoryRow[]) {
 
 function seedMachineRows(rows: MachineRow[]) {
   const now = new Date().toISOString();
-  return rows
+  const machines = rows
     .filter((row) => normalizeText(row.name) && row.category_id)
     .map((row) => ({
       id: row.id,
@@ -184,6 +289,7 @@ function seedMachineRows(rows: MachineRow[]) {
       model: optionalText(row.model),
       serialNumber: optionalText(row.serial_number),
       inventoryNumber: optionalText(row.inventory_number),
+      referenceNumber: optionalPositiveInteger(row.reference_number) ?? extractReferenceNumber(row.specifications),
       countryOfOrigin: optionalText(row.country_of_origin),
       price: null,
       condition:
@@ -207,10 +313,12 @@ function seedMachineRows(rows: MachineRow[]) {
       categoryId: row.category_id!,
       specialDeal: Boolean(row.special_deal ?? row.featured),
       images: normalizeImages(row.images),
-      specifications: normalizeSpecs(row.specifications),
+      specifications: stripReferenceNumberSpec(normalizeSpecs(row.specifications)),
       createdAt: row.created_at ?? now,
       updatedAt: row.created_at ?? now,
     })) satisfies AdminMachine[];
+
+  return assignDefaultReferenceNumbers(machines);
 }
 
 async function buildSeedCatalog() {
@@ -328,10 +436,19 @@ async function readCatalogFile() {
   try {
     const content = await readFile(catalogFilePath, "utf8");
     const parsed = JSON.parse(content) as Partial<AdminCatalogSnapshot>;
+    const machines = Array.isArray(parsed.machines)
+      ? assignDefaultReferenceNumbers(
+          parsed.machines.map((machine) => ({
+            ...machine,
+            referenceNumber: optionalPositiveInteger((machine as Partial<AdminMachine>).referenceNumber),
+            specifications: stripReferenceNumberSpec(normalizeSpecs((machine as Partial<AdminMachine>).specifications)),
+          } as AdminMachine)),
+        )
+      : [];
 
     return {
       categories: Array.isArray(parsed.categories) ? parsed.categories : [],
-      machines: Array.isArray(parsed.machines) ? parsed.machines : [],
+      machines,
       lastSyncedAt: typeof parsed.lastSyncedAt === "string" ? parsed.lastSyncedAt : null,
     } satisfies AdminCatalogSnapshot;
   } catch (error) {
@@ -434,6 +551,11 @@ function validateMachineInput(input: AdminMachineInput, categories: AdminCategor
   }
 
   const images = normalizeImages(input.images);
+  const referenceNumber = optionalPositiveInteger(input.referenceNumber);
+
+  if (input.referenceNumber != null && !referenceNumber) {
+    throw new Error("Reference number must be a positive whole number.");
+  }
 
   return {
     name,
@@ -441,6 +563,7 @@ function validateMachineInput(input: AdminMachineInput, categories: AdminCategor
     model: optionalText(input.model),
     serialNumber: optionalText(input.serialNumber),
     inventoryNumber: optionalText(input.inventoryNumber),
+    referenceNumber,
     countryOfOrigin: optionalText(input.countryOfOrigin),
     price: typeof input.price === "number" && Number.isFinite(input.price) ? input.price : null,
     condition: input.condition ?? "used",
@@ -450,7 +573,7 @@ function validateMachineInput(input: AdminMachineInput, categories: AdminCategor
     categoryId: input.categoryId,
     specialDeal: Boolean(input.specialDeal),
     images,
-    specifications: normalizeSpecs(input.specifications),
+    specifications: stripReferenceNumberSpec(normalizeSpecs(input.specifications)),
   };
 }
 
@@ -668,7 +791,12 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
     createdAt: oldMachine?.createdAt ?? now,
     updatedAt: now,
     ...normalized,
+    referenceNumber: normalized.referenceNumber ?? oldMachine?.referenceNumber ?? getNextReferenceNumber(machines),
     images: resolvedImages,
+  };
+  const machineSpecificationsForStorage = {
+    ...newMachine.specifications,
+    ...(newMachine.referenceNumber ? { [referenceNumberSpecKey]: String(newMachine.referenceNumber) } : {}),
   };
 
   const removedImages = oldMachine
@@ -703,7 +831,7 @@ export async function upsertAdminMachine(input: AdminMachineInput) {
           special_deal: newMachine.specialDeal,
           featured: newMachine.specialDeal,
           images: newMachine.images,
-          specifications: newMachine.specifications,
+          specifications: machineSpecificationsForStorage,
           created_at: newMachine.createdAt
         }])
       });

@@ -62,6 +62,7 @@ export type MachineRow = {
   condition: string | null;
   country_of_origin: string | null;
   inventory_number: string | null;
+  reference_number?: number | string | null;
   serial_number: string | null;
   machine_type: string | null;
   special_deal: boolean | null;

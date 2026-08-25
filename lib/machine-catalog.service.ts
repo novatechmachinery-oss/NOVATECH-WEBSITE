@@ -23,6 +23,42 @@ function asOptionalText(value: unknown) {
   return text || undefined;
 }
 
+function asOptionalPositiveInteger(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value > 0 ? value : undefined;
+  }
+
+  const text = asText(value);
+  if (!text) {
+    return undefined;
+  }
+
+  const parsed = Number(text);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function isReferenceNumberSpecKey(key: string) {
+  return [
+    "__referencenumber",
+    "referencenumber",
+    "reference_number",
+    "ref. no.",
+    "ref no",
+    "reference number",
+  ].includes(key.trim().toLowerCase());
+}
+
+function extractReferenceNumberFromSpecifications(specifications: unknown) {
+  if (!specifications || typeof specifications !== "object" || Array.isArray(specifications)) {
+    return undefined;
+  }
+
+  const entry = Object.entries(specifications as Record<string, unknown>).find(([key]) =>
+    isReferenceNumberSpecKey(key),
+  );
+  return asOptionalPositiveInteger(entry?.[1]);
+}
+
 function asStringArray(value: unknown) {
   if (!Array.isArray(value)) {
     return [];
@@ -124,6 +160,10 @@ function buildMachineSpecifications(
   }
 
   for (const [key, rawValue] of Object.entries(row.specifications as Record<string, unknown>)) {
+    if (isReferenceNumberSpecKey(key)) {
+      continue;
+    }
+
     const value = asOptionalText(rawValue);
     if (!value) {
       continue;
@@ -181,6 +221,8 @@ function normalizeMachine(row: MachineRow, categoryMap: Map<string, CategoryRow>
     model: asOptionalText(row.model),
     condition: asOptionalText(row.condition),
     stockNumber: asOptionalText(row.inventory_number ?? row.serial_number),
+    referenceNumber:
+      asOptionalPositiveInteger(row.reference_number) ?? extractReferenceNumberFromSpecifications(row.specifications),
     support: "Inspection, loading and export assistance available",
     images: images.length > 0 ? images : [primaryImage],
     imagePositions,
@@ -232,6 +274,7 @@ function normalizeAdminMachine(
     model: machine.model,
     condition: machine.condition,
     stockNumber: machine.inventoryNumber ?? machine.serialNumber,
+    referenceNumber: machine.referenceNumber,
     support: "Inspection, loading and export assistance available",
     images: images.length > 0 ? images : [primaryImage],
     imagePositions,
@@ -259,7 +302,13 @@ function normalizeAdminMachine(
 }
 
 function assignMachineReferenceNumbers(machines: MachineItem[]) {
+  const assignedNumbers = new Set(
+    machines
+      .map((machine) => machine.referenceNumber)
+      .filter((value): value is number => typeof value === "number" && Number.isInteger(value) && value > 0),
+  );
   const referenceNumbers = new Map<string, number>();
+  let nextReferenceNumber = 1;
 
   machines
     .map((machine, index) => ({ machine, index }))
@@ -273,8 +322,19 @@ function assignMachineReferenceNumbers(machines: MachineItem[]) {
 
       return left.index - right.index;
     })
-    .forEach(({ machine }, index) => {
-      referenceNumbers.set(machine.id, index + 1);
+    .forEach(({ machine }) => {
+      if (machine.referenceNumber) {
+        referenceNumbers.set(machine.id, machine.referenceNumber);
+        return;
+      }
+
+      while (assignedNumbers.has(nextReferenceNumber)) {
+        nextReferenceNumber += 1;
+      }
+
+      referenceNumbers.set(machine.id, nextReferenceNumber);
+      assignedNumbers.add(nextReferenceNumber);
+      nextReferenceNumber += 1;
     });
 
   return machines.map((machine) => ({

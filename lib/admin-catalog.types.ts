@@ -16,6 +16,7 @@ export type AdminMachine = {
   model?: string;
   serialNumber?: string;
   inventoryNumber?: string;
+  referenceNumber?: number;
   countryOfOrigin?: string;
   price?: number | null;
   condition: "new" | "used" | "refurbished";
@@ -51,6 +52,7 @@ export type AdminMachineInput = {
   model?: string;
   serialNumber?: string;
   inventoryNumber?: string;
+  referenceNumber?: number | null;
   countryOfOrigin?: string;
   price?: number | null;
   condition?: AdminMachine["condition"];
