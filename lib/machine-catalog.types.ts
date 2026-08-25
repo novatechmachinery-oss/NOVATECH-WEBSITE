@@ -26,6 +26,7 @@ export type MachineItem = {
   model?: string;
   condition?: string;
   stockNumber?: string;
+  referenceNumber?: number;
   support?: string;
   images?: string[];
   imagePositions?: string[];

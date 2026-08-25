@@ -1544,22 +1544,31 @@ export default function MetalWorkingCatalogue({
                 <p className="mb-2 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#145b93]">
                   {selectedMachine.subcategory || selectedMachine.category}
                 </p>
-                <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="min-w-0 xl:flex-1">
+                <div className="grid min-w-0 grid-cols-1 gap-0 min-[560px]:grid-cols-3 xl:grid-cols-[50%_12.5%_12.5%_12.5%_12.5%] xl:items-start">
+                  <div className="min-w-0 min-[560px]:col-span-2 xl:col-span-1">
                     <h1 className="break-words text-[1.35rem] font-semibold uppercase leading-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">
                       {selectedMachine.title}
                     </h1>
                   </div>
 
-                  <div className="grid min-w-0 grid-cols-1 gap-2 min-[560px]:grid-cols-3 xl:w-[700px] xl:shrink-0">
+                  {selectedMachine.referenceNumber ? (
+                    <div className="flex min-h-[60px] min-w-0 items-center justify-center border border-slate-200 bg-white px-2 text-center text-slate-950">
+                      <span className="truncate text-[0.86rem] font-semibold uppercase leading-tight text-[#145b93] sm:text-[0.95rem] lg:text-[1.05rem]">
+                        Ref. No. {selectedMachine.referenceNumber}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="hidden xl:block" />
+                  )}
+
                     <a
                       href={REQUEST_PRICE_WHATSAPP_HREF}
                       target="_blank"
                       rel="noreferrer"
-                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-[#145b93] bg-[#145b93] py-1 text-left text-white shadow-[0_12px_24px_rgba(20,91,147,0.18)] transition hover:-translate-y-0.5 hover:bg-[#0f4c7c] hover:shadow-[0_16px_28px_rgba(20,91,147,0.24)]"
+                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-[#145b93] bg-[#145b93] py-0 text-left text-white shadow-none transition hover:bg-[#0f4c7c]"
                     >
-                    <span className="flex w-[30%] shrink-0 items-center justify-center">
-                      <CircleDollarSign className="h-9 w-9" />
+                    <span className="flex w-[28%] shrink-0 items-center justify-center">
+                      <CircleDollarSign className="h-8 w-8" />
                     </span>
                     <span className="min-w-0 flex-1 self-center leading-tight">
                       <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
@@ -1569,16 +1578,16 @@ export default function MetalWorkingCatalogue({
                         Get Best Quote
                       </span>
                     </span>
-                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center opacity-80 transition group-hover:translate-x-0.5" />
+                    <ChevronRight className="mr-1 h-4 w-4 shrink-0 self-center opacity-80" />
                     </a>
                     <a
                       href={WHATSAPP_HREF}
                       target="_blank"
                       rel="noreferrer"
-                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_16px_28px_rgba(16,185,129,0.14)]"
+                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-emerald-300"
                     >
-                    <span className="flex w-[30%] shrink-0 items-center justify-center text-emerald-600">
-                      <WhatsAppBrandIcon className="h-9 w-9" />
+                    <span className="flex w-[28%] shrink-0 items-center justify-center text-emerald-600">
+                      <WhatsAppBrandIcon className="h-8 w-8" />
                     </span>
                     <span className="min-w-0 flex-1 self-center leading-tight">
                       <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
@@ -1588,14 +1597,14 @@ export default function MetalWorkingCatalogue({
                         Chat With Us
                       </span>
                     </span>
-                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+                    <ChevronRight className="mr-1 h-4 w-4 shrink-0 self-center text-slate-400 group-hover:text-emerald-600" />
                     </a>
                     <a
                       href="tel:+919646255855"
-                      className="group inline-flex min-h-[64px] min-w-0 items-stretch rounded-[0.45rem] border border-slate-200 bg-white py-1 text-left text-slate-900 shadow-[0_10px_22px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_16px_28px_rgba(14,165,233,0.14)]"
+                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-sky-300"
                     >
-                    <span className="flex w-[30%] shrink-0 items-center justify-center text-[#145b93]">
-                      <Phone className="h-9 w-9" />
+                    <span className="flex w-[28%] shrink-0 items-center justify-center text-[#145b93]">
+                      <Phone className="h-8 w-8" />
                     </span>
                     <span className="min-w-0 flex-1 self-center leading-tight">
                       <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
@@ -1605,9 +1614,8 @@ export default function MetalWorkingCatalogue({
                         Speak to Expert
                       </span>
                     </span>
-                    <ChevronRight className="mr-2 h-4 w-4 shrink-0 self-center text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#145b93]" />
+                    <ChevronRight className="mr-1 h-4 w-4 shrink-0 self-center text-slate-400 group-hover:text-[#145b93]" />
                     </a>
-                  </div>
                 </div>
               </div>
 

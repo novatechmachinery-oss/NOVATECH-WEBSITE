@@ -161,9 +161,21 @@ export default async function MachinePage({ params }: MachinePageProps) {
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">
                   {machine.subcategory || machine.category}
                 </p>
-                <h1 className="mt-2 break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl">
-                  {machine.title}
-                </h1>
+                <div className="mt-2 flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+                  <h1 className="min-w-0 flex-none break-words text-2xl font-black leading-tight tracking-tight sm:max-w-[calc(100%-8rem)] sm:text-3xl">
+                    {machine.title}
+                  </h1>
+                  {machine.referenceNumber ? (
+                    <div className="shrink-0 self-start text-slate-950">
+                      <span className="block whitespace-nowrap text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl">
+                        Ref. No.
+                      </span>
+                      <span className="block text-2xl font-black uppercase leading-tight tracking-tight text-[#145b93] sm:text-3xl">
+                        {machine.referenceNumber}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
                 <div className="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                     <TrackedLink
                       eventName="contact_whatsapp"

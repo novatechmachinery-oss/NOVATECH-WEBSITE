@@ -258,6 +258,31 @@ function normalizeAdminMachine(
   };
 }
 
+function assignMachineReferenceNumbers(machines: MachineItem[]) {
+  const referenceNumbers = new Map<string, number>();
+
+  machines
+    .map((machine, index) => ({ machine, index }))
+    .sort((left, right) => {
+      const leftDate = Date.parse(left.machine.createdAt ?? "") || 0;
+      const rightDate = Date.parse(right.machine.createdAt ?? "") || 0;
+
+      if (leftDate !== rightDate) {
+        return leftDate - rightDate;
+      }
+
+      return left.index - right.index;
+    })
+    .forEach(({ machine }, index) => {
+      referenceNumbers.set(machine.id, index + 1);
+    });
+
+  return machines.map((machine) => ({
+    ...machine,
+    referenceNumber: referenceNumbers.get(machine.id),
+  }));
+}
+
 export async function getCategories() {
   const adminCatalog = await getAdminCatalog({ cache: "public" });
   if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
@@ -282,10 +307,16 @@ const getMachineInventoryCached = unstable_cache(
     const adminCatalog = await getAdminCatalog({ cache: "public" });
     if (adminCatalog.categories.length > 0 || adminCatalog.machines.length > 0) {
       const categoryMap = buildCategoryIndex(adminCatalog.categories);
-      return adminCatalog.machines
-        .filter((machine) => machine.stockStatus !== "sold")
+      const machines = adminCatalog.machines
         .map((machine) => normalizeAdminMachine(machine, categoryMap))
         .filter((machine): machine is MachineItem => machine !== null);
+      const soldMachineIds = new Set(
+        adminCatalog.machines
+          .filter((machine) => machine.stockStatus === "sold")
+          .map((machine) => machine.id),
+      );
+
+      return assignMachineReferenceNumbers(machines).filter((machine) => !soldMachineIds.has(machine.id));
     }
 
     if (!hasSupabaseConfig()) {
@@ -294,7 +325,7 @@ const getMachineInventoryCached = unstable_cache(
 
     const [categories, machineRows] = await Promise.all([
       getCategories(),
-      supabaseRest<MachineRow[]>("machines?select=*&stock_status=neq.sold&order=created_at.desc").catch(
+      supabaseRest<MachineRow[]>("machines?select=*&order=created_at.desc").catch(
         (error) => {
           console.error("Failed to fetch machines from Supabase.", error);
           return [] as MachineRow[];
@@ -304,9 +335,16 @@ const getMachineInventoryCached = unstable_cache(
 
     const categoryMap = createCategoryMap(categories);
 
-    return machineRows
+    const machines = machineRows
       .map((row) => normalizeMachine(row, categoryMap))
       .filter((machine): machine is MachineItem => machine !== null);
+    const soldMachineIds = new Set(
+      machineRows
+        .filter((row) => asText(row.stock_status).toLowerCase() === "sold")
+        .map((row) => row.id),
+    );
+
+    return assignMachineReferenceNumbers(machines).filter((machine) => !soldMachineIds.has(machine.id));
   },
   ["machine-inventory"],
   { revalidate: 120, tags: ["machines"] },
