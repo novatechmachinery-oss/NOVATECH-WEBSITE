@@ -171,10 +171,13 @@ export default function TopHeader({
     }
 
     document.body.style.overflow = "hidden";
-    setIsCompactSearchOpen(false);
-    setIsCompactSuggestionsOpen(false);
+    const closeCompactSearch = window.setTimeout(() => {
+      setIsCompactSearchOpen(false);
+      setIsCompactSuggestionsOpen(false);
+    }, 0);
 
     return () => {
+      window.clearTimeout(closeCompactSearch);
       document.body.style.overflow = "";
     };
   }, [isMobileMenuOpen]);
@@ -569,7 +572,7 @@ export default function TopHeader({
               </Link>
             </div>
 
-            <div id="mobile-machinery-links-inline" className="mt-px grid grid-cols-1 gap-0 bg-white">
+            <div id="mobile-machinery-links-inline" className="mt-px grid grid-cols-2 gap-px bg-white">
                 {inlineCategoryLinks.map((item, index) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
                   const isSpecialDeals = item.label.trim().toLowerCase() === "special deals";
@@ -579,7 +582,7 @@ export default function TopHeader({
                     : isPathActive;
 
                   return (
-                    <div key={`inline-${item.label}-${item.href}`} className={index === 0 ? "" : "border-t border-white"}>
+                    <div key={`inline-${item.label}-${item.href}`} className={index === 0 ? "col-span-2" : ""}>
                       <Link
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}

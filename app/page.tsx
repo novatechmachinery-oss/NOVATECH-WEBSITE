@@ -6,6 +6,7 @@ import HeroSlider from "../components/HeroSlider";
 import CategoryCard from "../components/Cards/CategoryCard";
 import MachineCard from "../components/Cards/MachineCard";
 import Footer from "../components/Footer";
+import MachineSearchAgent from "@/components/MachineSearchAgent";
 import SiteHeader from "../components/SiteHeader";
 import SpecialDealsHeadingLink from "@/components/SpecialDealsHeadingLink";
 import SpecialDealsSlider from "../components/SpecialDealsSlider";
@@ -186,6 +187,7 @@ export default async function Home() {
         title={settings.home.machineCtaTitle}
         description={settings.home.machineCtaDescription}
       />
+      <MachineSearchAgent />
       <Footer />
     </div>
   );
