@@ -183,23 +183,52 @@ export default function MachineSearchAgent() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-5 z-40 inline-flex min-h-[86px] w-[min(88vw,310px)] items-center gap-3 border border-[#145b93] bg-[linear-gradient(135deg,#0f3f70_0%,#145b93_54%,#1f7dbb_100%)] px-4 text-left text-white shadow-[0_22px_44px_rgba(20,91,147,0.36)] transition hover:-translate-y-1 hover:shadow-[0_28px_54px_rgba(20,91,147,0.42)] focus:outline-none focus:ring-2 focus:ring-[#145b93]/40 sm:bottom-8 sm:right-8 sm:min-h-[96px] sm:w-[330px]"
+        className="premium-widget-animate fixed bottom-6 right-5 z-40 flex items-center justify-center border border-[#145b93]/25 bg-white text-[#145b93] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 h-[52px] w-[205px] rounded-full p-1.5 md:h-[220px] md:w-[220px] md:rounded-2xl md:p-3 md:bg-[linear-gradient(135deg,#0f3f70_0%,#145b93_54%,#1f7dbb_100%)] md:text-white md:border-[#145b93]"
         aria-label="Open machine search assistant"
       >
-        <span className="relative inline-flex h-16 w-16 shrink-0 items-center justify-center border border-white/30 bg-white/14">
-          <Bot className="h-9 w-9" />
-          <span className="absolute -right-1 -top-1 inline-flex h-7 w-7 items-center justify-center border border-white/50 bg-[#E32636]">
-            <Search className="h-3.5 w-3.5" />
+        {/* Mobile Layout */}
+        <div className="flex items-center justify-center gap-2.5 w-full h-full md:hidden px-3">
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-50 text-[#145b93] border border-sky-100/70 shadow-inner">
+            <Search className="h-4 w-4" />
+            <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </div>
+          <span className="text-[0.76rem] font-extrabold uppercase tracking-[0.03em] whitespace-nowrap text-[#145b93]">
+            ⚡ Fastest AI Search
           </span>
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[0.72rem] font-black uppercase tracking-[0.18em] text-sky-100">
-            AI Search
-          </span>
-          <span className="mt-1 block text-base font-black uppercase leading-tight">
-            Machine Search Assistant
-          </span>
-        </span>
+        </div>
+
+        {/* Desktop Square Card Layout (md+) */}
+        <div className="hidden md:flex flex-col flex-1 justify-between h-full text-left">
+          <div className="flex items-center justify-between w-full">
+            <div className="relative inline-flex h-11 w-11 items-center justify-center border border-white/20 bg-white/10 rounded-lg">
+              <Search className="h-5.5 w-5.5 text-sky-200" />
+              <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+            </div>
+            <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded text-[0.64rem] font-bold tracking-wider uppercase text-sky-100">
+              <Sparkles className="h-3 w-3 text-sky-300" /> Live AI
+            </span>
+          </div>
+
+          <div className="my-2">
+            <h4 className="text-[0.66rem] font-black uppercase tracking-widest text-sky-200">Fastest AI Search</h4>
+            <h3 className="text-[0.98rem] font-extrabold uppercase leading-snug text-white mt-0.5">
+              Machine Search Assistant
+            </h3>
+          </div>
+
+          <div className="w-full">
+            <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white/50 hover:bg-white/15 transition duration-150">
+              <Search className="h-4 w-4 shrink-0 text-white/70" />
+              <span className="text-xs font-semibold truncate text-white/70">Ask AI about machines...</span>
+            </div>
+          </div>
+        </div>
       </button>
 
       <div
@@ -267,35 +296,48 @@ export default function MachineSearchAgent() {
             </div>
           ) : (
             <>
-              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
+              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5 bg-[#f4f7fa]">
+                {messages.map((message) => {
+                  const isUser = message.role === "user";
+                  return (
                     <div
-                      className={`max-w-[92%] ${
-                        message.role === "user"
-                          ? "bg-[#145b93] px-4 py-3 text-white shadow-[0_10px_20px_rgba(20,91,147,0.18)]"
-                          : "text-slate-950"
-                      }`}
+                      key={message.id}
+                      className={`flex gap-3 items-end ${isUser ? "justify-end" : "justify-start"}`}
                     >
-                      <p className="text-[0.9rem] font-semibold leading-6">{message.text}</p>
-                      {message.results?.length ? (
-                        <div className="mt-3 space-y-2">
-                          {message.results.map((result) => (
-                            <AgentResultCard key={result.id} result={result} />
-                          ))}
+                      {!isUser && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-white text-[#145b93] shadow-sm mb-1">
+                          <Bot className="h-4.5 w-4.5" />
                         </div>
-                      ) : null}
+                      )}
+                      <div className="flex flex-col max-w-[85%]">
+                        <div
+                          className={`px-4 py-2.5 shadow-sm text-[0.88rem] leading-relaxed ${
+                            isUser
+                              ? "bg-[#145b93] text-white rounded-2xl rounded-br-none"
+                              : "bg-white text-slate-900 border border-slate-200 rounded-2xl rounded-bl-none"
+                          }`}
+                        >
+                          <p className="font-semibold whitespace-pre-wrap">{message.text}</p>
+                        </div>
+                        {message.results?.length ? (
+                          <div className="mt-3 space-y-3 w-full">
+                            {message.results.map((result) => (
+                              <AgentResultCard key={result.id} result={result} />
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {loading ? (
-                  <div className="flex justify-start">
-                    <div className="inline-flex items-center gap-2 bg-white px-4 py-3 text-[0.86rem] font-black text-slate-600 shadow-sm">
+                  <div className="flex gap-3 items-end justify-start">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-white text-[#145b93] shadow-sm mb-1">
+                      <Bot className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="bg-white text-slate-500 border border-slate-200 rounded-2xl rounded-bl-none px-4 py-2.5 shadow-sm flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#145b93]" />
-                      Searching
+                      <span className="text-xs font-bold uppercase tracking-wider">AI is searching...</span>
                     </div>
                   </div>
                 ) : null}

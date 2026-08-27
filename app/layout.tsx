@@ -7,6 +7,7 @@ import { getSeoConfig } from "@/lib/seo/seo-config";
 import { generatePageMetadata } from "@/lib/seo/metadata";
 import { getGlobalSchemas } from "@/lib/seo/schema";
 import { getTrackingConfig } from "@/lib/seo/tracking";
+import MachineSearchAgent from "@/components/MachineSearchAgent";
 
 export const revalidate = 300;
 
@@ -109,6 +110,7 @@ y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, documen
           dangerouslySetInnerHTML={{ __html: JSON.stringify([organization, website]) }}
         />
         {children}
+        <MachineSearchAgent />
       </body>
     </html>
   );

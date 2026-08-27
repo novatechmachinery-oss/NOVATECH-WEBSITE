@@ -92,15 +92,12 @@ export default function NewsletterSignup({ variant }: NewsletterSignupProps) {
         type="button"
         onClick={() => setIsModalOpen(true)}
         suppressHydrationWarning
-        className="inline-flex h-9 w-[20.5rem] max-w-full items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[#B82100]/20 bg-[#B82100] px-2 text-[clamp(0.56rem,0.55vw,0.68rem)] font-black uppercase tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2 max-[1366px]:lg:h-8 max-[1366px]:lg:w-8 max-[1366px]:lg:px-0"
+        className="inline-flex h-8.5 w-full max-w-[195px] items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[#B82100]/20 bg-[#B82100] px-1 text-[0.54rem] font-black uppercase tracking-[0.01em] text-white shadow-[0_8px_18px_rgba(184,33,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(184,33,0,0.24)] focus:outline-none focus:ring-2 focus:ring-[#B82100]/25 focus:ring-offset-2 md:h-8 md:max-w-full md:text-[0.54rem] lg:h-8.5 lg:max-w-full lg:text-[0.64rem] xl:text-[0.74rem] min-[1440px]:h-9 min-[1440px]:max-w-[328px] min-[1440px]:text-[0.78rem] min-[1440px]:px-2"
       >
-        <span className="max-[1366px]:lg:hidden">
+        <span className="shrink-0">
           <NewsletterIcon />
         </span>
-        <span className="hidden max-[1366px]:lg:inline-flex">
-          <BellIcon />
-        </span>
-        <span className="min-w-0 whitespace-nowrap max-[1366px]:lg:hidden">Subscribe to Newsletter</span>
+        <span className="min-w-0 truncate">Subscribe to Newsletter</span>
       </button>
       {isModalOpen ? <NewsletterModal onClose={() => setIsModalOpen(false)} /> : null}
     </>

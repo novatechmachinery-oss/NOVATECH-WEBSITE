@@ -1081,3 +1081,61 @@ a[class*="inline-flex"][class*="rounded"] {
     animation: none;
   }
 }
+
+/* Premium Subtle Animations */
+@keyframes premium-cta-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.01);
+  }
+}
+
+.premium-cta-animate {
+  animation: premium-cta-float 3s ease-in-out infinite;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.premium-cta-animate:hover {
+  transform: translateY(-5px) scale(1.025) !important;
+  box-shadow: 0 20px 38px rgba(22, 84, 139, 0.28) !important;
+  animation-play-state: paused;
+}
+
+@keyframes premium-widget-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.premium-widget-animate {
+  animation: premium-widget-float 4s ease-in-out infinite;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.premium-widget-animate:hover {
+  animation-play-state: paused;
+  transform: translateY(-6px) scale(1.02) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-cta-animate {
+    animation: none !important;
+    transition: none !important;
+  }
+  .premium-cta-animate:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .premium-widget-animate {
+    animation: none !important;
+    transition: none !important;
+  }
+  .premium-widget-animate:hover {
+    transform: none !important;
+  }
+}

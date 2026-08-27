@@ -57,11 +57,11 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
 
   return (
     <div
-      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] min-[1440px]:block min-[1440px]:h-[50px]"
+      className="hidden border-b border-[#E32636] bg-[#E32636] text-white shadow-[0_12px_24px_rgba(64,5,5,0.12)] md:block md:h-[42px]"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
       <div className="w-full px-0">
-        <div className="flex flex-wrap gap-px bg-white/45 min-[1440px]:h-[50px] min-[1440px]:flex-nowrap">
+        <div className="flex flex-wrap gap-px bg-white/45 md:h-[42px] md:flex-nowrap">
           {desktopTypes.map((item, index) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
             const Icon = iconMap[item.label.trim().toLowerCase() as keyof typeof iconMap] ?? Settings;
@@ -70,7 +70,7 @@ export default function HomeCategoryNav({ types = defaultTypes }: HomeCategoryNa
                 key={item.label}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`group relative flex min-h-[38px] items-center justify-center gap-1.5 overflow-hidden bg-[#E32636] px-1.5 text-center text-[0.66rem] font-black uppercase tracking-[0.01em] text-white transition-[filter,box-shadow] duration-300 min-[390px]:min-h-[40px] min-[390px]:gap-2 min-[390px]:px-2 min-[390px]:text-[0.72rem] min-[414px]:min-h-[42px] min-[414px]:gap-3 min-[414px]:px-3 min-[414px]:text-[0.78rem] sm:text-[0.82rem] lg:h-full lg:min-h-0 lg:flex-1 lg:text-[0.9rem] ${
+                className={`group relative flex min-h-[38px] items-center justify-center gap-1.5 overflow-hidden bg-[#E32636] px-1.5 text-center text-[0.66rem] font-black uppercase tracking-[0.01em] text-white transition-[filter,box-shadow] duration-300 min-[390px]:min-h-[40px] min-[390px]:gap-2 min-[390px]:px-2 min-[390px]:text-[0.72rem] min-[414px]:min-h-[42px] min-[414px]:gap-3 min-[414px]:px-3 min-[414px]:text-[0.78rem] sm:text-[0.82rem] md:h-full md:min-h-0 md:flex-1 md:text-[0.84rem] lg:text-[0.9rem] ${
                   index < 2 ? "w-[calc(50%-0.5px)]" : "w-[calc(33.333%-0.67px)]"
                 } ${
                   isActive

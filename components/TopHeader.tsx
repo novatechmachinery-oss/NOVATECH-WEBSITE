@@ -206,24 +206,24 @@ export default function TopHeader({
 
   return (
     <div
-      className="border-b-0 border-slate-200 bg-[#fff7e6] text-slate-800 min-[1440px]:border-b"
+      className="border-b-0 border-slate-200 bg-[#fff7e6] text-slate-800 md:border-b"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="grid w-full grid-cols-1 gap-0 px-1.5 pb-0 pt-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:pb-0 min-[414px]:pt-1 sm:px-3 sm:pb-0 sm:pt-1.5 md:px-4 md:pb-0 md:pt-2 lg:px-5 lg:pb-0 lg:pt-2 min-[1440px]:grid-cols-[150px_minmax(0,1fr)_300px] min-[1440px]:items-center min-[1440px]:px-6 min-[1440px]:py-2">
-        <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible min-[1440px]:contents">
+        <div className="grid w-full grid-cols-1 gap-0 px-1.5 pb-0 pt-0.5 text-[0.74rem] min-[414px]:px-2 min-[414px]:pb-0 min-[414px]:pt-1 sm:px-3 sm:pb-0 sm:pt-1.5 md:grid-cols-[70px_minmax(0,1fr)_210px] md:items-center md:px-4 md:py-1.5 lg:grid-cols-[88px_minmax(0,1fr)_280px] lg:px-4 lg:py-2 min-[1440px]:grid-cols-[185px_minmax(0,1fr)_300px] min-[1440px]:px-6 min-[1440px]:py-2.5">
+        <div className="flex min-w-0 max-w-full items-center gap-0 overflow-visible md:contents">
           <Link href="/" className="flex-none transition hover:opacity-95">
-            <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[86px] md:w-[114px] lg:h-[92px] lg:w-[122px] min-[1440px]:h-[108px] min-[1440px]:w-[150px]">
+            <div className="relative h-[56px] w-[68px] overflow-hidden min-[390px]:h-[60px] min-[390px]:w-[74px] min-[414px]:h-[66px] min-[414px]:w-[84px] sm:h-[74px] sm:w-[98px] md:h-[58px] md:w-[70px] lg:h-[72px] lg:w-[88px] min-[1440px]:h-[152px] min-[1440px]:w-[185px]">
               <Image src={logoSrc} alt={logoAlt} fill sizes="120px" className="object-contain" />
             </div>
           </Link>
-          <div className="relative min-w-0 max-w-full flex-1 min-[1440px]:flex min-[1440px]:h-[108px] min-[1440px]:flex-col min-[1440px]:justify-start">
+            <div className="relative min-w-0 max-w-full flex-1 md:flex md:h-[58px] md:flex-col md:justify-start lg:h-[72px] min-[1440px]:h-[152px]">
             <button
               type="button"
               onClick={() => {
                 setIsMobileMenuOpen((current) => !current);
                 setIsDrawerMachineryOpen(false);
               }}
-              className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 min-[1440px]:hidden"
+              className="absolute right-0 top-1 inline-flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white/80 text-[#163d6b] shadow-sm min-[414px]:h-10 min-[414px]:w-10 md:hidden"
               aria-label="Open menu"
               aria-expanded={isMobileMenuOpen}
             >
@@ -231,23 +231,23 @@ export default function TopHeader({
               <span className="h-0.5 w-5 rounded-full bg-current" />
               <span className="h-0.5 w-5 rounded-full bg-current" />
             </button>
-            <div
-              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] lg:leading-[1.03] min-[1440px]:justify-start min-[1440px]:pr-4"
+             <div
+              className="flex min-w-0 max-w-full flex-1 flex-col overflow-visible pl-1 pr-10 text-left leading-[0.98] text-[#163d6b] min-[414px]:pr-12 min-[414px]:leading-[1.01] md:overflow-hidden md:justify-center md:pr-4 md:leading-[1.02] lg:leading-[1.02] min-[1440px]:leading-[1.02]"
               style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
             >
-              <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
+              <span className="block max-w-full whitespace-nowrap text-[0.98rem] font-black uppercase tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] md:hidden">
                 NOVATECH MACHINERY
               </span>
-              <span className="block max-w-full whitespace-normal text-[0.98rem] font-black uppercase leading-[0.98] tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] sm:hidden">
+              <span className="block max-w-full whitespace-normal text-[0.98rem] font-black uppercase leading-[0.98] tracking-[0.01em] min-[390px]:text-[1.1rem] min-[414px]:text-[1.18rem] md:hidden">
                 CORPORATION (OPC)
                 <br />
                 PRIVATE LIMITED
               </span>
-              <span className="hidden max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] sm:block md:text-[1.78rem] lg:text-[1.92rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.66rem)]">
+               <span className="hidden max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:block md:text-[1.18rem] lg:text-[1.48rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[4.65rem]">
                 NOVATECH MACHINERY CORPORATION
               </span>
-              <div className="mt-0 hidden max-w-full flex-col gap-1 sm:flex">
-                <span className="block max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:text-[1.78rem] lg:text-[1.92rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[clamp(2.02rem,calc((64vw-150px)/14.8),2.76rem)]">
+              <div className="mt-0 hidden max-w-full flex-col gap-1 md:flex">
+                 <span className="block max-w-full whitespace-normal text-[1.42rem] font-black uppercase tracking-[0.02em] md:text-[1.18rem] lg:text-[1.48rem] min-[1440px]:whitespace-nowrap min-[1440px]:text-[4.65rem]">
                   (OPC) PRIVATE LIMITED
                 </span>
               </div>
@@ -256,7 +256,7 @@ export default function TopHeader({
         </div>
 
         {isMobileMenuOpen ? (
-          <div className="fixed inset-0 z-[9999] min-[1440px]:hidden" aria-modal="true" role="dialog">
+          <div className="fixed inset-0 z-[9999] md:hidden" aria-modal="true" role="dialog">
             <button
               type="button"
               aria-label="Close mobile menu"
@@ -389,12 +389,12 @@ export default function TopHeader({
           </div>
         ) : null}
 
-        <div className="hidden min-w-0 flex-col items-center justify-center gap-2 px-2 pb-1 pt-1 text-sm text-slate-900 min-[1440px]:flex min-[1440px]:items-end min-[1440px]:justify-end min-[1440px]:pb-0 min-[1440px]:pt-2">
-          <div className="hidden shrink-0 min-[1440px]:flex">
+        <div className="hidden min-w-0 flex-col items-center justify-center gap-2 px-2 pb-1 pt-1 text-sm text-slate-900 md:flex md:items-end md:justify-end md:pb-0 md:pt-2">
+          <div className="hidden shrink-0 md:flex">
             <NewsletterSignup variant="desktop" />
           </div>
 
-          <div className="hidden w-full translate-y-4 flex-wrap items-center justify-center gap-x-5 gap-y-2 leading-none min-[1440px]:flex min-[1440px]:flex-nowrap min-[1440px]:justify-end">
+           <div className="hidden w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 leading-none md:flex md:flex-nowrap md:justify-end">
             <div className="inline-flex shrink-0 items-center gap-1">
               <a
                 href={`tel:${cleanPhoneNumber(phonePrimary)}`}
@@ -431,7 +431,7 @@ export default function TopHeader({
         </div>
 
         {!isMobileMenuOpen ? (
-          <div className="border-t border-slate-200 bg-[#fff7e6] px-0 pb-0 pt-0 min-[414px]:px-0 min-[414px]:pb-0 min-[414px]:pt-0 min-[1440px]:hidden">
+          <div className="border-t border-slate-200 bg-[#fff7e6] px-0 pb-0 pt-0 min-[414px]:px-0 min-[414px]:pb-0 min-[414px]:pt-0 md:hidden">
           {isCompactSearchOpen ? (
             <div className="relative z-[100]">
               <form
@@ -556,10 +556,15 @@ export default function TopHeader({
                 <span className="truncate">HOME</span>
               </Link>
 
-              <div className={mobileQuickLinkClass + " gap-1"}>
+              <Link
+                href="/used-machinery"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                }}
+                className={mobileQuickLinkClass}
+              >
                 <span className="truncate">USED MACHINERY</span>
-                <ChevronDown className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
-              </div>
+              </Link>
 
               <Link
                 href="/categories"
@@ -572,8 +577,8 @@ export default function TopHeader({
               </Link>
             </div>
 
-            <div id="mobile-machinery-links-inline" className="mt-px grid grid-cols-2 gap-px bg-white">
-                {inlineCategoryLinks.map((item, index) => {
+            <div id="mobile-machinery-links-inline" className="mt-px grid grid-cols-3 gap-px bg-white">
+                {inlineCategoryLinks.map((item) => {
                   const Icon = machineryIconMap[item.label.trim().toLowerCase() as keyof typeof machineryIconMap] ?? Settings;
                   const isSpecialDeals = item.label.trim().toLowerCase() === "special deals";
                   const isPathActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -582,7 +587,7 @@ export default function TopHeader({
                     : isPathActive;
 
                   return (
-                    <div key={`inline-${item.label}-${item.href}`} className={index === 0 ? "col-span-2" : ""}>
+                    <div key={`inline-${item.label}-${item.href}`}>
                       <Link
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
@@ -590,7 +595,7 @@ export default function TopHeader({
                           setActiveMobileCategoryHref(item.href);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`relative flex min-h-[38px] items-center justify-center gap-2 bg-[#E32636] px-11 text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-white min-[390px]:text-[0.76rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.8rem] ${
+                        className={`relative flex min-h-[38px] items-center justify-center gap-1.5 bg-[#E32636] px-1 text-center text-[0.52rem] font-black uppercase tracking-[0.01em] text-white min-[350px]:text-[0.56rem] min-[390px]:text-[0.62rem] min-[414px]:min-h-[42px] min-[414px]:text-[0.66rem] ${
                           isActive ? "bg-[#c91f30] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.82)]" : ""
                         } ${
                           isSpecialDeals
@@ -598,24 +603,8 @@ export default function TopHeader({
                             : "transition-[filter] duration-300 hover:brightness-105 focus-visible:brightness-105"
                         }`}
                       >
-                        <Icon className="h-4 w-4 shrink-0" />
+                        <Icon className="h-3.5 w-3.5 shrink-0" />
                         <span className="text-balance leading-none">{item.label}</span>
-                        {isActive ? (
-                          <span
-                            aria-hidden="true"
-                            className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center drop-shadow-[0_4px_7px_rgba(88,6,16,0.3)]"
-                          >
-                            <svg viewBox="0 0 32 32" fill="none" className="h-7 w-7 overflow-visible">
-                              <path
-                                d="M7 4.8c0-1.4 1.52-2.27 2.73-1.55l17.45 10.4a2.72 2.72 0 0 1 0 4.7L9.73 28.75C8.52 29.47 7 28.6 7 27.2V4.8Z"
-                                stroke="currentColor"
-                                strokeWidth="3.2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </span>
-                        ) : null}
                       </Link>
                     </div>
                   );

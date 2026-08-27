@@ -204,7 +204,7 @@ export function parseMachineSearchIntent(query: string, context?: AgentSearchCon
   const wantsBigger = /\b(bigger|larger|large|higher|upar|zyada|more)\b/i.test(normalizedQuery) && !wantsMore;
   const explicitLimit = normalizedQuery.match(/\b(?:show|give)\s+(\d+)\s*(?:more|machines|results)?\b|\b(\d+)\s+more\b/i);
   const explicitLimitValue = explicitLimit ? Number(explicitLimit[1] ?? explicitLimit[2]) : null;
-  const limit = explicitLimitValue ? Math.min(Math.max(explicitLimitValue, 1), 8) : 5;
+  const limit = explicitLimitValue ? Math.min(Math.max(explicitLimitValue, 1), 20) : 12;
 
   if (wantsMore && context) {
     return {

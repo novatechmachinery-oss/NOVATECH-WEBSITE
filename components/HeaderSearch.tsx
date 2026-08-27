@@ -74,7 +74,7 @@ export default function HeaderSearch({ machines }: HeaderSearchProps) {
   }
 
   return (
-    <div className="relative hidden xl:block xl:w-[430px]">
+    <div className="relative hidden md:block md:w-[190px] lg:w-[310px] xl:w-[430px]">
       <form
         onSubmit={(event) => {
           event.preventDefault();

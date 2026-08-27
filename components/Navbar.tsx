@@ -44,10 +44,10 @@ export default function Navbar({ machines }: NavbarProps) {
 
   return (
     <nav
-      className="hidden border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)] min-[1440px]:block"
+      className="hidden border-b border-[#0b2b49] bg-[linear-gradient(90deg,#071a33_0%,#0c2746_24%,#0f2e52_52%,#0b2440_100%)] text-white shadow-[0_10px_26px_rgba(2,12,27,0.28)] md:block"
       style={{ fontFamily: '"Arial Black", Arial, Helvetica, sans-serif' }}
     >
-      <div className="mx-auto hidden h-[50px] w-full max-w-[1600px] items-center justify-between gap-5 px-4 min-[1440px]:flex min-[1440px]:px-8">
+      <div className="mx-auto hidden h-[42px] w-full max-w-[1600px] items-center justify-between gap-5 px-4 md:flex md:px-6">
         <div className="flex items-center gap-1.5 text-[0.82rem] font-black uppercase tracking-[0.005em] text-white">
           {navItems.map((link) => {
             const isActive = isActiveNavItem(pathname, link.href);
@@ -57,7 +57,7 @@ export default function Navbar({ machines }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`inline-flex h-[34px] items-center gap-2 rounded-[5px] px-4 transition ${
+                className={`inline-flex h-[30px] items-center gap-2 rounded-[5px] px-3.5 transition ${
                   isActive
                     ? "bg-[linear-gradient(180deg,#2e76c2_0%,#1b5ca1_100%)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(2,12,27,0.22)]"
                     : "text-white hover:bg-white/8"
