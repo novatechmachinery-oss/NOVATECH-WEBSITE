@@ -457,11 +457,8 @@ if (process.argv.includes("--sync")) {
   await syncSeoSettings(nextSeo);
   console.log("Synced generated SEO settings to Supabase seo_settings/main.");
 }
+  
+
  
-
-
-
-
-
 
 

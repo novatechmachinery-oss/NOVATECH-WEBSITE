@@ -107,3 +107,4 @@ export default function CarbideEnquiryForm() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block"><span className="mb-2 block text-sm font-bold text-[#071c3c]">{label}</span>{children}</label>;
 }
+ 
