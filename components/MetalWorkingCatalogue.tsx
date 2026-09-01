@@ -4,7 +4,6 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft,
   BadgePercent,
   Bolt,
   Bot,
@@ -772,7 +771,6 @@ export default function MetalWorkingCatalogue({
   const [canScrollThumbnailsLeft, setCanScrollThumbnailsLeft] = useState(false);
   const [canScrollThumbnailsRight, setCanScrollThumbnailsRight] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [showFullImageHint, setShowFullImageHint] = useState(Boolean(initialMachineId));
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialSelectedCategory);
@@ -905,16 +903,6 @@ export default function MetalWorkingCatalogue({
     };
   }, [selectedMachineId, selectedMachine?.images?.length]);
 
-  useEffect(() => {
-    if (!showFullImageHint) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => setShowFullImageHint(false), 12200);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [showFullImageHint]);
-
   function toggleCategory(name: string) {
     setOpenCategories((prev) =>
       Object.fromEntries(
@@ -1028,7 +1016,6 @@ export default function MetalWorkingCatalogue({
   function openMachine(machineId: string, category?: string, subcategory?: string) {
     setSelectedMachineId(machineId);
     setActiveImageIndex(0);
-    setShowFullImageHint(true);
 
     if (category) {
       setSelectedCategory(category);
@@ -1058,31 +1045,6 @@ export default function MetalWorkingCatalogue({
     params.set("machine", machineId);
 
     router.push(`${pathname}?${params.toString()}`);
-  }
-
-  function handleBackToResults() {
-    setSelectedMachineId(null);
-
-    const params = new URLSearchParams();
-
-    if (selectedCategory) {
-      params.set("category", selectedCategory);
-    }
-
-    if (selectedSubcategory) {
-      params.set("subcategory", selectedSubcategory);
-    }
-
-    if (machineMode !== "all") {
-      params.set("mode", machineMode);
-    }
-
-    if (machineSearch.trim()) {
-      params.set("q", machineSearch.trim());
-    }
-
-    const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname);
   }
 
   function scrollToTop() {
@@ -1530,29 +1492,17 @@ export default function MetalWorkingCatalogue({
         {/* PRODUCTS */}
         {selectedMachine ? (
           <div className="min-w-0 overflow-hidden border border-slate-200 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-4 lg:p-5">
-            <button suppressHydrationWarning
-              type="button"
-              onClick={handleBackToResults}
-              className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Machines
-            </button>
-
-            <div className="mt-3 min-w-0">
+            <div className="min-w-0">
               <div className="mb-4 min-w-0 border-b border-slate-200 pb-4">
-                <p className="mb-2 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#145b93]">
-                  {selectedMachine.subcategory || selectedMachine.category}
-                </p>
-                <div className="grid min-w-0 grid-cols-1 gap-0 min-[560px]:grid-cols-3 xl:grid-cols-[50%_12.5%_12.5%_12.5%_12.5%] xl:items-start">
-                  <div className="min-w-0 min-[560px]:col-span-2 xl:col-span-1">
+                <div className="grid min-w-0 grid-cols-2 gap-1.5 min-[560px]:grid-cols-3 sm:gap-2 xl:grid-cols-[50%_12.5%_12.5%_12.5%_12.5%] xl:items-start">
+                  <div className="col-span-2 min-w-0 xl:col-span-1">
                     <h1 className="break-words text-[1.35rem] font-semibold uppercase leading-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">
                       {selectedMachine.title}
                     </h1>
                   </div>
 
                   {selectedMachine.referenceNumber ? (
-                    <div className="flex min-h-[60px] min-w-0 items-center justify-center border border-slate-200 bg-white px-2 text-center text-slate-950">
+                    <div className="flex min-h-[52px] min-w-0 items-center justify-center border border-slate-200 bg-white px-2 text-center text-slate-950 sm:min-h-[60px]">
                       <span className="truncate text-[0.86rem] font-semibold uppercase leading-tight text-[#145b93] sm:text-[0.95rem] lg:text-[1.05rem]">
                         Ref. No. {selectedMachine.referenceNumber}
                       </span>
@@ -1565,16 +1515,16 @@ export default function MetalWorkingCatalogue({
                       href={REQUEST_PRICE_WHATSAPP_HREF}
                       target="_blank"
                       rel="noreferrer"
-                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-[#145b93] bg-[#145b93] py-0 text-left text-white shadow-none transition hover:bg-[#0f4c7c]"
+                      className="group inline-flex min-h-[52px] min-w-0 items-stretch rounded-none border border-[#145b93] bg-[#145b93] py-0 text-left text-white shadow-none transition hover:bg-[#0f4c7c] sm:min-h-[60px]"
                     >
                     <span className="flex w-[28%] shrink-0 items-center justify-center">
                       <CircleDollarSign className="h-8 w-8" />
                     </span>
                     <span className="min-w-0 flex-1 self-center leading-tight">
-                      <span className="block truncate text-[0.78rem] font-black uppercase tracking-[0.02em]">
+                      <span className="block truncate text-[0.68rem] font-black uppercase tracking-[0.01em] sm:text-[0.78rem]">
                         Request Price
                       </span>
-                      <span className="mt-0.5 block truncate text-[0.68rem] font-semibold text-sky-100">
+                      <span className="mt-0.5 block truncate text-[0.6rem] font-semibold text-sky-100 sm:text-[0.68rem]">
                         Get Best Quote
                       </span>
                     </span>
@@ -1584,7 +1534,7 @@ export default function MetalWorkingCatalogue({
                       href={WHATSAPP_HREF}
                       target="_blank"
                       rel="noreferrer"
-                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-emerald-300"
+                      className="group inline-flex min-h-[52px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-emerald-300 sm:min-h-[60px]"
                     >
                     <span className="flex w-[28%] shrink-0 items-center justify-center text-emerald-600">
                       <WhatsAppBrandIcon className="h-8 w-8" />
@@ -1601,7 +1551,7 @@ export default function MetalWorkingCatalogue({
                     </a>
                     <a
                       href="tel:+919646255855"
-                      className="group inline-flex min-h-[60px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-sky-300"
+                      className="group inline-flex min-h-[52px] min-w-0 items-stretch rounded-none border border-slate-200 bg-white py-0 text-left text-slate-900 shadow-none transition hover:border-sky-300 sm:min-h-[60px]"
                     >
                     <span className="flex w-[28%] shrink-0 items-center justify-center text-[#145b93]">
                       <Phone className="h-8 w-8" />
@@ -1623,13 +1573,10 @@ export default function MetalWorkingCatalogue({
                 <div className="min-w-0">
                   <div className="min-w-0">
                     <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                      <div className="group relative flex h-[210px] w-full items-center justify-center overflow-hidden bg-white sm:h-[320px] md:h-[360px] lg:h-[420px]">
+                      <div className="group relative flex h-[250px] w-full items-center justify-center overflow-hidden bg-white sm:h-[380px] md:h-[440px] lg:h-[520px] xl:h-[560px]">
                         <button suppressHydrationWarning
                           type="button"
-                          onClick={() => {
-                            setShowFullImageHint(false);
-                            setIsLightboxOpen(true);
-                          }}
+                          onClick={() => setIsLightboxOpen(true)}
                           className="block h-full w-full cursor-zoom-in"
                           aria-label="Enlarge selected machine image"
                         >
@@ -1645,20 +1592,6 @@ export default function MetalWorkingCatalogue({
                             className="h-full w-full object-contain object-center"
                           />
                         </button>
-
-                        {showFullImageHint ? (
-                          <div className="pointer-events-none absolute inset-x-0 top-16 z-30 overflow-hidden px-3">
-                            <div
-                              role="status"
-                              className="machine-image-click-hint flex w-max items-center gap-2 rounded-full border border-white/45 bg-[linear-gradient(90deg,rgba(20,91,147,0.96),rgba(14,116,144,0.96))] px-4 py-2 text-white shadow-[0_10px_28px_rgba(15,23,42,0.38)] backdrop-blur-md"
-                            >
-                              <Maximize2 className="h-4 w-4 shrink-0" />
-                              <span className="text-xs font-black uppercase tracking-[0.08em] sm:text-sm">
-                                Click to view full image
-                              </span>
-                            </div>
-                          </div>
-                        ) : null}
 
                         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between bg-[linear-gradient(180deg,rgba(15,23,42,0.32),transparent)] px-3 py-3 text-white">
                           <span className="rounded-full bg-slate-950/55 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
@@ -1676,10 +1609,7 @@ export default function MetalWorkingCatalogue({
                             </a>
                             <button
                               type="button"
-                              onClick={() => {
-                                setShowFullImageHint(false);
-                                setIsLightboxOpen(true);
-                              }}
+                              onClick={() => setIsLightboxOpen(true)}
                               className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-slate-950/55 text-white shadow-[0_12px_28px_rgba(15,23,42,0.24)] backdrop-blur transition hover:bg-[#145b93]"
                               aria-label="Open enlarged image"
                             >
@@ -1726,7 +1656,7 @@ export default function MetalWorkingCatalogue({
 
                         <div
                           ref={thumbnailStripRef}
-                          className="grid grid-flow-col auto-cols-[72px] gap-2 overflow-x-auto pb-1 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] sm:auto-cols-[96px] [&::-webkit-scrollbar]:hidden"
+                          className="grid grid-flow-col auto-cols-[84px] gap-2 overflow-x-auto pb-1 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] sm:auto-cols-[112px] [&::-webkit-scrollbar]:hidden"
                         >
                           {machineDetailGallery.map((image, index) => (
                             <button suppressHydrationWarning
@@ -1774,7 +1704,7 @@ export default function MetalWorkingCatalogue({
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="grid min-w-0 grid-cols-1 gap-1.5 min-[420px]:grid-cols-2 min-[720px]:grid-cols-4 sm:gap-2">
+                    <div className="grid min-w-0 grid-cols-2 gap-1.5 min-[720px]:grid-cols-4 sm:gap-2">
                       {machineSpecifications.length > 0 ? machineSpecifications.map((spec, index) => (
                         <div
                           key={`${spec.label}-${index}`}
@@ -1797,7 +1727,7 @@ export default function MetalWorkingCatalogue({
                       <span className="h-[2px] flex-1 bg-[#145b93]" />
                     </div>
 
-                    <div className="min-w-0 space-y-2 break-words text-[0.94rem] leading-6 text-slate-600 sm:text-[0.98rem]">
+                    <div className="machine-description-scroll min-w-0 max-h-[30rem] space-y-2 overflow-y-auto break-words pr-3 text-[0.94rem] leading-6 text-slate-600 sm:text-[0.98rem]">
                       {machineDetailDescription.length > 0 ? (
                         machineDetailDescription.map((line, i) => (
                           <p key={i}>{line}</p>
@@ -1811,10 +1741,10 @@ export default function MetalWorkingCatalogue({
                       <button suppressHydrationWarning
                         type="button"
                         onClick={handleDownloadMachinePdf}
-                        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 border border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_55%,#0f4c7c_100%)] px-4 py-2 text-center text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_12px_24px_rgba(20,91,147,0.2)] transition hover:brightness-95 sm:w-auto sm:min-w-[320px]"
+                        className="inline-flex min-h-[38px] w-full items-center justify-center gap-1.5 border border-[#145b93] bg-[linear-gradient(135deg,#145b93_0%,#2f7fc7_55%,#0f4c7c_100%)] px-2 py-1.5 text-center text-[0.65rem] font-bold uppercase tracking-[0.02em] text-white shadow-[0_10px_20px_rgba(20,91,147,0.18)] transition hover:brightness-95 sm:w-auto sm:min-w-[280px] sm:px-3 sm:text-xs sm:tracking-[0.06em]"
                       >
-                        <Download className="h-4 w-4 shrink-0" />
-                        <span>Download Machine Data & Images</span>
+                        <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="whitespace-nowrap">Download Data &amp; Images</span>
                       </button>
 
                     </div>
@@ -1832,13 +1762,6 @@ export default function MetalWorkingCatalogue({
                       Related machines from the same category for quick comparison.
                     </p>
                   </div>
-                  <button suppressHydrationWarning
-                    type="button"
-                    onClick={handleBackToResults}
-                    className="inline-flex items-center justify-center text-lg font-black text-[#145b93] transition hover:text-[#0f4c7c] sm:text-xl"
-                  >
-                    &larr; More options
-                  </button>
                 </div>
 
                 <div className="mt-4 grid gap-3 min-[520px]:grid-cols-2 xl:grid-cols-4">

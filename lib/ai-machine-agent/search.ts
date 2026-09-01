@@ -1,5 +1,5 @@
 import type { MachineItem } from "@/lib/machines";
-import { getMachinePath } from "@/lib/machine-urls";
+import { getMachineCatalogPath } from "@/lib/machine-urls";
 import type {
   AgentMachineResult,
   AgentSearchContext,
@@ -9,7 +9,6 @@ import type {
   RelevantSpec,
 } from "@/lib/ai-machine-agent/types";
 
-const maxCandidateResults = 60;
 const textIntentMinimumScore = 54;
 const numericIntentMinimumScore = 34;
 const mixedIntentMinimumScore = 78;
@@ -334,7 +333,7 @@ function machineToResult(ranked: RankedMachine): AgentMachineResult {
   return {
     id: machine.id,
     title: machine.title,
-    url: getMachinePath(machine),
+    url: getMachineCatalogPath(machine),
     manufacturer: machine.manufacturer,
     model: machine.model,
     category: machine.category,
@@ -347,17 +346,19 @@ function machineToResult(ranked: RankedMachine): AgentMachineResult {
 }
 
 export function searchMachines(machines: MachineItem[], intent: MachineSearchIntent, context?: AgentSearchContext) {
-  const ranked = filterRelevantResults(machines
-    .map((machine) => rankMachine(machine, intent))
-    .filter((item): item is RankedMachine => item !== null)
-    .sort((left, right) => {
-      if (right.exact !== left.exact) return Number(right.exact) - Number(left.exact);
-      return right.score - left.score;
-    })
-    .slice(0, maxCandidateResults), intent);
+  const ranked = filterRelevantResults(
+    machines
+      .map((machine) => rankMachine(machine, intent))
+      .filter((item): item is RankedMachine => item !== null)
+      .sort((left, right) => {
+        if (right.exact !== left.exact) return Number(right.exact) - Number(left.exact);
+        return right.score - left.score;
+      }),
+    intent,
+  );
 
   const offset = intent.wantsMore ? context?.offset ?? 0 : 0;
-  const results = ranked.slice(offset, offset + intent.limit).map(machineToResult);
+  const results = ranked.slice(offset).map(machineToResult);
   const numericWithHints = intent.numericCriteria.filter((criterion) => criterion.fieldHint);
   const lastFieldHint = numericWithHints.at(-1)?.fieldHint ?? context?.lastFieldHint;
 
@@ -372,5 +373,7 @@ export function searchMachines(machines: MachineItem[], intent: MachineSearchInt
     } satisfies AgentSearchContext,
     total: ranked.length,
     hasExact: ranked.some((item) => item.exact),
+    exactCount: ranked.filter((item) => item.exact).length,
+    closeCount: ranked.filter((item) => !item.exact).length,
   };
 }

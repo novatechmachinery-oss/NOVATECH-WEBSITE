@@ -242,7 +242,7 @@ export default async function MachinePage({ params }: MachinePageProps) {
                   ))}
                 </dl>
                 {machine.description ? (
-                  <div className="mt-5 space-y-1.5 text-sm leading-6 text-slate-700">
+                  <div className="machine-description-scroll mt-5 max-h-[30rem] space-y-1.5 overflow-y-auto pr-3 text-sm leading-6 text-slate-700">
                     {machine.description
                       .split(/\n+/)
                       .map((line) => line.trim())

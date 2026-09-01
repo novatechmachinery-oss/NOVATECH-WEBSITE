@@ -60,13 +60,15 @@ export async function POST(request: Request) {
     }
 
     const machines = await getMachineInventory();
-    const { results, nextContext, hasExact } = searchMachines(machines, intent, context);
-    const fallback = buildSearchMessage(language, results, hasExact);
+    const { results, nextContext, hasExact, exactCount, closeCount } = searchMachines(machines, intent, context);
+    const fallback = buildSearchMessage(language, results, hasExact, exactCount, closeCount);
     const message = await createGeminiSummary({
       language,
       intent,
       results,
       fallback,
+      exactCount,
+      closeCount,
     });
 
     return NextResponse.json({

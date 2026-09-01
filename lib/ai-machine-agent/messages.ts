@@ -4,7 +4,8 @@ const copy = {
   english: {
     clarification: "Which specification is this value for?",
     empty: "Please type a machine name or specification.",
-    noResults: "No relevant machine found. Try another machine type or specification.",
+    noResults:
+      "I couldn’t find a matching machine in the current inventory. Share the machine type, brand, model, or key specification and I’ll check again.",
     exactPrefix: "I found",
     closePrefix: "Exact match not found. Closest machines:",
     foundSuffix: "match",
@@ -14,7 +15,8 @@ const copy = {
   hindi: {
     clarification: "Ye value kis specification ke liye hai?",
     empty: "Machine name ya specification type karein.",
-    noResults: "Relevant machine nahi mili. Machine type ya specification badal kar try karein.",
+    noResults:
+      "Current inventory mein exact match nahi mila. Machine type, brand, model ya key specification share karein—main dobara check kar deta hoon.",
     exactPrefix: "Mujhe",
     closePrefix: "Exact match nahi mila. Ye closest machines hain:",
     foundSuffix: "match mila",
@@ -67,12 +69,21 @@ export function getAgentCopy(language: AgentLanguage) {
   return copy[language] ?? copy.english;
 }
 
-export function buildSearchMessage(language: AgentLanguage, results: AgentMachineResult[], hasExact: boolean) {
+export function buildSearchMessage(
+  language: AgentLanguage,
+  results: AgentMachineResult[],
+  hasExact: boolean,
+  exactCount = 0,
+  closeCount = 0,
+) {
   const labels = getAgentCopy(language);
 
   if (results.length === 0) return labels.noResults;
-  if (!hasExact) return labels.closePrefix;
+  if (!hasExact) {
+    return `${labels.closePrefix} ${results.length} relevant option${results.length === 1 ? "" : "s"} found.`;
+  }
 
-  const suffix = results.length === 1 ? labels.foundSuffix : labels.foundSuffixPlural;
-  return `${labels.exactPrefix} ${results.length} ${suffix}:`;
+  const suffix = exactCount === 1 ? labels.foundSuffix : labels.foundSuffixPlural;
+  const closeNote = closeCount > 0 ? ` ${closeCount} close alternative${closeCount === 1 ? " is" : "s are"} also listed below.` : "";
+  return `${labels.exactPrefix} ${exactCount} ${suffix}.${closeNote}`;
 }

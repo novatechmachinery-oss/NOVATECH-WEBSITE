@@ -27,7 +27,80 @@ const languageOptions: Array<{ id: AgentLanguage; label: string }> = [
   { id: "bengali", label: "বাংলা" },
 ];
 
-const sessionLanguageKey = "novatech-machine-agent-language";
+const agentUiCopy: Record<
+  AgentLanguage,
+  {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    question: string;
+    description: string;
+    placeholder: string;
+    searching: string;
+    viewMachine: string;
+  }
+> = {
+  english: {
+    eyebrow: "AI Machine Search",
+    title: "Machine Search Assistant",
+    subtitle: "Find the right machine from our inventory",
+    question: "What machine are you looking for?",
+    description: "Enter what you are looking for, and we will check the available machines for you.",
+    placeholder: "Write your machine requirements...",
+    searching: "AI is searching...",
+    viewMachine: "View Machine",
+  },
+  hindi: {
+    eyebrow: "एआई मशीन सर्च",
+    title: "मशीन सर्च असिस्टेंट",
+    subtitle: "हमारी इन्वेंटरी से सही मशीन खोजें",
+    question: "आप किस मशीन की तलाश कर रहे हैं?",
+    description: "मशीन का प्रकार, ब्रांड, मॉडल या स्पेसिफिकेशन लिखें। हम उपलब्ध इन्वेंटरी जांचेंगे।",
+    placeholder: "अपनी मशीन की आवश्यकता लिखें...",
+    searching: "एआई खोज रहा है...",
+    viewMachine: "मशीन देखें",
+  },
+  punjabi: {
+    eyebrow: "ਏਆਈ ਮਸ਼ੀਨ ਸਰਚ",
+    title: "ਮਸ਼ੀਨ ਸਰਚ ਅਸਿਸਟੈਂਟ",
+    subtitle: "ਸਾਡੀ ਇਨਵੈਂਟਰੀ ਵਿੱਚੋਂ ਸਹੀ ਮਸ਼ੀਨ ਲੱਭੋ",
+    question: "ਤੁਸੀਂ ਕਿਹੜੀ ਮਸ਼ੀਨ ਲੱਭ ਰਹੇ ਹੋ?",
+    description: "ਮਸ਼ੀਨ ਦਾ ਟਾਈਪ, ਬ੍ਰਾਂਡ, ਮਾਡਲ ਜਾਂ ਸਪੈਸੀਫਿਕੇਸ਼ਨ ਲਿਖੋ। ਅਸੀਂ ਉਪਲਬਧ ਇਨਵੈਂਟਰੀ ਚੈੱਕ ਕਰਾਂਗੇ।",
+    placeholder: "ਆਪਣੀ ਮਸ਼ੀਨ ਦੀ ਲੋੜ ਲਿਖੋ...",
+    searching: "ਏਆਈ ਖੋਜ ਰਿਹਾ ਹੈ...",
+    viewMachine: "ਮਸ਼ੀਨ ਵੇਖੋ",
+  },
+  tamil: {
+    eyebrow: "ஏஐ மெஷின் தேடல்",
+    title: "மெஷின் தேடல் உதவியாளர்",
+    subtitle: "எங்கள் இருப்பிலிருந்து சரியான மெஷினை கண்டறியுங்கள்",
+    question: "நீங்கள் எந்த மெஷினை தேடுகிறீர்கள்?",
+    description: "மெஷின் வகை, பிராண்ட், மாடல் அல்லது விவரக்குறிப்புகளை எழுதுங்கள். இருப்பை நாங்கள் சரிபார்ப்போம்.",
+    placeholder: "உங்கள் மெஷின் தேவையை எழுதுங்கள்...",
+    searching: "ஏஐ தேடுகிறது...",
+    viewMachine: "மெஷினை பார்க்கவும்",
+  },
+  marathi: {
+    eyebrow: "एआय मशीन शोध",
+    title: "मशीन शोध सहाय्यक",
+    subtitle: "आमच्या इन्व्हेंटरीमधून योग्य मशीन शोधा",
+    question: "तुम्ही कोणती मशीन शोधत आहात?",
+    description: "मशीनचा प्रकार, ब्रँड, मॉडेल किंवा तपशील लिहा. आम्ही उपलब्ध इन्व्हेंटरी तपासू.",
+    placeholder: "तुमची मशीनची गरज लिहा...",
+    searching: "एआय शोधत आहे...",
+    viewMachine: "मशीन पहा",
+  },
+  bengali: {
+    eyebrow: "এআই মেশিন সার্চ",
+    title: "মেশিন সার্চ সহায়ক",
+    subtitle: "আমাদের ইনভেন্টরি থেকে সঠিক মেশিন খুঁজুন",
+    question: "আপনি কোন মেশিন খুঁজছেন?",
+    description: "মেশিনের ধরন, ব্র্যান্ড, মডেল বা স্পেসিফিকেশন লিখুন। আমরা উপলব্ধ ইনভেন্টরি পরীক্ষা করব।",
+    placeholder: "আপনার মেশিনের প্রয়োজন লিখুন...",
+    searching: "এআই খুঁজছে...",
+    viewMachine: "মেশিন দেখুন",
+  },
+};
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -55,7 +128,15 @@ function emptyMessage(language: AgentLanguage) {
   }[language];
 }
 
-function AgentResultCard({ result }: { result: AgentMachineResult }) {
+function AgentResultCard({
+  result,
+  viewMachine,
+  onViewMachine,
+}: {
+  result: AgentMachineResult;
+  viewMachine: string;
+  onViewMachine: () => void;
+}) {
   const specs = result.relevantSpecs.slice(0, 4);
 
   return (
@@ -79,9 +160,10 @@ function AgentResultCard({ result }: { result: AgentMachineResult }) {
       </dl>
       <Link
         href={result.url}
+        onClick={onViewMachine}
         className="mt-3 inline-flex min-h-10 items-center justify-center border border-[#145b93] bg-[#145b93] px-4 text-[0.74rem] font-black uppercase tracking-[0.08em] text-white transition hover:bg-[#0f4c7c] focus:outline-none focus:ring-2 focus:ring-[#145b93]/35"
       >
-        View Machine -&gt;
+        {viewMachine} -&gt;
       </Link>
     </article>
   );
@@ -94,17 +176,10 @@ export default function MachineSearchAgent() {
   const [query, setQuery] = useState("");
   const [context, setContext] = useState<AgentSearchContext>({});
   const [loading, setLoading] = useState(false);
+  const [mobileWidgetDismissed, setMobileWidgetDismissed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const saved = window.sessionStorage.getItem(sessionLanguageKey) as AgentLanguage | null;
-    if (saved && languageOptions.some((item) => item.id === saved)) {
-      setLanguage(saved);
-      setMessages([{ id: createId(), role: "agent", text: welcomeText(saved) }]);
-    }
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -127,9 +202,21 @@ export default function MachineSearchAgent() {
   }, [messages, loading]);
 
   function chooseLanguage(nextLanguage: AgentLanguage) {
-    window.sessionStorage.setItem(sessionLanguageKey, nextLanguage);
     setLanguage(nextLanguage);
     setMessages([{ id: createId(), role: "agent", text: welcomeText(nextLanguage) }]);
+  }
+
+  function openAgent() {
+    if (language && messages.length > 0) {
+      setOpen(true);
+      return;
+    }
+
+    setLanguage(null);
+    setMessages([]);
+    setQuery("");
+    setContext({});
+    setOpen(true);
   }
 
   async function submitSearch(event?: FormEvent<HTMLFormElement>) {
@@ -178,58 +265,117 @@ export default function MachineSearchAgent() {
     }
   }
 
+  const isInitialSearch = Boolean(
+    language && messages.length === 1 && messages[0]?.role === "agent" && !loading,
+  );
+  const ui = agentUiCopy[language ?? "english"];
+
+  const searchComposer = (
+    <form
+      onSubmit={submitSearch}
+      className={
+        isInitialSearch
+          ? "mt-5 w-full max-w-xl"
+          : "sticky bottom-0 border-t border-slate-200 bg-white px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-12px_30px_rgba(15,23,42,0.06)]"
+      }
+    >
+      <div className={isInitialSearch ? "machine-agent-gradient-border rounded-2xl" : ""}>
+        <div className={`flex items-center gap-2 ${isInitialSearch ? "rounded-[15px] bg-white p-1.5" : ""}`}>
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={handleInputKeyDown}
+          disabled={loading}
+          placeholder={ui.placeholder}
+          aria-label="Machine search query"
+          className={`min-h-13 min-w-0 flex-1 px-4 text-[0.92rem] font-semibold text-slate-900 outline-none placeholder:text-slate-400 disabled:bg-slate-100 ${
+            isInitialSearch
+              ? "rounded-xl border-0 bg-[#f8fbff] focus:ring-0"
+              : "rounded-xl border border-slate-200 bg-[#f8fbff] focus:border-[#0878e8] focus:ring-2 focus:ring-[#0878e8]/20"
+          }`}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="machine-agent-send-button inline-flex h-13 w-13 shrink-0 items-center justify-center border border-[#e32636] bg-[#e32636] text-white transition hover:bg-[#c91f30] focus:outline-none focus:ring-2 focus:ring-[#e32636]/30 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Send machine search"
+        >
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+        </button>
+        </div>
+      </div>
+    </form>
+  );
+
   return (
     <>
+      <div className="fixed bottom-6 right-5 z-40 flex flex-col items-center">
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        className="premium-widget-animate fixed bottom-6 right-5 z-40 flex items-center justify-center border border-[#145b93]/25 bg-white text-[#145b93] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 h-[52px] w-[205px] rounded-full p-1.5 md:h-[220px] md:w-[220px] md:rounded-2xl md:p-3 md:bg-[linear-gradient(135deg,#0f3f70_0%,#145b93_54%,#1f7dbb_100%)] md:text-white md:border-[#145b93]"
+        onClick={openAgent}
+        className={`premium-widget-animate machine-search-widget-card machine-search-mobile-card flex items-center justify-center border border-[#145b93]/25 bg-white text-[#145b93] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 p-1.5 md:h-[220px] md:w-[220px] md:rounded-2xl md:p-4 md:bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#e9f6ff_100%)] md:text-[#0878e8] md:border-[#00a8ff]/70 md:shadow-[0_16px_36px_rgba(8,120,232,0.18)] ${
+          mobileWidgetDismissed ? "h-14 w-14" : "h-[108px] w-[108px] p-2"
+        }`}
         aria-label="Open machine search assistant"
       >
         {/* Mobile Layout */}
-        <div className="flex items-center justify-center gap-2.5 w-full h-full md:hidden px-3">
-          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-50 text-[#145b93] border border-sky-100/70 shadow-inner">
-            <Search className="h-4 w-4" />
-            <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
+        {mobileWidgetDismissed ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-1 md:hidden">
+            <Search className="h-5 w-5 text-[#0878e8]" />
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.08em] text-[#07549c]">Search</span>
           </div>
-          <span className="text-[0.76rem] font-extrabold uppercase tracking-[0.03em] whitespace-nowrap text-[#145b93]">
-            ⚡ Fastest AI Search
-          </span>
-        </div>
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 md:hidden">
+            <span className="text-[0.62rem] font-black uppercase tracking-[0.07em] text-[#07549c]">AI Search</span>
+            <span className="text-[0.46rem] font-bold uppercase tracking-[0.04em] text-[#0878e8]">Enter requirements</span>
+            <div className="mt-1 flex h-7 w-full items-center gap-1.5 rounded-md border border-[#00a8ff]/45 bg-[#f8fbff] px-2 text-[#07549c] shadow-[0_2px_7px_rgba(8,120,232,0.1)]">
+              <Search className="h-3 w-3 shrink-0" />
+              <span className="truncate text-[0.47rem] font-bold">Search machines</span>
+            </div>
+          </div>
+        )}
 
         {/* Desktop Square Card Layout (md+) */}
         <div className="hidden md:flex flex-col flex-1 justify-between h-full text-left">
-          <div className="flex items-center justify-between w-full">
-            <div className="relative inline-flex h-11 w-11 items-center justify-center border border-white/20 bg-white/10 rounded-lg">
-              <Search className="h-5.5 w-5.5 text-sky-200" />
-              <span className="absolute -right-1 -top-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </span>
-            </div>
-            <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded text-[0.64rem] font-bold tracking-wider uppercase text-sky-100">
-              <Sparkles className="h-3 w-3 text-sky-300" /> Live AI
-            </span>
+          <div className="machine-search-icon-mark mt-1 flex h-[52px] shrink-0 items-center justify-center">
+            <Search className="h-11 w-11 stroke-[2.25] text-[#4e82f4]" />
+            <Sparkles className="machine-search-spark machine-search-spark--blue h-4 w-4" />
+            <Sparkles className="machine-search-spark machine-search-spark--yellow h-3 w-3" />
+            <Sparkles className="machine-search-spark machine-search-spark--pink h-3.5 w-3.5" />
           </div>
 
-          <div className="my-2">
-            <h4 className="text-[0.66rem] font-black uppercase tracking-widest text-sky-200">Fastest AI Search</h4>
-            <h3 className="text-[0.98rem] font-extrabold uppercase leading-snug text-white mt-0.5">
+          <div className="mt-1 mb-2">
+            <h4 className="text-[0.74rem] font-black uppercase tracking-[0.12em] text-[#0878e8]">Fastest AI Search</h4>
+            <h3 className="mt-1.5 text-[1.04rem] font-extrabold uppercase leading-snug text-[#07549c]">
               Machine Search Assistant
             </h3>
           </div>
 
           <div className="w-full">
-            <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white/50 hover:bg-white/15 transition duration-150">
-              <Search className="h-4 w-4 shrink-0 text-white/70" />
-              <span className="text-xs font-semibold truncate text-white/70">Ask AI about machines...</span>
+            <div className="machine-agent-gradient-border rounded-xl">
+              <div className="flex items-center gap-2 rounded-[11px] bg-white px-3 py-2 text-white/50 transition duration-150">
+                <Search className="h-4 w-4 shrink-0 text-[#145b93]/70" />
+                <span className="text-[0.67rem] font-semibold truncate text-slate-500">Write your requirements...</span>
+              </div>
             </div>
           </div>
         </div>
       </button>
+      {!mobileWidgetDismissed ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setMobileWidgetDismissed(true);
+          }}
+          className="machine-search-mobile-close absolute -right-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center border border-white bg-[#07549c] text-white shadow-sm md:hidden"
+          aria-label="Minimize search assistant"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      ) : null}
+      </div>
 
       <div
         className={`fixed inset-0 z-50 bg-slate-950/20 transition-opacity duration-300 lg:bg-transparent ${
@@ -250,26 +396,16 @@ export default function MachineSearchAgent() {
           aria-modal="true"
           aria-label="Machine Search Assistant"
         >
-          <header className="flex min-h-[92px] items-center justify-between border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f3f8fc_100%)] px-5">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="inline-flex h-13 w-13 shrink-0 items-center justify-center border border-sky-200 bg-white text-[#145b93] shadow-[0_10px_22px_rgba(20,91,147,0.12)]">
-                <Bot className="h-7 w-7" />
-              </span>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[0.74rem] font-black uppercase tracking-[0.14em] text-[#145b93]">
-                  <Sparkles className="h-4 w-4" />
-                  AI Agent
-                </div>
-                <h2 className="mt-1 truncate text-lg font-black text-slate-950">Machine Search Assistant</h2>
-                <p className="mt-0.5 truncate text-[0.76rem] font-semibold text-slate-500">
-                  Find the right machine for your requirements
-                </p>
-              </div>
+          <header className="flex min-h-[96px] items-center justify-between border-b border-sky-100 bg-white px-6">
+            <div className="min-w-0">
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[#0878e8]">{ui.eyebrow}</div>
+              <h2 className="mt-1 truncate text-xl font-black text-[#07549c]">{ui.title}</h2>
+              <p className="mt-1 truncate text-[0.78rem] font-semibold text-slate-500">{ui.subtitle}</p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30"
+              className="machine-agent-close-button inline-flex h-10 w-10 shrink-0 items-center justify-center border border-[#e32636] bg-[#e32636] text-white transition hover:bg-[#c91f30] focus:outline-none focus:ring-2 focus:ring-[#e32636]/30"
               aria-label="Close machine search assistant"
             >
               <X className="h-5 w-5" />
@@ -277,27 +413,52 @@ export default function MachineSearchAgent() {
           </header>
 
           {!language ? (
-            <div className="flex flex-1 flex-col justify-center px-5">
-              <p className="text-center text-lg font-black leading-tight text-slate-950">
-                Which language would you like to continue in?
-              </p>
-              <div className="mx-auto mt-5 grid w-full max-w-sm grid-cols-3 gap-2">
+            <div className="flex flex-1 items-center justify-center bg-[#f4f7fa] px-5 py-8">
+              <div className="w-full max-w-md rounded-3xl border border-sky-100 bg-white p-7 text-center shadow-[0_18px_42px_rgba(8,120,232,0.13)]">
+                <div className="mx-auto flex h-13 w-13 items-center justify-center rounded-2xl bg-[#eaf6ff] text-[#0878e8]">
+                  <Sparkles className="h-7 w-7" />
+                </div>
+                <p className="mt-5 text-[0.72rem] font-black uppercase tracking-[0.15em] text-[#0878e8]">AI Machine Search</p>
+                <h3 className="mt-2 text-xl font-black text-[#07549c]">Choose your language</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">Your search assistant will reply in the language you select.</p>
+                <div className="mt-6 grid grid-cols-3 gap-2.5">
                 {languageOptions.map((option) => (
                   <button
                     key={option.id}
                     type="button"
                     onClick={() => chooseLanguage(option.id)}
-                    className="min-h-11 border border-slate-200 bg-white px-2 text-sm font-black text-slate-900 shadow-sm transition hover:border-[#145b93] hover:text-[#145b93] focus:outline-none focus:ring-2 focus:ring-[#145b93]/30"
+                    className="machine-agent-language-button min-h-11 border border-sky-100 bg-[#f8fbff] px-2 text-sm font-black text-[#07549c] shadow-sm transition hover:border-[#0878e8] hover:bg-[#eaf6ff] focus:outline-none focus:ring-2 focus:ring-[#0878e8]/25"
                   >
                     {option.label}
                   </button>
                 ))}
+                </div>
               </div>
             </div>
           ) : (
             <>
-              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5 bg-[#f4f7fa]">
-                {messages.map((message) => {
+              <div
+                ref={scrollRef}
+                className={`flex-1 bg-[#f4f7fa] ${
+                  isInitialSearch
+                    ? "flex flex-col items-center justify-center px-6 py-8"
+                    : "space-y-4 overflow-y-auto px-5 py-5"
+                }`}
+              >
+                {isInitialSearch ? (
+                  <div className="flex w-full max-w-xl flex-col items-center text-center">
+                    <div className="machine-search-icon-mark flex h-[74px] items-center justify-center">
+                      <Search className="h-14 w-14 stroke-[2.2] text-[#4e82f4]" />
+                      <Sparkles className="machine-search-spark machine-search-spark--blue h-4 w-4" />
+                      <Sparkles className="machine-search-spark machine-search-spark--yellow h-3 w-3" />
+                      <Sparkles className="machine-search-spark machine-search-spark--pink h-3.5 w-3.5" />
+                    </div>
+                    <h3 className="mt-4 text-xl font-black text-[#07549c]">{ui.question}</h3>
+                    <p className="mt-2 max-w-md text-sm font-semibold leading-6 text-slate-500">
+                      {ui.description}
+                    </p>
+                  </div>
+                ) : messages.map((message) => {
                   const isUser = message.role === "user";
                   return (
                     <div
@@ -322,7 +483,12 @@ export default function MachineSearchAgent() {
                         {message.results?.length ? (
                           <div className="mt-3 space-y-3 w-full">
                             {message.results.map((result) => (
-                              <AgentResultCard key={result.id} result={result} />
+                              <AgentResultCard
+                                key={result.id}
+                                result={result}
+                                viewMachine={ui.viewMachine}
+                                onViewMachine={() => setOpen(false)}
+                              />
                             ))}
                           </div>
                         ) : null}
@@ -337,34 +503,14 @@ export default function MachineSearchAgent() {
                     </div>
                     <div className="bg-white text-slate-500 border border-slate-200 rounded-2xl rounded-bl-none px-4 py-2.5 shadow-sm flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-[#145b93]" />
-                      <span className="text-xs font-bold uppercase tracking-wider">AI is searching...</span>
+                      <span className="text-xs font-bold uppercase tracking-wider">{ui.searching}</span>
                     </div>
                   </div>
                 ) : null}
+                {isInitialSearch ? searchComposer : null}
               </div>
 
-              <form onSubmit={submitSearch} className="sticky bottom-0 border-t border-slate-200 bg-white px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-12px_30px_rgba(15,23,42,0.06)]">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={inputRef}
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                    disabled={loading}
-                    placeholder="lathe X 1000 dia 500"
-                    aria-label="Machine search query"
-                    className="min-h-13 min-w-0 flex-1 border border-slate-300 bg-white px-4 text-[0.92rem] font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#145b93] focus:ring-2 focus:ring-[#145b93]/20 disabled:bg-slate-100"
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex h-13 w-13 shrink-0 items-center justify-center border border-[#145b93] bg-[#145b93] text-white transition hover:bg-[#0f4c7c] focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 disabled:cursor-not-allowed disabled:opacity-60"
-                    aria-label="Send machine search"
-                  >
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                  </button>
-                </div>
-              </form>
+              {!isInitialSearch ? searchComposer : null}
             </>
           )}
         </aside>

@@ -15,3 +15,23 @@ export function getMachinePath(machine: Pick<MachineItem, "id" | "title"> | stri
   }
   return `/machines/${generateMachineSlug(machine)}`;
 }
+
+export function getMachineCatalogPath(
+  machine: Pick<
+    MachineItem,
+    "id" | "category" | "subcategory" | "categorySlug" | "subcategorySlug"
+  >,
+) {
+  const params = new URLSearchParams();
+
+  if (machine.categorySlug ?? machine.category) {
+    params.set("category", machine.categorySlug ?? machine.category);
+  }
+
+  if (machine.subcategorySlug ?? machine.subcategory) {
+    params.set("subcategory", machine.subcategorySlug ?? machine.subcategory ?? "");
+  }
+
+  params.set("machine", machine.id);
+  return `/used-machinery?${params.toString()}`;
+}

@@ -3,7 +3,7 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
-  --font-sans: "Arial Black", Arial, Helvetica, sans-serif;
+  --font-sans: Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
   --accent: #E32636;
   --accent-strong: #C91F30;
@@ -28,6 +28,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Keep the existing header and navigation typography; make page content bold
+   without changing the designed sizes. */
+:is(main, footer, aside) :where(h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, label, dt, dd, li, th, td) {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700 !important;
 }
 
 * {
@@ -1122,6 +1129,172 @@ a[class*="inline-flex"][class*="rounded"] {
   transform: translateY(-6px) scale(1.02) !important;
 }
 
+@keyframes machine-agent-border-flow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@property --machine-card-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes machine-card-border-flow {
+  to {
+    --machine-card-border-angle: 360deg;
+  }
+}
+
+@property --machine-mobile-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes machine-mobile-border-flow {
+  to {
+    --machine-mobile-border-angle: 360deg;
+  }
+}
+
+.machine-agent-gradient-border {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 1px;
+  box-shadow: 0 0 9px rgba(0, 217, 255, 0.34), 0 0 17px rgba(155, 92, 255, 0.18);
+}
+
+.machine-agent-gradient-border::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: -65%;
+  background: conic-gradient(
+    from 0deg,
+    #00a8ff,
+    #00d9ff,
+    #2de5d0,
+    #18d98b,
+    #ffd43b,
+    #ff8a3d,
+    #ff4fa3,
+    #9b5cff,
+    #00a8ff
+  );
+  animation: machine-agent-border-flow 5.5s linear infinite;
+}
+
+@media (min-width: 768px) {
+  button.machine-search-widget-card {
+    border-radius: 18px !important;
+    overflow: hidden;
+    border: 2px solid #0878e8 !important;
+    background: #ffffff !important;
+    box-shadow: 0 20px 42px rgba(8, 120, 232, 0.28), 0 0 22px rgba(0, 168, 255, 0.18) !important;
+    animation: premium-widget-float 4s ease-in-out infinite;
+  }
+}
+
+.machine-agent-gradient-border > div {
+  position: relative;
+  z-index: 1;
+}
+
+.machine-agent-live-badge {
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.22), inset 0 0 0 1px rgba(0, 217, 255, 0.2);
+}
+
+.machine-search-icon-mark {
+  position: relative;
+}
+
+.machine-search-spark {
+  position: absolute;
+}
+
+.machine-search-spark--blue {
+  top: 1px;
+  right: calc(50% - 32px);
+  color: #3182f6;
+}
+
+.machine-search-spark--yellow {
+  top: 19px;
+  left: calc(50% - 34px);
+  color: #f7bd38;
+}
+
+.machine-search-spark--pink {
+  bottom: 1px;
+  left: calc(50% - 27px);
+  color: #ff5d83;
+}
+
+@media (max-width: 767px) {
+  button.machine-search-mobile-card {
+    border-radius: 16px !important;
+    border: 1px solid transparent !important;
+    background:
+      linear-gradient(#ffffff, #ffffff) padding-box,
+      conic-gradient(
+        from var(--machine-mobile-border-angle),
+        #0878e8,
+        #00d9ff,
+        #18d98b,
+        #ffd43b,
+        #ff4fa3,
+        #9b5cff,
+        #0878e8
+      ) border-box !important;
+    box-shadow: 0 10px 24px rgba(8, 120, 232, 0.2), 0 0 14px rgba(0, 217, 255, 0.16) !important;
+    animation:
+      premium-widget-float 4s ease-in-out infinite,
+      machine-mobile-border-flow 5.5s linear infinite;
+  }
+
+button.machine-search-mobile-close {
+  border-radius: 9999px !important;
+}
+
+button.machine-agent-send-button {
+  border-radius: 12px !important;
+}
+
+button.machine-agent-close-button {
+  border-radius: 10px !important;
+}
+
+button.machine-agent-language-button {
+  border-radius: 10px !important;
+}
+
+.machine-description-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #0878e8 #eaf6ff;
+}
+
+.machine-description-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.machine-description-scroll::-webkit-scrollbar-track {
+  background: #eaf6ff;
+  border-radius: 9999px;
+}
+
+.machine-description-scroll::-webkit-scrollbar-thumb {
+  background: #0878e8;
+  border-radius: 9999px;
+}
+
+.machine-description-scroll::-webkit-scrollbar-thumb:hover {
+  background: #07549c;
+}
+}
+
 @media (prefers-reduced-motion: reduce) {
   .premium-cta-animate {
     animation: none !important;
@@ -1137,5 +1310,11 @@ a[class*="inline-flex"][class*="rounded"] {
   }
   .premium-widget-animate:hover {
     transform: none !important;
+  }
+  .machine-agent-gradient-border::before {
+    animation: none;
+  }
+  .machine-search-widget-card {
+    animation: none;
   }
 }

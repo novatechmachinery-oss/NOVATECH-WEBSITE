@@ -19,15 +19,17 @@ export async function createGeminiSummary(input: {
   intent: MachineSearchIntent;
   results: AgentMachineResult[];
   fallback: string;
+  exactCount: number;
+  closeCount: number;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || input.results.length === 0) return input.fallback;
+  if (!apiKey) return input.fallback;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const machines = input.results.map((result) => ({
+    const machines = input.results.slice(0, 16).map((result) => ({
       title: result.title,
       model: result.model,
       specs: result.relevantSpecs.slice(0, 3),
@@ -47,13 +49,17 @@ export async function createGeminiSummary(input: {
               parts: [
                 {
                   text: [
-                    "You are a machine sales search assistant.",
-                    "Write only one short result heading. No explanations.",
+                    "You are a helpful, professional machine inventory assistant.",
                     `Language: ${languageName(input.language)}.`,
                     `User query: ${input.intent.query}`,
+                    `Exact/relevant inventory matches: ${input.exactCount}.`,
+                    `Close alternatives: ${input.closeCount}.`,
                     `Results JSON: ${JSON.stringify(machines)}`,
-                    `Fallback heading: ${input.fallback}`,
-                    "Return a concise heading only, under 14 words.",
+                    `Safe fallback response: ${input.fallback}`,
+                    "Reply in the selected language only.",
+                    "If Results JSON is empty, explain politely that no matching machine is currently in inventory and ask for a machine type, brand, model, or key specification. Do not invent inventory.",
+                    "If results exist, say clearly whether matching machines are available, mention exact/relevant matches first, and then close alternatives only if present. Do not invent specifications or availability.",
+                    "Use no more than two concise sentences.",
                   ].join("\n"),
                 },
               ],
@@ -61,7 +67,7 @@ export async function createGeminiSummary(input: {
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 50,
+            maxOutputTokens: 120,
           },
         }),
       },
@@ -73,7 +79,7 @@ export async function createGeminiSummary(input: {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    return text && text.length <= 140 ? text : input.fallback;
+    return text && text.length <= 360 ? text : input.fallback;
   } catch {
     return input.fallback;
   } finally {
