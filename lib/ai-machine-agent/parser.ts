@@ -66,6 +66,16 @@ function normalizeQuery(value: string) {
     .trim();
 }
 
+function extractIdentityQuery(query: string) {
+  return query
+    .replace(
+      /\b(?:hello|hi|hey|thanks|thank you|good morning|good evening|good night|bye|okay|ok|show me|show|find|search|need|looking for|i need|i want|do you have|can you show|available|availability|mujhe|mujko|mujhko|chahiye|koi|machine|machines|please|around|near|ke|ki|ka|hai|hain|ho|kya)\b/g,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function normalizeNumber(value: string) {
   const cleaned = value.replace(/,/g, "");
   const parsed = Number(cleaned);
@@ -200,6 +210,7 @@ function extractTerms(query: string) {
 
 export function parseMachineSearchIntent(query: string, context?: AgentSearchContext): MachineSearchIntent {
   const normalizedQuery = normalizeQuery(query);
+  const identityQuery = extractIdentityQuery(normalizedQuery);
   const wantsMore = /\b(show|give|more|next)\b.*\b(\d+|more)?\b/i.test(normalizedQuery) && /\bmore|next\b/i.test(normalizedQuery);
   const wantsBigger = /\b(bigger|larger|large|higher|upar|zyada|more)\b/i.test(normalizedQuery) && !wantsMore;
   const explicitLimit = normalizedQuery.match(/\b(?:show|give)\s+(\d+)\s*(?:more|machines|results)?\b|\b(\d+)\s+more\b/i);
@@ -210,6 +221,7 @@ export function parseMachineSearchIntent(query: string, context?: AgentSearchCon
     return {
       query,
       normalizedQuery,
+      identityQuery,
       textTerms: context.textTerms ?? [],
       phraseTerms: context.phraseTerms ?? [],
       numericCriteria: context.numericCriteria ?? [],
@@ -229,6 +241,7 @@ export function parseMachineSearchIntent(query: string, context?: AgentSearchCon
   return {
     query,
     normalizedQuery,
+    identityQuery,
     textTerms: mergedTextTerms,
     phraseTerms: mergedPhraseTerms,
     numericCriteria: mergedNumericCriteria,

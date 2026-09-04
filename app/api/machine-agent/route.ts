@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createGeminiSummary } from "@/lib/ai-machine-agent/gemini";
+import { createGeminiSummary, detectConversationIntent } from "@/lib/ai-machine-agent/gemini";
 import { buildSearchMessage, getAgentCopy } from "@/lib/ai-machine-agent/messages";
 import { parseMachineSearchIntent, shouldAskForNumericClarification } from "@/lib/ai-machine-agent/parser";
 import { searchMachines } from "@/lib/ai-machine-agent/search";
@@ -10,7 +10,7 @@ import { getMachineInventory } from "@/lib/machines";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const languages = new Set<AgentLanguage>(["english", "hindi", "punjabi", "tamil", "marathi", "bengali"]);
+const languages = new Set<AgentLanguage>(["english", "hindi", "chinese", "punjabi", "tamil", "marathi", "bengali"]);
 
 function asLanguage(value: unknown): AgentLanguage {
   return typeof value === "string" && languages.has(value as AgentLanguage) ? (value as AgentLanguage) : "english";
@@ -49,6 +49,15 @@ export async function POST(request: Request) {
     }
 
     const intent = parseMachineSearchIntent(query, context);
+    const conversationIntent = await detectConversationIntent({ language, query });
+
+    if (conversationIntent.kind === "conversation") {
+      return NextResponse.json({
+        message: conversationIntent.reply,
+        results: [],
+        context,
+      } satisfies AgentSearchResponse);
+    }
 
     if (shouldAskForNumericClarification(intent, context)) {
       return NextResponse.json({

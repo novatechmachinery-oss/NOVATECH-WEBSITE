@@ -1259,6 +1259,10 @@ button.machine-search-mobile-close {
   border-radius: 9999px !important;
 }
 
+button.machine-search-desktop-close {
+  border-radius: 9999px !important;
+}
+
 button.machine-agent-send-button {
   border-radius: 12px !important;
 }
@@ -1269,6 +1273,32 @@ button.machine-agent-close-button {
 
 button.machine-agent-language-button {
   border-radius: 10px !important;
+}
+
+.site-language-switcher {
+  position: fixed;
+  z-index: 39;
+  left: 1rem;
+  bottom: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #0878e8;
+  border-radius: 9999px;
+  background: #ffffff;
+  padding: 0.45rem 0.7rem;
+  color: #07549c;
+  box-shadow: 0 10px 24px rgba(8, 120, 232, 0.18);
+}
+
+.site-language-switcher select {
+  max-width: 5.8rem;
+  border: 0;
+  background: transparent;
+  color: #07549c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  outline: none;
 }
 
 .machine-description-scroll {

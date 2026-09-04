@@ -28,10 +28,12 @@ export async function proxy(request: NextRequest) {
       return unauthorizedResponse;
     }
 
+
+
     const loginUrl = new URL(LOGIN_PAGE, request.url);
     loginUrl.searchParams.set("from", pathname);
     const redirectResponse = NextResponse.redirect(loginUrl);
-    clearAdminAuthCookies(request, redirectResponse);
+    clearAdminAuthCookies(request, redirectResponse); 
     return redirectResponse;
   }
 

@@ -184,11 +184,7 @@ function scoreNumericCriterion(machine: MachineItem, criterion: NumericSearchCri
     const values = chooseAxisValue(spec.label, numberValues(spec.value), criterion.fieldHint);
     for (const value of values) {
       const match = scoreNumberMatch(value, criterion);
-      const score = criterion.fieldHint && match.score > 0
-        ? match.score + 18
-        : allowBroadNumeric
-          ? match.score
-          : Math.min(match.score, 18);
+      const score = criterion.fieldHint && match.score > 0 ? match.score + 18 : allowBroadNumeric ? match.score : Math.min(match.score, 18);
       if (score > bestScore || (score === bestScore && match.diff < bestDiff)) {
         bestScore = score;
         bestExact = Boolean(criterion.fieldHint && match.exact);
@@ -233,16 +229,16 @@ function scoreTextTerms(machine: MachineItem, intent: MachineSearchIntent) {
     const normalizedPhrase = normalizeText(phrase);
     if (!normalizedPhrase) continue;
     if (hasPhrase(title, normalizedPhrase)) score += 70;
-    else if (hasPhrase(category, normalizedPhrase)) score += 58;
     else if (hasPhrase(brandModel, normalizedPhrase)) score += 62;
+    else if (hasPhrase(category, normalizedPhrase)) score += 58;
     else if (hasPhrase(text, normalizedPhrase)) score += 28;
   }
 
   for (const term of intent.textTerms) {
     if (hasWord(title, term)) score += 34;
     else if (hasTerm(title, term)) score += 24;
-    else if (hasTerm(category, term)) score += 30;
     else if (hasTerm(brandModel, term)) score += 32;
+    else if (hasTerm(category, term)) score += 30;
     else if (hasTerm(text, term)) score += 10;
 
     for (const spec of machine.specifications ?? []) {
@@ -255,6 +251,47 @@ function scoreTextTerms(machine: MachineItem, intent: MachineSearchIntent) {
   return { score, matchedSpecs };
 }
 
+function isFieldOnlyIdentity(identity: string) {
+  return words(identity).every((term) =>
+    ["x", "y", "z", "dia", "diameter", "spindle", "table", "height", "width", "length", "rpm", "feed", "taper", "control", "weight", "capacity", "model", "brand", "year"].includes(term),
+  );
+}
+
+function scoreIdentityPriority(machine: MachineItem, intent: MachineSearchIntent) {
+  const identity = normalizeText(intent.identityQuery);
+  if (!identity || isFieldOnlyIdentity(identity)) {
+    return { priority: 6, bonus: 0, exact: false };
+  }
+
+  const title = normalizeText(machine.title);
+  const model = normalizeText(machine.model ?? "");
+  const brand = normalizeText(machine.manufacturer ?? "");
+  const brandModel = normalizeText([machine.manufacturer, machine.model].filter(Boolean).join(" "));
+  const category = normalizeText([machine.category, machine.subcategory, machine.machineType].filter(Boolean).join(" "));
+  const identityHasNumber = /\d/.test(identity);
+  const exactModel = Boolean(model) && model === identity;
+  const exactName = Boolean(title) && (title === identity || (identityHasNumber && hasPhrase(title, identity)));
+  const exactBrandModel = Boolean(brandModel) && (brandModel === identity || (Boolean(brand) && Boolean(model) && identity === `${brand} ${model}`));
+  const exactNameAndModel = exactModel && exactName;
+  const closeName =
+    !exactNameAndModel &&
+    !exactModel &&
+    !exactName &&
+    !exactBrandModel &&
+    ((Boolean(model) && model.startsWith(identity)) ||
+      (Boolean(title) && title.startsWith(identity)) ||
+      (Boolean(brandModel) && brandModel.includes(identity)));
+  const exactCategory = !exactNameAndModel && !exactModel && !exactName && !exactBrandModel && hasPhrase(category, identity);
+
+  if (exactNameAndModel) return { priority: 0, bonus: 560, exact: true };
+  if (exactModel) return { priority: 1, bonus: 470, exact: true };
+  if (exactName) return { priority: 2, bonus: 410, exact: true };
+  if (exactBrandModel) return { priority: 3, bonus: 360, exact: true };
+  if (closeName) return { priority: 4, bonus: 240, exact: false };
+  if (exactCategory) return { priority: 5, bonus: 120, exact: false };
+  return { priority: 6, bonus: 0, exact: false };
+}
+
 function rankMachine(machine: MachineItem, intent: MachineSearchIntent): RankedMachine | null {
   const textMatch = scoreTextTerms(machine, intent);
   const hasTextIntent = intent.textTerms.length > 0 || intent.phraseTerms.length > 0;
@@ -263,8 +300,9 @@ function rankMachine(machine: MachineItem, intent: MachineSearchIntent): RankedM
     return null;
   }
 
-  let score = textMatch.score;
-  let exact = textMatch.score >= 70;
+  const identityMatch = scoreIdentityPriority(machine, intent);
+  let score = textMatch.score + identityMatch.bonus;
+  let exact = identityMatch.exact || textMatch.score >= 70;
   const relevantSpecs: RelevantSpec[] = [...textMatch.matchedSpecs];
   let numericMatches = 0;
   const allowBroadNumeric = !hasTextIntent;
@@ -295,6 +333,7 @@ function rankMachine(machine: MachineItem, intent: MachineSearchIntent): RankedM
 
   return {
     machine,
+    priority: identityMatch.priority,
     score,
     exact,
     relevantSpecs: [...relevantSpecs, ...importantSpecs(machine)]
@@ -315,17 +354,14 @@ function minimumScoreForIntent(intent: MachineSearchIntent) {
 function filterRelevantResults(ranked: RankedMachine[], intent: MachineSearchIntent) {
   const minimumScore = minimumScoreForIntent(intent);
   const topScore = ranked[0]?.score ?? 0;
-  const identifyingNameQuery =
-    intent.textTerms.length >= 3 &&
-    intent.numericCriteria.length > 0 &&
-    intent.numericCriteria.every((criterion) => !criterion.fieldHint);
-  const ratioFloor = identifyingNameQuery
-    ? topScore * 0.68
+  const hasStrongIdentityMatch = (ranked[0]?.priority ?? 6) < 6;
+  const ratioFloor = hasStrongIdentityMatch
+    ? Math.max(minimumScore, topScore * 0.18)
     : topScore >= 150
       ? topScore * 0.34
       : minimumScore;
 
-  return ranked.filter((item) => item.score >= minimumScore && item.score >= ratioFloor);
+  return ranked.filter((item) => item.score >= minimumScore && (item.priority <= 5 || item.score >= ratioFloor));
 }
 
 function machineToResult(ranked: RankedMachine): AgentMachineResult {
@@ -351,6 +387,7 @@ export function searchMachines(machines: MachineItem[], intent: MachineSearchInt
       .map((machine) => rankMachine(machine, intent))
       .filter((item): item is RankedMachine => item !== null)
       .sort((left, right) => {
+        if (left.priority !== right.priority) return left.priority - right.priority;
         if (right.exact !== left.exact) return Number(right.exact) - Number(left.exact);
         return right.score - left.score;
       }),
@@ -358,7 +395,8 @@ export function searchMachines(machines: MachineItem[], intent: MachineSearchInt
   );
 
   const offset = intent.wantsMore ? context?.offset ?? 0 : 0;
-  const results = ranked.slice(offset).map(machineToResult);
+  const page = ranked.slice(offset, offset + intent.limit);
+  const results = page.map(machineToResult);
   const numericWithHints = intent.numericCriteria.filter((criterion) => criterion.fieldHint);
   const lastFieldHint = numericWithHints.at(-1)?.fieldHint ?? context?.lastFieldHint;
 

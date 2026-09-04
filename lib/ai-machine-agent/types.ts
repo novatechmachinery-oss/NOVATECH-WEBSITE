@@ -1,6 +1,6 @@
 import type { MachineItem } from "@/lib/machines";
 
-export type AgentLanguage = "english" | "hindi" | "punjabi" | "tamil" | "marathi" | "bengali";
+export type AgentLanguage = "english" | "hindi" | "chinese" | "punjabi" | "tamil" | "marathi" | "bengali";
 
 export type NumericSearchCriterion = {
   raw: string;
@@ -14,6 +14,7 @@ export type NumericSearchCriterion = {
 export type MachineSearchIntent = {
   query: string;
   normalizedQuery: string;
+  identityQuery: string;
   textTerms: string[];
   phraseTerms: string[];
   numericCriteria: NumericSearchCriterion[];
@@ -58,7 +59,17 @@ export type AgentSearchResponse = {
 
 export type RankedMachine = {
   machine: MachineItem;
+  priority: number;
   score: number;
   exact: boolean;
   relevantSpecs: RelevantSpec[];
 };
+
+export type AgentConversationIntent =
+  | {
+      kind: "conversation";
+      reply: string;
+    }
+  | {
+      kind: "search";
+    };

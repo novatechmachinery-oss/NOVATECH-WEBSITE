@@ -20,6 +20,7 @@ type ChatMessage = {
 
 const languageOptions: Array<{ id: AgentLanguage; label: string }> = [
   { id: "english", label: "English" },
+  { id: "chinese", label: "中文" },
   { id: "hindi", label: "हिंदी" },
   { id: "punjabi", label: "ਪੰਜਾਬੀ" },
   { id: "tamil", label: "தமிழ்" },
@@ -59,6 +60,16 @@ const agentUiCopy: Record<
     placeholder: "अपनी मशीन की आवश्यकता लिखें...",
     searching: "एआई खोज रहा है...",
     viewMachine: "मशीन देखें",
+  },
+  chinese: {
+    eyebrow: "AI 机器搜索",
+    title: "机器搜索助手",
+    subtitle: "从我们的库存中查找合适的机器",
+    question: "您正在寻找什么机器？",
+    description: "请输入您的需求，我们将为您检查可用的机器。",
+    placeholder: "请输入您的机器需求...",
+    searching: "AI 正在搜索...",
+    viewMachine: "查看机器",
   },
   punjabi: {
     eyebrow: "ਏਆਈ ਮਸ਼ੀਨ ਸਰਚ",
@@ -110,6 +121,7 @@ function welcomeText(language: AgentLanguage) {
   return {
     english: "Tell me the machine name, brand, model, or specs.",
     hindi: "Machine name, brand, model ya specs batayein.",
+    chinese: "请输入您需要的机器类型或要求。",
     punjabi: "Machine name, brand, model ya specs dasso.",
     tamil: "Machine name, brand, model அல்லது specs சொல்லுங்கள்.",
     marathi: "Machine name, brand, model kiwa specs sanga.",
@@ -121,6 +133,7 @@ function emptyMessage(language: AgentLanguage) {
   return {
     english: "Please type a machine name or specification.",
     hindi: "Machine name ya specification type karein.",
+    chinese: "请输入机器名称或规格。",
     punjabi: "Machine name ya specification type karo.",
     tamil: "Machine name அல்லது specification type செய்யவும்.",
     marathi: "Machine name kiwa specification type kara.",
@@ -177,6 +190,7 @@ export default function MachineSearchAgent() {
   const [context, setContext] = useState<AgentSearchContext>({});
   const [loading, setLoading] = useState(false);
   const [mobileWidgetDismissed, setMobileWidgetDismissed] = useState(false);
+  const [desktopWidgetDismissed, setDesktopWidgetDismissed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -314,9 +328,9 @@ export default function MachineSearchAgent() {
       <button
         type="button"
         onClick={openAgent}
-        className={`premium-widget-animate machine-search-widget-card machine-search-mobile-card flex items-center justify-center border border-[#145b93]/25 bg-white text-[#145b93] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 p-1.5 md:h-[220px] md:w-[220px] md:rounded-2xl md:p-4 md:bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#e9f6ff_100%)] md:text-[#0878e8] md:border-[#00a8ff]/70 md:shadow-[0_16px_36px_rgba(8,120,232,0.18)] ${
+        className={`premium-widget-animate machine-search-widget-card machine-search-mobile-card flex items-center justify-center border border-[#145b93]/25 bg-white text-[#145b93] shadow-[0_16px_36px_rgba(15,23,42,0.16)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#145b93]/30 p-1.5 md:rounded-2xl md:bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#e9f6ff_100%)] md:text-[#0878e8] md:border-[#00a8ff]/70 md:shadow-[0_16px_36px_rgba(8,120,232,0.18)] ${
           mobileWidgetDismissed ? "h-14 w-14" : "h-[108px] w-[108px] p-2"
-        }`}
+        } ${desktopWidgetDismissed ? "md:h-14 md:w-14 md:p-1.5" : "md:h-[220px] md:w-[220px] md:p-4"}`}
         aria-label="Open machine search assistant"
       >
         {/* Mobile Layout */}
@@ -337,6 +351,12 @@ export default function MachineSearchAgent() {
         )}
 
         {/* Desktop Square Card Layout (md+) */}
+        {desktopWidgetDismissed ? (
+          <div className="hidden h-full w-full flex-col items-center justify-center gap-1 md:flex">
+            <Search className="h-6 w-6 text-[#0878e8]" />
+            <span className="text-[0.48rem] font-black uppercase tracking-[0.06em] text-[#07549c]">Search</span>
+          </div>
+        ) : (
         <div className="hidden md:flex flex-col flex-1 justify-between h-full text-left">
           <div className="machine-search-icon-mark mt-1 flex h-[52px] shrink-0 items-center justify-center">
             <Search className="h-11 w-11 stroke-[2.25] text-[#4e82f4]" />
@@ -361,6 +381,7 @@ export default function MachineSearchAgent() {
             </div>
           </div>
         </div>
+        )}
       </button>
       {!mobileWidgetDismissed ? (
         <button
@@ -373,6 +394,19 @@ export default function MachineSearchAgent() {
           aria-label="Minimize search assistant"
         >
           <X className="h-3 w-3" />
+        </button>
+      ) : null}
+      {!desktopWidgetDismissed ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setDesktopWidgetDismissed(true);
+          }}
+          className="machine-search-desktop-close absolute -right-2 -top-2 hidden h-6 w-6 items-center justify-center border border-white bg-[#e32636] text-white shadow-md md:inline-flex"
+          aria-label="Minimize AI search assistant"
+        >
+          <X className="h-3.5 w-3.5" />
         </button>
       ) : null}
       </div>
@@ -422,7 +456,9 @@ export default function MachineSearchAgent() {
                 <h3 className="mt-2 text-xl font-black text-[#07549c]">Choose your language</h3>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">Your search assistant will reply in the language you select.</p>
                 <div className="mt-6 grid grid-cols-3 gap-2.5">
-                {languageOptions.map((option) => (
+                {languageOptions
+                  .filter((option) => ["english", "hindi", "chinese", "tamil"].includes(option.id))
+                  .map((option) => (
                   <button
                     key={option.id}
                     type="button"
@@ -431,7 +467,7 @@ export default function MachineSearchAgent() {
                   >
                     {option.label}
                   </button>
-                ))}
+                  ))}
                 </div>
               </div>
             </div>
